@@ -9,7 +9,7 @@ class Subject extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'class_id', 'teacher_id']; // ថែម teacher_id បើមាន
+    protected $fillable = ['name']; // ថែម teacher_id បើមាន
 
     // Relationship ទៅកាន់ Class
     public function class()
@@ -19,8 +19,7 @@ class Subject extends Model
     }
 
     // 💡 បន្ថែម Relationship នេះដើម្បីបំបាត់ Error
-    public function teacher()
-    {
-        return $this->belongsTo(Teacher::class, 'teacher_id');
+    public function teacher() {
+        return $this->belongsToMany(Teacher::class, 'subject_teacher', 'subject_id', 'teacher_id');
     }
 }

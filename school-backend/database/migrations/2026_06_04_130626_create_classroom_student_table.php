@@ -17,8 +17,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->foreignId('class_id')->constrained('classes')->cascadeOnDelete();
-            $table->foreignId('year_id')->constrained('years')->cascadeOnDelete(); // ចាប់ឆ្នាំសិក្សាជាមួយតែម្តង
-            $table->string('status')->default('Studying'); // Studying, Completed, Dropped
+            $table->foreignId('year_id')->constrained('years')->cascadeOnDelete(); 
+            $table->string('status')->default('Studying');
             $table->timestamps();
         });
     }

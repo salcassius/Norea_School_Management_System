@@ -21,7 +21,7 @@ class SubjectController extends Controller
         // កែសម្រួល Validation ឱ្យពិនិត្យទាំងថ្នាក់រៀន និងគ្រូបង្រៀន
         $data = $request->validate([
             'name'       => 'required|string|max:255',
-            'class_id'   => 'required|exists:classes,id', 
+            'class_id'   => 'nullable|exists:classes,id', 
             'teacher_id' => 'nullable|exists:teachers,id', // 💡 បើកដំណើរការ និងអនុញ្ញាតឱ្យទៅជា null បាន
         ], [
             'name.required'       => 'សូមបញ្ចូលឈ្មោះមុខវិជ្ជា',
@@ -33,7 +33,7 @@ class SubjectController extends Controller
         // បង្កើត Record ថ្មីក្នុង Database
         $subject = Subject::create([
             'name'       => $data['name'],
-            'class_id'   => $data['class_id'],
+            'class_id'   => $data['class_id'] ?? null,
             'teacher_id' => $data['teacher_id'] ?? null, // 💡 រក្សាទុក ID គ្រូបង្រៀនចូលក្នុងតារាង
         ]);
 
@@ -56,21 +56,21 @@ class SubjectController extends Controller
         // Validation ដូចទៅនឹងការ Store ដែរ
         $data = $request->validate([
             'name'       => 'required|string|max:255',
-            'class_id'   => 'required|exists:classes,id',
+            'class_id'   => 'nullable|exists:classes,id',
             'teacher_id' => 'nullable|exists:teachers,id', 
         ], [
             'name.required'     => 'សូមបញ្ចូលឈ្មោះមុខវិជ្ជា',
-            'class_id.required' => 'សូមជ្រើសរើសថ្នាក់រៀន',
+            'class_id.exists' => 'សូមជ្រើសរើសថ្នាក់រៀន',
             'class_id.exists'   => 'ថ្នាក់រៀនដែលបានជ្រើសរើសមិនត្រឹមត្រូវឡើយ',
             'teacher_id.exists' => 'គ្រូបង្រៀនដែលបានជ្រើសរើសមិនមានក្នុងប្រព័ន្ធឡើយ',
         ]);
 
         // ធ្វើបច្ចុប្បន្នភាពទិន្នន័យ
         $subject->update([
-            'name'       => $data['name'],
-            'class_id'   => $data['class_id'],
-            'teacher_id' => $data['teacher_id'] ?? null, // បើមិនបានជ្រើសរើសគ្រូ វានឹងទៅជា null
-        ]);
+    'name'       => $data['name'],
+    'class_id'   => $request->input('class_id', null),   // យក null បើមិនមានតម្លៃ
+    'teacher_id' => $request->input('teacher_id', null), // យក null បើមិនមានតម្លៃ
+]);
 
         return response()->json([
             'message' => 'កែសម្រួលមុខវិជ្ជាបានជោគជ័យ',

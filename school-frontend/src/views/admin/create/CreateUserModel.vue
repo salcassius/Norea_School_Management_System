@@ -32,6 +32,28 @@
             />
           </div>
 
+          <div class="relative">
+            <label class="block text-sm font-semibold text-slate-700 mb-1.5">ពាក្យសម្ងាត់</label>
+            <input
+              v-model="form.password" 
+              :type="showPassword ? 'text' : 'password'" 
+              required 
+              placeholder="••••••••"
+              class="w-full border border-slate-300 rounded-xl px-4 py-2.5 pr-12 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all" 
+            />
+
+            <button type="button" @click="showPassword = !showPassword" 
+                class="absolute right-3 top-[48px] -translate-y-1/2 text-gray-400 hover:text-black-600 focus:outline-none">
+                <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                </svg>
+              </button>
+          </div>
+
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-semibold text-slate-700 mb-1.5">តួនាទី</label>
@@ -41,32 +63,20 @@
                 <option value="admin">Admin</option>
               </select>
             </div>
-            <!-- <div>
+            <div>
               <label class="block text-sm font-semibold text-slate-700 mb-1.5">ស្ថានភាព</label>
               <select v-model="form.status" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 outline-none cursor-pointer focus:border-indigo-500">
-                <option value="Active">សកម្ម</option>
-                <option value="Inactive">អសកម្ម</option>
+                <option value="1">សកម្ម</option>
+                <option value="0">អសកម្ម</option>
               </select>
-            </div> -->
-          </div>
-
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1.5">ពាក្យសម្ងាត់</label>
-            <input
-              v-model="form.password" 
-              type="password" 
-              required 
-              placeholder="••••••••"
-              class="w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all" 
-            />
+            </div>
           </div>
 
           <div class="flex justify-end gap-3 mt-8">
             <button 
               type="button" 
               @click="$emit('close')" 
-              class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-medium transition-all"
-            >
+              class="px-6 py-2.5 text-slate-700 hover:bg-slate-200 bg-indigo-200 rounded-xl font-medium transition-all text-sm">
               បោះបង់
             </button>
             <button 
@@ -85,7 +95,7 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue'; // Added ref here
 import { X } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -93,14 +103,15 @@ const props = defineProps({
   loading: Boolean
 });
 
-const emit = defineEmits(['close', 'submit']);
+const showPassword = ref(false);
+const emit = defineEmits(['close', 'submit', 'error']);
 
 const form = reactive({
   name: '',
   email: '',
   password: '',
   role: 'student',
-  status: 1 // កែពី 'Active' មកជាលេខ 1 វិញ
+  status: 1 
 });
 
 const handleSubmit = () => {

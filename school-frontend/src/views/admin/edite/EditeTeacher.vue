@@ -55,9 +55,38 @@
             </div>
 
             <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">ថ្ងែខែឆ្នាំកំណើត <span class="text-rose-500">*</span></label>
+              <input v-model="form.dob" type="date" :class="inputClass" required />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">លេខទូរស័ព្ទ <span class="text-rose-500">*</span></label>
+              <input v-model="form.phone" type="text" :class="inputClass" required />
+            </div>
+
+            <div>
               <label class="block text-sm font-semibold text-slate-700 mb-1.5">អ៊ីមែល <span class="text-rose-500">*</span></label>
               <input v-model="form.email" type="email" :class="inputClass" required />
             </div>
+          </div>
+
+          <div class="relative">
+            <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+              លេខសម្ងាត់ថ្មី <span class="text-xs font-normal text-slate-400">(ទុកទំនេរ បើមិនចង់ប្តូរ)</span>
+            </label>
+            <input v-model="form.password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
+              class="w-full border border-slate-300 rounded-xl px-4 py-2.5 pr-12 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all" />
+
+            <button type="button" @click="showPassword = !showPassword"
+              class="absolute right-3 top-[38px] text-gray-400 hover:text-slate-600 focus:outline-none">
+              <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+              </svg>
+            </button>
           </div>
 
           <div class="space-y-2 pt-1">
@@ -77,7 +106,7 @@
               <label class="block text-sm font-semibold text-slate-700 flex items-center gap-1.5">
                 <Home class="w-4 h-4 text-slate-400" /> អាសយដ្ឋានបច្ចុប្បន្ន
               </label>
-              <button type="button" @click="copyPOB" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
+              <button type="button" @click="copyPOB" class="text-[14px] text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
                 ដូចទីកន្លែងកំណើត
               </button>
             </div>
@@ -107,8 +136,8 @@
             <div>
               <label class="block text-sm font-semibold text-slate-700 mb-1.5">ស្ថានភាព <span class="text-rose-500">*</span></label>
               <select v-model="form.status" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none cursor-pointer focus:border-indigo-500">
-                <option :value="1">សកម្ម</option>
-                <option :value="0">អសកម្ម</option>
+                <option :value="1">នៅបង្រៀន</option>
+                <option :value="0">ឈប់បង្រៀន/ផ្អាក</option>
               </select>
             </div>
           </div>
@@ -120,7 +149,7 @@
         </form>
 
         <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 mt-4 bg-slate-50/50">
-          <button type="button" @click="closeModal" class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-medium transition-all">
+          <button type="button" @click="closeModal" class="px-6 py-2.5 text-slate-700 hover:bg-slate-200 bg-indigo-200 rounded-xl font-medium transition-all text-sm">
             បោះបង់
           </button>
           <button @click="submitForm" :disabled="loading" class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-70 flex items-center gap-2">
@@ -136,7 +165,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { X, Camera, User, MapPin, Home, AlertCircle } from 'lucide-vue-next';
+import { X, Camera, User, AlertCircle, MapPin, Home } from 'lucide-vue-next';
 import api from '../../../services/authService'
 
 const props = defineProps({
@@ -144,13 +173,13 @@ const props = defineProps({
   teacherData: Object
 })
 
-const emit = defineEmits(['update:modelValue', 'refresh'])
+const emit = defineEmits(['update:modelValue', 'refresh']);
 
 const loading = ref(false)
 const errorMessage = ref(null)
 const previewUrl = ref(null)
 
-// ប្រើប្រាស់ inputClass ដែលមាន Style ដូច EditeUser បេះបិទ
+const showPassword = ref(false);
 const inputClass = "w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all";
 
 const form = ref({
@@ -161,6 +190,7 @@ const form = ref({
   gender: 'male',
   specialty: [],
   email: '',
+  password: '',
   phone: '',
   dob: '',
   pob_village: '',
@@ -178,8 +208,9 @@ const form = ref({
 
 watch(() => props.teacherData, (newData) => {
   if (newData) {
-    console.log("ទិន្នន័យធ្លាក់មកកាន់ Modal:", newData);
     errorMessage.value = null
+    // លុប URL ចាស់ ដើម្បីសន្សំ Memory
+    if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
     previewUrl.value = null
     
     form.value = {
@@ -188,33 +219,34 @@ watch(() => props.teacherData, (newData) => {
       name_kh: newData.name_kh || '',
       name_en: newData.name_en || '',
       gender: newData.gender || 'male',
-      email: newData.email || (newData.user && newData.user.email ? newData.user.email : ''),
+      email: newData.email || (newData.user?.email || ''),
+      password: '', // តែងតែទុកទទេនៅពេលចាប់ផ្តើម edit
       phone: newData.phone || '',
-      dob: newData.dob || '',
-      hire_date: newData.hire_date || '',
+      // កាត់យកតែ YYYY-MM-DD
+      dob: newData.dob ? newData.dob.split('T')[0] : '',
+      hire_date: newData.hire_date ? newData.hire_date.split('T')[0] : '',
       status: (newData.status === 'Active' || newData.status == 1) ? 1 : 0,
       photo: null,
-
       pob_village: newData.pob_village || newData.pob_khum || '',
       pob_commune: newData.pob_commune || newData.pob_sangkat || '',
       pob_district: newData.pob_district || newData.pob_khan || '',
       pob_province: newData.pob_province || newData.pob_city || '',
-
       village: newData.village || newData.khum || '',
       commune: newData.commune || newData.sangkat || '',
       district: newData.district || newData.khan || '',
       province: newData.province || newData.city || '',
-
       specialty: typeof newData.specialty === 'string' 
-        ? JSON.parse(newData.specialty) 
+        ? JSON.parse(newData.specialty || '[]') 
         : (Array.isArray(newData.specialty) ? newData.specialty : [])
     };
   }
+    showPassword.value = false;
 }, { immediate: true, deep: true })
 
 const handleFile = (e) => {
   const file = e.target.files[0]
   if (file) {
+    if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
     form.value.photo = file
     previewUrl.value = URL.createObjectURL(file)
   }
@@ -237,13 +269,16 @@ const submitForm = async () => {
     const formData = new FormData()
     formData.append('_method', 'PUT')
 
-    Object.keys(form.value).forEach(key => {
+    Object.entries(form.value).forEach(([key, value]) => {
+      // កុំផ្ញើ password ប្រសិនបើទទេ
+      if (key === 'password' && !value) return;
+      
       if (key === 'specialty') {
-        formData.append(key, JSON.stringify(form.value[key]))
+        formData.append(key, JSON.stringify(value))
       } else if (key === 'photo') {
-        if (form.value.photo) formData.append('photo', form.value.photo)
-      } else if (form.value[key] !== null && form.value[key] !== undefined) {
-        formData.append(key, form.value[key])
+        if (value instanceof File) formData.append('photo', value)
+      } else if (value !== null && value !== undefined && value !== '') {
+        formData.append(key, value)
       }
     })
 

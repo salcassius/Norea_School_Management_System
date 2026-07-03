@@ -12,88 +12,78 @@ use App\Http\Controllers\API\ScheduleController;
 use App\Http\Controllers\API\AttendanceController;
 use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\ExamController;
+use App\Http\Controllers\API\ScoreController;
 
+// Public Routes
 Route::post('/login', [AuthController::class, 'login']);
-
 Route::get('years', [AcademicController::class, 'index']);
-Route::get('classes', [ClassController::class, 'index']);
 Route::get('subjects', [SubjectController::class, 'index']);
 Route::get('teachers', [TeacherController::class, 'index']);
 Route::get('schedules', [ScheduleController::class, 'index']);
-
 Route::middleware('auth:sanctum')->group(function () {
-
-    // Auth & User Management
+    
+    // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Attendance Routes (Universal)
+    Route::get('/attendance/sheet', [AttendanceController::class, 'getAttendanceSheet']);
+    Route::post('/attendance/save', [AttendanceController::class, 'saveAttendance']);
+    Route::get('/attendance/report', [AttendanceController::class, 'getReport']);
+
+    // Common API
     Route::get('users/stats', [UserController::class, 'getStats']);
     Route::apiResource('users', UserController::class);
-    Route::get('/attendance/sheet', [AttendanceController::class, 'getAttendanceSheet']);
-    Route::get('/attendance/sheet', [AttendanceController::class, 'getAttendanceSheet']);
-    // ✅ កូដថ្មី៖ ប្តូរមកហៅ getStudentsByClass វិញឱ្យត្រូវតាមឈ្មោះ function ក្នុង StudentController
-    // Route::get('/my-students', [StudentController::class, 'getMyStudents']);
     Route::get('classes/{class_id}/students', [StudentController::class, 'getStudentsByClass']);
+    Route::delete('/classes/{class_id}/students/{student_id}', [ClassController::class, 'removeStudentFromClass']);
 
+    // Scores
+    Route::post('/scores/save', [ScoreController::class, 'saveScores']);
+    Route::get('/scores', [ScoreController::class, 'getScores']);
+    Route::get('/scores/export-pdf/exam/{examId}/class/{classId}', [ScoreController::class, 'exportPdf']);
+
+    // Admin & Teacher Shared Access
     Route::middleware('role:admin,teacher')->group(function () {
-        // មើលព័ត៌មានលម្អិតតាម ID (Show)
+
+        Route::get('classes', [ClassController::class, 'index']);
         Route::get('classes/{id}', [ClassController::class, 'show']);
         Route::get('subjects/{id}', [SubjectController::class, 'show']);
         Route::get('teachers/{id}', [TeacherController::class, 'show']);
         Route::get('years/{id}', [AcademicController::class, 'show']);
         Route::get('schedules/{id}', [ScheduleController::class, 'show']);
-
-        Route::get('schedules', [ScheduleController::class, 'index']);
         Route::post('schedules', [ScheduleController::class, 'store']);
-
-        // សម្រាប់សិស្ស
+        
         Route::get('students', [StudentController::class, 'index']);
         Route::get('students/{id}', [StudentController::class, 'show']);
-
-       
-
-        Route::post('/attendance', [AttendanceController::class, 'store']);
-        Route::get('/attendance/sheet', [AttendanceController::class, 'getAttendanceSheet']);
-        Route::post('/attendance/save', [AttendanceController::class, 'saveAttendance']);
-
+        
         Route::get('exams', [ExamController::class, 'index']);
         Route::get('exams/{id}', [ExamController::class, 'show']);
-
-        // Dashboard Stats
         Route::get('/dashboard-stats', [DashboardController::class, 'getDashboardStats']);
     });
 
-
+    // Admin Only
     Route::middleware('role:admin')->group(function () {
-        // Classes: បង្កើត កែប្រែ លុប
         Route::post('classes', [ClassController::class, 'store']);
         Route::put('classes/{id}', [ClassController::class, 'update']);
         Route::delete('classes/{id}', [ClassController::class, 'destroy']);
-
-        Route::get('classes/{class_id}/students', [StudentController::class, 'getStudentsByClass']);
         Route::post('/classes/{class_id}/assign-student', [ClassController::class, 'addStudentToClass']);
 
-
-        // Students: បង្កើត កែប្រែ លុប
         Route::post('students', [StudentController::class, 'store']);
         Route::put('students/{id}', [StudentController::class, 'update']);
         Route::delete('students/{id}', [StudentController::class, 'destroy']);
 
-        // Teachers: បង្កើត កែប្រែ លុប
         Route::post('teachers', [TeacherController::class, 'store']);
         Route::put('teachers/{id}', [TeacherController::class, 'update']);
         Route::delete('teachers/{id}', [TeacherController::class, 'destroy']);
 
-        // Subjects: បង្កើត កែប្រែ លុប
         Route::post('subjects', [SubjectController::class, 'store']);
         Route::put('subjects/{id}', [SubjectController::class, 'update']);
         Route::delete('subjects/{id}', [SubjectController::class, 'destroy']);
 
-        // Academic Years: បង្កើត កែប្រែ លុប
         Route::post('years', [AcademicController::class, 'store']);
         Route::put('years/{id}', [AcademicController::class, 'update']);
         Route::delete('years/{id}', [AcademicController::class, 'destroy']);
         Route::post('years/{id}/set-active', [AcademicController::class, 'setActive']);
 
-        Route::post('schedules', [ScheduleController::class, 'store']);
         Route::put('schedules/{id}', [ScheduleController::class, 'update']);
         Route::delete('schedules/{id}', [ScheduleController::class, 'destroy']);
 
@@ -101,15 +91,21 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('exams/{id}', [ExamController::class, 'update']);
         Route::delete('exams/{id}', [ExamController::class, 'destroy']);
 
+        Route::get('/dashboard-stats', [DashboardController::class, 'getDashboardStats']);
+
+        Route::get('/users/export-pdf', [UserController::class, 'exportUsersPdf']);
         Route::get('/admin/stats', [AcademicController::class, 'getStats']);
+
+
     });
 
-
+    // Teacher Only
     Route::middleware('role:teacher')->group(function () {
         Route::get('/teacher/dashboard', [DashboardController::class, 'getTeacherDashboard']);
         Route::get('/my-students', [StudentController::class, 'getMyStudents']);
         Route::get('/teacher/my-schedules', [ScheduleController::class, 'getTeacherSchedule']);
-        
-        // អ្នកអាចបន្ថែម Route ផ្សេងៗទៀតសម្រាប់គ្រូនៅទីនេះ
+        Route::get('/teacher/attendance/schedules', [AttendanceController::class, 'getTeacherSchedulesToday']);
+        Route::get('/teacher/attendance/students/{class_id}', [AttendanceController::class, 'getStudentsByClass']);
+        Route::post('/teacher/attendance/save', [AttendanceController::class, 'saveAttendance']);
     });
 });

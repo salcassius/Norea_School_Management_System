@@ -13,38 +13,48 @@
     </div>
 
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <table class="w-full text-left">
-        <thead class="bg-slate-50/50 border-b border-slate-100">
-          <tr>
-            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">ល.រ</th>
-            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">ឈ្មោះសិស្ស</th>
-            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">ភេទ</th>
-            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">ស្ថានភាព</th>
-            <!-- <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-right">សកម្មភាព</th> -->
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
-          <tr v-for="(student, index) in filteredStudents" :key="student.id" class="hover:bg-slate-50 transition-colors">
-            <td class="px-6 py-4 text-sm text-slate-600">{{ index + 1 }}</td>
-            <td class="px-6 py-4">
-              <div class="font-bold text-slate-800">{{ student.name_kh }}</div>
-              <div class="text-[11px] text-slate-400 uppercase">{{ student.student_id_card }}</div>
-            </td>
-            <td class="px-6 py-4 text-sm text-slate-600">{{ student.gender === 'male' ? 'ប្រុស' : 'ស្រី' }}</td>
-            <td class="px-6 py-4">
-              <span :class="student.status == 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'" 
-                    class="px-2 py-1 rounded-lg text-[10px] font-bold">
-                {{ student.status == 1 ? 'កំពុងរៀន' : 'ឈប់រៀន' }}
-              </span>
-            </td>
-            <!-- <td class="px-6 py-4 text-right">
-              <button @click="openEditModal(student)" class="text-indigo-600 hover:text-indigo-800 font-bold text-xs">
-                កែសម្រួល
-              </button>
-            </td> -->
-          </tr>
-        </tbody>
-      </table>
+      <table class="w-full text-left border-collapse min-w-[1200px]">
+            <thead>
+              <tr class="bg-slate-50 text-[14px] font-bold text-slate-600 uppercase tracking-wider">
+                <th class="px-4 py-3 w-12 sticky left-0 bg-slate-50 z-10">ល.រ</th>
+                <th class="px-4 py-3 w-40 sticky left-12 bg-slate-50 z-10">ឈ្មោះសិស្ស</th>
+                <th class="px-4 py-3">អត្តលេខ</th>
+                <th class="px-4 py-3">ភេទ</th>
+                <th class="px-4 py-3">ថ្ងៃកំណើត</th>
+                <th class="px-6 py-4 text-[14px] font-bold text-slate-600 uppercase tracking-wider">អាសយដ្ឋានបច្ចុប្បន្ន</th>
+                <th class="px-4 py-3">លេខទូរស័ព្ទ</th>
+                <th class="px-4 py-3">ឪពុក (ឈ្មោះ/លេខ)</th>
+                <th class="px-4 py-3">ម្តាយ (ឈ្មោះ/លេខ)</th>
+                <th class="px-4 py-3 text-center sticky right-0 bg-slate-50 z-20">សកម្មភាព</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-xs">
+              <tr v-for="(std, index) in classStudents" :key="std.id" class="hover:bg-indigo-50/30 transition-colors">
+                <td class="px-4 py-4 font-bold text-slate-700 bg-white sticky left-0 z-10">{{ index + 1 }}</td>
+                <td class="px-4 py-4 bg-white sticky left-10 z-10 border-r border-slate-100">
+                  <div class="text-[14px] font-bold text-slate-800">{{ std.name_kh }}</div>
+                  <div class="text-[14px] text-slate-600 uppercase">{{ std.name_en }}</div>
+                </td>
+                <td class="px-4 py-4 font-mono font-bold text-[14px] text-indigo-600 uppercase">{{ std.student_id_card }}</td>
+                <td class="px-4 py-4 text-slate-700 text-[14px]">{{ std.gender === 'male' ? 'ប្រុស' : 'ស្រី' }}</td>
+                <td class="px-4 py-4 text-slate-700 text-[14px]">{{ std.date_of_birth ? new Date(std.date_of_birth).toLocaleDateString('km-KH') : 'N/A' }}</td>
+                <td class="px-6 py-4 text-sm text-slate-600">
+                <div class="text-[14px]">
+                  {{ std.village }}, {{ std.commune }}, {{ std.district }}, {{ std.province }}
+                </div>
+              </td>
+                <td class="px-4 py-4 text-slate-700 text-[14px]">{{ std.phone }}</td>
+                <td class="px-4 py-4 text-slate-700 text-[14px]">
+                  <div>{{ std.guardian_dad_name }}</div>
+                  <div class="text-[13px] text-slate-700">{{ std.guardian_dad_phone }}</div>
+                </td>
+                <td class="px-4 py-4 text-[14px] text-slate-700">
+                  <div>{{ std.guardian_mom_name }}</div>
+                  <div class="text-[13px] text-slate-700">{{ std.guardian_mom_phone }}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
     </div>
 
     <!-- <EditStudent 

@@ -18,11 +18,9 @@ return new class extends Migration
         $table->string('name');
         $table->string('grade_level');
         $table->boolean('is_active')->default(1);
-
         $table->foreignId('year_id')->constrained()->cascadeOnDelete();
         $table->foreignId('teacher_id')->nullable()
               ->constrained('teachers')->nullOnDelete();
-
         $table->timestamps();
     });
 }

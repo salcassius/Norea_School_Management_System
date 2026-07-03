@@ -10,15 +10,7 @@ class Exam extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'type',
-        'year_id',
-        'class_id',
-        'subject_id',
-        'exam_date',
-        'start_time',
-        'end_time',
-        'status',
+        'name', 'type', 'year_id', 'class_id', 'exam_date', 'start_time', 'end_time', 'status',
     ];
 
     protected $casts = [
@@ -29,16 +21,12 @@ class Exam extends Model
 
     public function year()
     {
-        return $this->belongsTo(Year::class);
+        return $this->belongsTo(Year::class, 'year_id');
     }
 
+    // ប្តូរឈ្មោះពី class() មកជា classRoom()
     public function class()
     {
-        return $this->belongsTo(ClassRoom::class);
-    }
-
-    public function subject()
-    {
-        return $this->belongsTo(Subject::class);
+        return $this->belongsTo(ClassRoom::class, 'class_id');
     }
 }

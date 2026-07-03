@@ -9,9 +9,8 @@ return new class extends Migration
     public function up()
     {
         Schema::table('classroom_student', function (Blueprint $table) {
-            // បន្ថែមជួរឈរ teacher_id
             $table->foreignId('teacher_id')
-                  ->nullable() // ដាក់ nullable ក្នុងករណីទិន្នន័យចាស់មិនមានគ្រូ
+                  ->nullable() 
                   ->after('class_id')
                   ->constrained('teachers')
                   ->cascadeOnDelete();

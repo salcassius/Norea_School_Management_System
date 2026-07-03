@@ -45,14 +45,6 @@
           </div>
         </div>
 
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-600 ml-0.5">បន្ទប់រៀន <span class="text-rose-500">*</span></label>
-          <div class="relative">
-            <MapPin class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400" />
-            <input v-model="form.room" type="text" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 pl-11 pr-4 text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all" required />
-          </div>
-        </div>
-
         <div class="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs font-semibold text-slate-500">
           <div>ថ្ងៃសិក្សា៖ <span class="text-slate-800 font-bold">{{ form.day }}</span></div>
           <div>ម៉ោងសិក្សា៖ <span class="text-slate-800 font-bold">{{ form.time }}</span></div>

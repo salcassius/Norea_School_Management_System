@@ -70,12 +70,12 @@ class TeacherController extends Controller
      */
     public function store(Request $request)
     {
-        // ១. Validation គ្រប់ Fields ទាំងអស់ឱ្យបានត្រឹមត្រូវ
         $validated = $request->validate([
             'teacher_id_card' => 'required|string|max:50|unique:teachers,teacher_id_card',
             'name_kh'         => 'required|string|max:255',
             'name_en'         => 'required|string|max:255',
-            'email'           => 'required|email|unique:users,email',
+            'email'           => 'required|email|unique:users,email|unique:teachers,email', // ពិនិត្យកុំឱ្យជាន់គ្នាក្នុងតារាងទាំងពីរ
+            'password'        => 'required|string|min:6',
             'gender'          => 'required|in:male,female',
             'specialty'       => 'nullable', 
             'dob'             => 'nullable|date',
@@ -87,7 +87,7 @@ class TeacherController extends Controller
             'pob_commune'     => 'nullable|string',
             'pob_village'     => 'nullable|string',
 
-            // អាសយដ្ឋានបច្ចុប្បន្ន (Current Address)
+            // អាសយដ្ឋានបច្ចុប្បន្ន
             'province'        => 'nullable|string',
             'district'        => 'nullable|string',
             'commune'         => 'nullable|string',
@@ -102,39 +102,38 @@ class TeacherController extends Controller
             return DB::transaction(function () use ($request, $validated) {
                 
                 $status = $request->has('status') ? (int)$request->status : 1;
+                $hashedPassword = Hash::make($validated['password']); // Hash តែម្តងសម្រាប់ប្រើប្រាស់ទាំងពីរតារាង
 
-                // ២. បង្កើតគណនីអ្នកប្រើប្រាស់ (User) ភ្ជាប់ជាមួយសិទ្ធិ teacher
+                // ១. បង្កើតគណនីនៅក្នុងតារាង users
                 $user = User::create([
                     'name'     => $validated['name_en'], 
                     'email'    => $validated['email'],
-                    'password' => Hash::make('password123'), // គណនីបង្កើតដំបូងប្រើ Default Password
+                    'password' => $hashedPassword,
                     'role'     => 'teacher',
                     'status'   => $status,
                 ]);
 
-                // ៣. រៀបចំទុកដាក់ឯកសាររូបថតប្រវត្តិរូប
+                // ២. រៀបចំទុកដាក់ឯកសាររូបថត
                 $photoPath = null;
                 if ($request->hasFile('photo')) {
                     $photoPath = $request->file('photo')->store('teachers', 'public');
                 }
 
-                // ៤. បំប្លែងទិន្នន័យ specialty ទៅជា JSON string (ប្រសិនបើផ្ញើមកជា Array)
-                $specialty = $request->specialty;
-                if (is_array($specialty)) {
-                    $specialty = json_encode($specialty);
-                }
+                // ៣. គ្រប់គ្រង Specialty
+                $specialty = $request->input('specialty', []);
 
-                // ៥. បង្កើតប្រវត្តិរូបគ្រូបង្រៀន (Teacher) ចូលក្នុង Table
+                // ៤. បង្កើតប្រវត្តិរូបគ្រូបង្រៀននៅក្នុងតារាង teachers (រួមទាំង email និង password)
                 $teacher = Teacher::create([
-                    'teacher_id_card' => $validated['teacher_id_card'],
                     'user_id'         => $user->id,
+                    'teacher_id_card' => $validated['teacher_id_card'],
                     'name_kh'         => $validated['name_kh'],
                     'name_en'         => $validated['name_en'],
+                    'email'           => $validated['email'],     // ✅ រក្សាទុកក្នុងតារាង teachers
+                    'password'        => $hashedPassword,         // ✅ រក្សាទុកក្នុងតារាង teachers (Hashed)
                     'specialty'       => $specialty, 
                     'gender'          => $validated['gender'],
                     'dob'             => $validated['dob'],
                     'phone'           => $validated['phone'],
-                    'email'           => $validated['email'],
                     
                     // ទីកន្លែងកំណើត
                     'pob_province'    => $validated['pob_province'],
@@ -155,10 +154,10 @@ class TeacherController extends Controller
 
                 return response()->json([
                     'status'  => 'success',
-                    'message' => 'រក្សាទុកព័ត៌មានគ្រូបង្រៀនជោគជ័យ',
+                    'message' => 'រក្សាទុកព័ត៌មានគ្រូ និងបង្កើតគណនីស្វ័យប្រវត្តិកើតឡើងដោយជោគជ័យ',
                     'data'    => $teacher->load('user')
                 ], 201);
-        });
+            });
         } catch (\Exception $e) {
             return response()->json([
                 'status'  => 'error',
@@ -174,25 +173,25 @@ class TeacherController extends Controller
     {
         $teacher = Teacher::findOrFail($id);
         
-        // ១. Validation ឱ្យគ្រប់គ្រាន់ ដើម្បីការពារការបាត់បង់ទិន្នន័យពេលលោតចូល $validated
         $validated = $request->validate([
             'teacher_id_card' => 'required|string|unique:teachers,teacher_id_card,' . $id,
             'name_kh'         => 'required|string',
             'name_en'         => 'required|string',
-            'email'           => 'required|email|unique:users,email,' . $teacher->user_id,
+            'email'           => 'required|email|unique:users,email,' . $teacher->user_id . '|unique:teachers,email,' . $id,
+            'password'        => 'nullable|string|min:6', 
             'gender'          => 'required|in:male,female',
             'dob'             => 'nullable|date',
             'phone'           => 'nullable|string',
             'specialty'       => 'nullable', 
             'status'          => 'nullable', 
             
-            // ទីកន្លែងកំណើត (POB)
+            // ទីកន្លែងកំណើត
             'pob_province'    => 'nullable|string',
             'pob_district'    => 'nullable|string',
             'pob_commune'     => 'nullable|string',
             'pob_village'     => 'nullable|string',
             
-            // អាសយដ្ឋានបច្ចុប្បន្ន (Current Address)
+            // អាសយដ្ឋានបច្ចុប្បន្ន
             'province'        => 'nullable|string',
             'district'        => 'nullable|string',
             'commune'         => 'nullable|string',
@@ -205,54 +204,54 @@ class TeacherController extends Controller
         try {
             return DB::transaction(function () use ($request, $teacher, $validated) {
                 
-                // បំប្លែងតម្លៃ status មកជា Integer (ទោះបីជាមកពី Frontend ជា String "0" ឬ "1" ក៏ដោយ)
                 $status = $request->has('status') ? (int)$request->status : 1;
+                $data = $validated;
+                $data['status'] = $status;
 
-                // ២. ធ្វើបច្ចុប្បន្នភាព (Update) ទៅកាន់ Table Users មុន
+                // ១. ពិនិត្យមើលការផ្លាស់ប្តូរ Password
+                if (!empty($validated['password'])) {
+                    $hashedPassword = Hash::make($validated['password']);
+                    $data['password'] = $hashedPassword; // សម្រាប់ Update ក្នុងតារាង teachers
+                } else {
+                    // ប្រសិនបើមិនបានវាយលេខសម្ងាត់ថ្មីទេ ដកវាចេញដើម្បីរក្សាលេខសម្ងាត់ចាស់ដដែល
+                    unset($data['password']); 
+                }
+
+                // ២. ធ្វើបច្ចុប្បន្នភាពទៅកាន់តារាង users មុន
                 if ($teacher->user) {
-                    $teacher->user->update([
+                    $userData = [
                         'name'   => $validated['name_en'],
                         'email'  => $validated['email'],
                         'status' => $status,
-                    ]);
-                }
-
-                // ៣. ចម្លងទិន្នន័យដែលបាន Validate រួចទៅក្នុង Array ថ្មីមួយសម្រាប់ចាត់ចែង
-                $data = $validated;
-                $data['status'] = $status;
-                
-                // គ្រប់គ្រងរឿង Specialty (ការពារការទម្លាក់ JSON ជាន់គ្នាពីរដង)
-                if (isset($data['specialty'])) {
-                    $decoded = json_decode($data['specialty'], true);
-                    if (is_array($decoded)) {
-                        // ប្រសិនបើវាជាទម្រង់ JSON String ស្រាប់ (មកពី JSON.stringify) គឺរក្សាទុកដដែល
-                        $data['specialty'] = $data['specialty']; 
-                    } else if (is_array($data['specialty'])) {
-                        // បើមកជាទម្រង់ Array ធម្មតា ត្រូវបំប្លែងទៅជា JSON String
-                        $data['specialty'] = json_encode($data['specialty']);
+                    ];
+                    if (isset($data['password'])) {
+                        $userData['password'] = $data['password'];
                     }
+                    $teacher->user->update($userData);
                 }
 
-                // ៤. គ្រប់គ្រងការផ្លាស់ប្តូររូបថត (លុបរូបចាស់ចេញពី Storage ប្រសិនបើមានការ Upload រូបថ្មី)
+                // ៣. គ្រប់គ្រងរឿង Specialty
+                $data['specialty'] = $request->input('specialty', []);
+
+                // ៤. គ្រប់គ្រងការផ្លាស់ប្តូររូបថត
                 if ($request->hasFile('photo')) {
                     if ($teacher->photo) {
                         Storage::disk('public')->delete($teacher->photo);
                     }
                     $data['photo'] = $request->file('photo')->store('teachers', 'public');
                 } else {
-                    // ប្រសិនបើមិនមានរូបថតថ្មីផ្ញើមកទេ ដក field នេះចេញដើម្បីរក្សារូបចាស់ឱ្យនៅដដែល
                     unset($data['photo']);
                 }
 
-                // ៥. ធ្វើបច្ចុប្បន្នភាព (Update) ទិន្នន័យគ្រូបង្រៀនទាំងអស់ចូលក្នុង Table Teachers
+                // ៥. ធ្វើបច្ចុប្បន្នភាពទិន្នន័យគ្រូបង្រៀនទៅកាន់តារាង teachers
                 $teacher->update($data);
 
                 return response()->json([
                     'status'  => 'success',
-                    'message' => 'កែប្រែព័ត៌មានគ្រូបង្រៀនជោគជ័យ',
+                    'message' => 'កែប្រែព័ត៌មានគ្រូបង្រៀន និងគណនីជោគជ័យ',
                     'data'    => $teacher->load('user')
                 ]);
-        });
+            });
         } catch (\Exception $e) {
             return response()->json([
                 'status'  => 'error',
@@ -260,7 +259,7 @@ class TeacherController extends Controller
             ], 500);
         }
     }
-
+    
     /**
      * លុបទិន្នន័យគ្រូបង្រៀន និងគណនី User (Destroy)
      */

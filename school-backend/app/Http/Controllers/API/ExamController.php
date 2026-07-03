@@ -9,17 +9,14 @@ use Illuminate\Http\JsonResponse;
 
 class ExamController extends Controller
 {
-    /**
-     * ទាញយកបញ្ជីការប្រឡង (អាច Filter តាមឆ្នាំ ឬថ្នាក់)
-     */
+
     public function index(Request $request): JsonResponse
     {
-        $query = Exam::query()->with(['year', 'class', 'subject']);
+        $query = Exam::query()->with(['year', 'class']);
 
         if ($request->has('year_id')) {
             $query->where('year_id', $request->year_id);
         }
-        
         if ($request->has('class_id')) {
             $query->where('class_id', $request->class_id);
         }
@@ -36,8 +33,8 @@ class ExamController extends Controller
             'name'       => 'required|string|max:255',
             'type'       => 'required|string|max:100',
             'year_id'    => 'required|exists:years,id',
-            'class_id'   => 'required|exists:classes,id',
-            'subject_id' => 'required|exists:subjects,id',
+            'class_id'   => 'nullable|exists:classes,id',
+            // 'subject_id' => 'nullable|exists:subjects,id',
             'exam_date'  => 'required|date',
             'start_time' => 'nullable',
             'end_time'   => 'nullable',
@@ -55,9 +52,10 @@ class ExamController extends Controller
 
     public function show($id): JsonResponse
     {
-        $exam = Exam::with(['year', 'class', 'subject'])->findOrFail($id);
+        $exam = Exam::with(['year', 'class'])->findOrFail($id);
         return response()->json(['success' => true, 'data' => $exam]);
     }
+
     public function update(Request $request, $id): JsonResponse
     {
         $exam = Exam::findOrFail($id);
@@ -65,6 +63,8 @@ class ExamController extends Controller
         $validated = $request->validate([
             'name'       => 'sometimes|string|max:255',
             'type'       => 'sometimes|string',
+            'class_id'   => 'nullable|exists:classes,id',
+            // 'subject_id' => 'nullable|exists:subjects,id',
             'exam_date'  => 'sometimes|date',
             'start_time' => 'nullable',
             'end_time'   => 'nullable',

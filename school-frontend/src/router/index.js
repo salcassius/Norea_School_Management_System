@@ -17,17 +17,24 @@ const ManageStudent = () => import('../views/admin/ManageStudent.vue')
 const ManageYear = () => import('../views/admin/ManageYear.vue')
 const ManageClass = () => import('../views/admin/ManageClass.vue')
 const ManageSubject = () => import('../views/admin/ManageSubject.vue')
-const ManageAttendance = () => import('../views/admin/ManageAttendance.vue')
 const ManageExam = () => import('../views/admin/ManageExam.vue')
 const ManageSchedule = () => import('../views/admin/ManageSchedule.vue')
+const ManageAttendance = () => import('../views/admin/ManageAttendance.vue')
+const ManageReport = () => import('../views/admin/ManageReport.vue')
+// const InputAttendance = () => import('../views/admin/attendance/InputAttendance.vue')
+// const ViewAttendance = () => import('../views/admin/attendance/ViewAttendance.vue')
+
 
 /* --- Teacher Pages --- */
 const TeacherDashboard = () => import('../views/teacher/Deshboard.vue')
-const Attendance = () => import('../views/teacher/Attendance.vue')
+const Attendance= () => import('../views/teacher/Attendance.vue')
 const InputScores = () => import('../views/teacher/InputScores.vue')
 const ScheduleTeacher = () => import('../views/teacher/ScheduleTeacher.vue')
 const Student = () => import('../views/teacher/Student.vue')
 const Report = () => import('../views/teacher/Report.vue')
+// const InputAttendanceStudent = () => import('../views/teacher/AttendanceStudent/InputAttendanceStudent.vue')
+// const ViewAttendanceStudent = () => import('../views/teacher/AttendanceStudent/ViewAttendanceStudent.vue')
+
 
 /* --- Student Pages --- */
 const StudentHome = () => import('../views/student/Home.vue')
@@ -55,9 +62,10 @@ const routes = [
       { path: 'class', name: 'Classes', component: ManageClass },
       { path: 'year', name: 'Years', component: ManageYear },
       { path: 'subject', name: 'Subjects', component: ManageSubject },
-      { path: 'attendance', name: 'Attendances', component: ManageAttendance },
+      {path: 'attendance', name: 'AdminAttendance', component: ManageAttendance},
       { path: 'exam', name: 'Exams', component: ManageExam },
       { path: 'schedule', name: 'Schedules', component: ManageSchedule },
+      {path: 'report', name: 'ManageReport', component: ManageReport}
     ]
   },
   {
@@ -66,16 +74,18 @@ const routes = [
     meta: { requiresAuth: true, role: 'teacher' },
     children: [
       { path: 'dashboard', name: 'TeacherDashboard', component: TeacherDashboard },
-      { path: 'attendance', name: 'Attendance', component: Attendance },
+      {
+        path: 'teacherattendance', name: 'TeacherAttendance', component: Attendance,
+      },
       { path: 'inputscores', name: 'InputScores', component: InputScores },
       { path: 'scheduleteacher', name: 'ScheduleTeacher', component: ScheduleTeacher },
       { path: 'student', name: 'Student', component: Student },
       { path: 'report', name: 'Report', component: Report },
-      { 
+      {
         path: 'student/:id/scores',
-        name: 'StudentScores', 
+        name: 'StudentScores',
         component: () => import('../views/teacher/StudentScore.vue'),
-        props: true 
+        props: true
       },
     ]
   },

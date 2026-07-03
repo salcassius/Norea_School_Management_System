@@ -49,11 +49,15 @@ class StudentController extends Controller
                 'name_kh'            => 'required|string|max:255',
                 'name_en'            => 'nullable|string|max:255',
                 'gender'             => 'required|string|in:male,female,other',
+                'password'        => 'required|string|min:6',
                 'email'              => 'required|email|unique:students,email|unique:users,email',
                 'phone'              => 'nullable|string',
                 'status'             => 'nullable|integer',
                 'photo'              => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'date_of_birth'      => 'nullable|date',
+                'pri_school'        => 'nullable|string',
+                'from_class'        => 'nullable|string',
+
                 // POB Fields
                 'pob_province'       => 'nullable|string',
                 'pob_district'       => 'nullable|string',
@@ -187,10 +191,13 @@ class StudentController extends Controller
                 Rule::unique('students')->ignore($student->id),
                 Rule::unique('users')->ignore($student->user_id ?? 0)
             ],
+            'password'           => 'nullable|string|min:6',
             'phone'              => 'sometimes|nullable|string',
             'status'             => 'sometimes|nullable|integer',
             'photo'              => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'date_of_birth'      => 'sometimes|nullable|date',
+            'pri_school'         => 'sometimes|nullable|string',
+            'from_class'         => 'sometimes|nullable|string',
 
             // ទីកន្លែងកំណើត និង អាសយដ្ឋាន
             'pob_province'       => 'sometimes|nullable|string',
@@ -239,14 +246,25 @@ class StudentController extends Controller
                 $student->update($validatedData);
 
                 // ៤. Update ទៅក្នុង Table Users
+                // ផ្នែក Update ទៅក្នុង Table Users
                 if ($student->user) {
-                    $student->user->update([
+                    // រៀបចំទិន្នន័យសម្រាប់ Update
+                    $userData = [
                         'name'   => $request->name_en ?? $student->user->name,
                         'email'  => $request->email ?? $student->user->email,
                         'status' => $request->status ?? $student->user->status,
-                    ]);
+                    ];
+
+                    // ពិនិត្យមើលថាតើមាន password ផ្ញើមកដែរឬទេ (បើមានទើប Update)
+                    if ($request->filled('password')) {
+                        $userData['password'] = bcrypt($request->password);
+                    }
+
+                    // អនុវត្តការ Update
+                    $student->user->update($userData);
                 }
 
+                // ឆ្លើយតបទៅ Frontend វិញ
                 return response()->json([
                     'message' => 'កែប្រែទិន្នន័យជោគជ័យ',
                     'data'    => $student->load(['year', 'user'])
@@ -280,8 +298,6 @@ class StudentController extends Controller
             return response()->json(['message' => 'លោកគ្រូមិនទាន់មានថ្នាក់ទទួលខុសត្រូវទេ'], 404);
         }
 
-        // ៤. ទាញយកបញ្ជីសិស្សតាមរយៈ Relationship (ត្រូវប្រើ () និងដាក់ឈ្មោះ Function ឱ្យត្រូវនឹង Model)
-        // សន្មតថាក្នុង ClassRoom Model អ្នកបានកំណត់ relationship ឈ្មោះ students()
         $students = $classRoom->student()->with(['user', 'year'])->get();
 
         return response()->json(['data' => $students]);

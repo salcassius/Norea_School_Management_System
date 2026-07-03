@@ -1,7 +1,7 @@
 <template>
   <div class="font-[Battambang] p-6 min-h-screen bg-slate-50/50 text-slate-700">
 
-    <div class="max-w-7xl mx-auto mb-6 no-print">
+    <!-- <div class="max-w-7xl mx-auto mb-6 no-print">
       <div
         class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="flex items-center gap-3">
@@ -24,17 +24,17 @@
           * រាល់ទិន្នន័យកាលវិភាគ និងថ្នាក់រៀននឹងបង្ហាញទៅតាមឆ្នាំសិក្សាដែលបានជ្រើសរើស
         </div>
       </div>
-    </div>
+    </div> -->
 
     <div v-if="!isClassSelected" class="max-w-7xl mx-auto">
       <div class="mb-8">
-        <h1 class="text-2xl font-bold text-slate-800 font-[Khmer_OS_Muol_Light]">គ្រប់គ្រងកាលវិភាគសិក្សា</h1>
+        <h1 class="text-2xl font-bold text-slate-800 font-[battambang]">គ្រប់គ្រងកាលវិភាគសិក្សា</h1>
         <p class="text-sm text-slate-500 mt-1">សូមជ្រើសរើសថ្នាក់រៀន ដើម្បីមើល ឬរៀបចំកាលវិភាគសិក្សា</p>
       </div>
 
       <div v-if="filteredClasses.length === 0"
         class="p-12 text-center bg-white rounded-2xl border border-slate-200/80 shadow-sm">
-        <p class="text-slate-400 font-medium">មិនមានទិន្នន័យថ្នាក់រៀនសម្រាប់ឆ្នាំសិក្សាដែលបានជ្រើសរើសឡើយ。</p>
+        <p class="text-slate-400 font-medium">មិនមានទិន្នន័យថ្នាក់រៀនសម្រាប់ឆ្នាំសិក្សាដែលបានជ្រើសរើសឡើយ</p>
       </div>
 
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -50,8 +50,8 @@
           <h3 class="text-lg font-bold text-slate-800">ថ្នាក់ទី​​៖​ {{ cls.grade_level }} {{ cls.name }}</h3>
           <div class="mt-5 flex items-center justify-between">
             <span
-              :class="['px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border', (cls.is_active == 1 || cls.is_active == true) ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100']">
-              {{ (cls.is_active == 1 || cls.is_active == true) ? 'Active' : 'Inactive' }}
+              :class="['px-2.5 py-0.5 rounded-full text-[13px] font-bold uppercase border', (cls.is_active == 1 || cls.is_active == true) ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100']">
+              {{ (cls.is_active == 1 || cls.is_active == true) ? 'បើកដំណើរការ' : 'បឹទបណ្តោះអាសន្ន' }}
             </span>
             <div
               class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all">

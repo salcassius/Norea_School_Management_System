@@ -1,6 +1,6 @@
 <template>
   <Transition name="fade">
-    <div v-if="isOpen" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+    <div v-if="isOpen" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in duration-150">
         
         <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -15,7 +15,7 @@
 
         <form @submit.prevent="handleSubmit" class="p-5 space-y-4 text-sm">
           <div class="space-y-1">
-            <label class="block font-semibold text-slate-600">ឈ្មោះឆ្នាំសិក្សា <span class="text-rose-500">*</span></label>
+            <label class="block font-semibold text-slate-600">ឈ្មោះឆ្នាំសិក្សា <span class="text-rose-500"></span></label>
             <div class="relative">
               <CalendarDays class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input 
@@ -30,7 +30,7 @@
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1">
-              <label class="block font-semibold text-slate-600">ថ្ងៃចាប់ផ្តើម <span class="text-rose-500">*</span></label>
+              <label class="block font-semibold text-slate-600">ថ្ងៃចាប់ផ្តើម <span class="text-rose-500"></span></label>
               <input 
                 v-model="form.start_date" 
                 type="date" 
@@ -39,7 +39,7 @@
               />
             </div>
             <div class="space-y-1">
-              <label class="block font-semibold text-slate-600">ថ្ងៃបញ្ចប់ <span class="text-rose-500">*</span></label>
+              <label class="block font-semibold text-slate-600">ថ្ងៃបញ្ចប់ <span class="text-rose-500"></span></label>
               <input 
                 v-model="form.end_date" 
                 type="date" 
@@ -92,7 +92,7 @@ const props = defineProps({
   isOpen: Boolean,
   editData: Object // ទទួលទិន្នន័យឆ្នាំសិក្សាដែលត្រូវកែសម្រួលពី Component មេ
 })
-const emit = defineEmits(['close', 'success'])
+const emit = defineEmits(['close', 'success', 'error'])
 
 const loading = ref(false)
 const form = ref({
@@ -102,7 +102,7 @@ const form = ref({
   is_active: false
 })
 
-// តាមដាននៅពេល Modal បើក ដើម្បីចាក់ទិន្នន័យចាស់ចូលក្នុង Form
+
 watch(() => props.isOpen, (newVal) => {
   if (newVal && props.editData) {
     form.value = {

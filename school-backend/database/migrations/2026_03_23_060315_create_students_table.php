@@ -15,13 +15,9 @@ return new class extends Migration
     {
         Schema::create('students', function (Blueprint $table) {
             $table->id();
-
-            // --- Foreign Keys (ទំនាក់ទំនង) ---
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('year_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('class_id')->nullable()->constrained('classes')->nullOnDelete();
-
-            // --- ព័ត៌មានផ្ទាល់ខ្លួនសិស្ស ---
             $table->string('student_id_card')->nullable()->unique();
             $table->string('name_kh');
             $table->string('name_en')->nullable();
@@ -30,29 +26,20 @@ return new class extends Migration
             $table->string('gender');
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
-
-            // --- ទីកន្លែងកំណើត (Place of Birth - បំបែកជា ៤) ---
             $table->string('pob_province')->nullable();
             $table->string('pob_district')->nullable();
             $table->string('pob_commune')->nullable();
             $table->string('pob_village')->nullable();
-
-            // --- អាសយដ្ឋានបច្ចុប្បន្ន (Current Address - បំបែកជា ៤) ---
             $table->string('province')->nullable();
             $table->string('district')->nullable();
             $table->string('commune')->nullable();
             $table->string('village')->nullable();
-
-            // --- ព័ត៌មានអាណាព្យាបាល ---
             $table->string('guardian_mom_name')->nullable();
             $table->string('guardian_mom_job')->nullable();
             $table->string('guardian_mom_phone')->nullable();
-
             $table->string('guardian_dad_name')->nullable();
             $table->string('guardian_dad_job')->nullable();
             $table->string('guardian_dad_phone')->nullable();
-
-            // --- ស្ថានភាពការសិក្សា ---
             $table->date('enrollment_date')->nullable();
             $table->boolean('status')->default(1);
 

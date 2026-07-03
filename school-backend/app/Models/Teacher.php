@@ -23,6 +23,7 @@ class Teacher extends Model
         'pob_commune',
         'pob_village',
         'email',
+        'password',
         'status',
         'phone',
         // អាសយដ្ឋានបច្ចុប្បន្ន (Current Address) ដែលបំបែករួច
@@ -60,4 +61,9 @@ class Teacher extends Model
         // គ្រូម្នាក់អាចបង្រៀនបានច្រើនថ្នាក់ (Has Many)
         return $this->hasMany(ClassRoom::class, 'teacher_id');
     }
+
+    public function subject() {
+    return $this->belongsToMany(Subject::class, 'subject_teacher', 'teacher_id', 'subject_id');
+    }
+
 }

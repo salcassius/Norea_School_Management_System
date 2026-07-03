@@ -18,12 +18,9 @@ return new class extends Migration
         $table->string('name');
         $table->string('email')->unique();
         $table->string('password');
-        
-        // Using enum ensures only these three roles can ever exist
         $table->enum('role', ['admin', 'teacher', 'student']);
         
-        $table->boolean('status')->default(true); // 1 for active, 0 for inactive
-        // $table->rememberToken(); // Useful for "Remember Me" login functionality
+        $table->boolean('status')->default(true); 
         $table->timestamps();
     });
 }

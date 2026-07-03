@@ -1,16 +1,12 @@
 <template>
-  <div class="flex h-screen bg-slate-50 font-khmer overflow-hidden">
-    <AppSidebar :is-collapsed="isCollapsed" />
-
-    <div class="font-[Battambang] flex-1 flex flex-col min-w-0 overflow-hidden">
+  <div class="flex h-screen overflow-hidden">
+    <AppSidebar :isCollapsed="isCollapsed" />
+    
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- បន្ថែម @toggle ដើម្បីឱ្យវាហៅ Function toggleSidebar -->
       <AppNavbar @toggle="toggleSidebar" />
-
-      <main class="flex-1 overflow-y-auto p-6">
-        <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <component :is="Component" />
-          </transition>
-        </router-view>
+      <main class="flex-1 overflow-y-auto">
+        <router-view /> 
       </main>
     </div>
   </div>
@@ -18,18 +14,13 @@
 
 <script setup>
 import { ref } from 'vue'
-// លុប useRouter ចេញ បើមិនប្រើក្នុង File នេះ
 import AppSidebar from '../components/common/AppSidebar.vue'
 import AppNavbar from '../components/common/AppNavbar.vue'
 
 const isCollapsed = ref(false)
 
+// Function នេះនឹងប្តូរតម្លៃ true/false
 const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value
 }
 </script>
-
-<style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-</style>

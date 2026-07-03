@@ -9,6 +9,8 @@ use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use Barryvdh\DomPDF\Facade\Pdf;
+use TCPDF;
 
 class UserController extends Controller
 {
@@ -50,8 +52,6 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        // ប្រើ DB Transaction ដើម្បីធានាថា បើបង្កើត Profile បរាជ័យ User ក៏មិនត្រូវបង្កើតដែរ
-        DB::beginTransaction();
 
         try {
             $validated = $request->validate([
@@ -62,39 +62,21 @@ class UserController extends Controller
                 'status'   => 'required',
             ]);
 
-            // ១. បង្កើត User Account
-            $user = User::create([
+        $user = User::create([
+
                 'name'     => $validated['name'],
                 'email'    => $validated['email'],
-                'password' => $validated['password'], // សង្ឃឹមថាអ្នកមាន Mutator hash ក្នុង Model រួចហើយ
+                'password' => $validated['password'],
                 'role'     => $validated['role'],
                 'status'   => $validated['status'],
-            ]);
+        ]);
 
-            // ២. បង្កើត Record ក្នុង Table តាម Role (ដើម្បីឱ្យ Relationship Work)
-            if ($user->role === 'teacher') {
-                Teacher::create([
-                    'user_id' => $user->id,
-                    'name_en' => $user->name,
-                    'email'   => $user->email,
-                    // ថែម field ចាំបាច់ផ្សេងៗទៀតនៅទីនេះ...
-                ]);
-            } elseif ($user->role === 'student') {
-                Student::create([
-                    'user_id' => $user->id,
-                    'name_en' => $user->name,
-                    'email'   => $user->email,
-                    // ថែម field ចាំបាច់ផ្សេងៗទៀតនៅទីនេះ...
-                ]);
-            }
+        return response()->json([
+            'success' => true,
+            'message' => 'បានបង្កើតអ្នកប្រើប្រាស់បានជោគជ័យ',
+            'data' => $user
 
-            DB::commit();
-
-            // Load relationship មុននឹង return ទៅ frontend
-            return response()->json([
-                'success' => true,
-                'data'    => $user->load(['teacher', 'student'])
-            ], 201);
+        ], 201);
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -130,7 +112,7 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'User updated successfully',
-            'data'    => $user->load(['teacher', 'student'])
+            'data'    => $user,
         ], 200);
 
     } catch (Exception $e) {
@@ -185,4 +167,33 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+  
+
+    public function exportUsersPdf(Request $request)
+{
+    try {
+        $role = $request->query('role', 'all');
+        $query = \App\Models\User::query();
+        
+        if ($role !== 'all') {
+            $query->where('role', $role);
+        }
+        $users = $query->get();
+
+        // ពិនិត្យមើលថា View មានពិតប្រាកដ ឬអត់
+        if (!view()->exists('pdf.users')) {
+            return response()->json(['message' => 'View [pdf.users] មិនត្រូវបានរកឃើញ'], 500);
+        }
+
+        $pdf = Pdf::loadView('pdf.users', ['users' => $users]);
+        return $pdf->download('users_list.pdf');
+
+    } catch (\Exception $e) {
+        // បោះសារ Error ចេញមកវិញដើម្បីឱ្យអ្នកដឹងថាវាខូចត្រង់ណា
+        return response()->json(['message' => $e->getMessage()], 500);
+    }
 }
+
+}
+

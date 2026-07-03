@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Student extends Model
 {
     use HasFactory;
-
+    protected $table = 'students';
     protected $fillable = [
         'user_id',
         'year_id', 
@@ -18,6 +18,8 @@ class Student extends Model
         'name_en',
         'photo',
         'date_of_birth',
+        'pri_school',
+        'from_class',
         
         // ✅ ទីកន្លែងកំណើត (POB) ដែលបំបែករួច
         'pob_province',
@@ -27,6 +29,7 @@ class Student extends Model
         
         'gender',
         'email',
+        'password',
         'phone',
         
         // ✅ អាសយដ្ឋានបច្ចុប្បន្ន (Current Address) ដែលបំបែករួច

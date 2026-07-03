@@ -20,10 +20,10 @@
               <p class="text-sm font-bold text-slate-700">{{ user.name || 'អ្នកប្រើប្រាស់' }}</p>
               <p class="text-[11px] text-slate-400 mt-1">{{ user.email }}</p>
             </div>
-            <ChevronDown :class="['w-4 h-4 text-slate-400 transition-transform', isDropdownOpen ? 'rotate-180' : '']" />
+            <!-- <ChevronDown :class="['w-4 h-4 text-slate-400 transition-transform', isDropdownOpen ? 'rotate-180' : '']" /> -->
           </button>
 
-          <div v-if="isDropdownOpen"
+          <!-- <div v-if="isDropdownOpen"
             class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 z-[100]">
             
             <button class="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors">
@@ -40,7 +40,7 @@
               <LogOut class="w-4 h-4" />
               <span>ចាកចេញ</span>
             </button>
-          </div>
+          </div> -->
         </div>
       </div>
     </header>

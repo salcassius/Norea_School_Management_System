@@ -10,30 +10,24 @@
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <div 
-        v-for="(day, index) in scheduleDays" 
-        :key="index" 
-        class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"
-      >
+      <div v-for="(day, index) in scheduleDays" :key="index"
+        class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
         <h2 class="font-bold text-indigo-600 mb-4 pb-2 border-b border-indigo-50">{{ day.name }}</h2>
-        
+
         <div v-if="day.lessons.length > 0" class="space-y-3">
-          <div 
-            v-for="lesson in day.lessons" 
-            :key="lesson.id" 
-            class="p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-indigo-200 transition-all"
-          >
+          <div v-for="lesson in day.lessons" :key="lesson.id"
+            class="p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-indigo-200 transition-all">
             <div class="flex justify-between items-start">
-              <span class="text-xs font-bold text-slate-500">{{ lesson.time }}</span>
-              <span class="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">
-                បន្ទប់៖ {{ lesson.room }}
+              <span class="text-[15px] font-bold text-slate-600">{{ lesson.time }}</span>
+              <span class="text-[13px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">
+                បន្ទប់៖ {{ lesson.className}}
               </span>
             </div>
             <p class="text-sm font-bold text-slate-800 mt-1">{{ lesson.subject }}</p>
-            <p class="text-xs text-slate-400">ថ្នាក់៖ {{ lesson.className }}</p>
+            <p class="text-[14px] text-slate-600">ថ្នាក់៖ {{ lesson.className }}</p>
           </div>
         </div>
-        
+
         <div v-else class="text-center py-6 text-slate-400 text-sm">
           សម្រាក
         </div>
@@ -44,7 +38,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import api from '../../services/authService' 
+import api from '../../services/authService'
 
 const isLoading = ref(true)
 
@@ -61,7 +55,7 @@ const fetchTeacherSchedule = async () => {
   isLoading.value = true
   try {
     const response = await api.get('/teacher/my-schedules')
-    const data = response.data 
+    const data = response.data
 
     // បង្កើត Object Mapping សម្រាប់ប្រៀបធៀបឈ្មោះថ្ងៃ
     const dayMapping = {
@@ -80,15 +74,17 @@ const fetchTeacherSchedule = async () => {
       // ប្រើ .trim() ដើម្បីកម្ចាត់ space ដែលលើស
       const dbDay = item.day ? item.day.trim() : '';
       const mappedDayName = dayMapping[dbDay] || dbDay;
-      
+
       const day = scheduleDays.value.find(d => d.name === mappedDayName)
-      
+
       if (day) {
         day.lessons.push({
           id: item.id,
           time: item.time,
           subject: item.subject?.name || 'មិនមានមុខវិជ្ជា',
-          className: item.class?.name || 'មិនមានថ្នាក់', 
+          className: item.class
+            ? `${item.class.grade_level}${item.class.name}`
+            : 'មិនមានថ្នាក់',
           room: item.room
         })
       } else {

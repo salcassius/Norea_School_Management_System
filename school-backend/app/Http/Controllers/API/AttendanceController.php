@@ -4,127 +4,201 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\ClassRoom;
+use App\Models\Schedule;
+use App\Models\Teacher;
 use App\Models\Student;
 use Illuminate\Http\Request;
-use Exception;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class AttendanceController extends Controller
 {
-    /**
-     * 🎯 មុខងារ៖ ទាញយកតារាងវត្តមានសិស្សតាមថ្នាក់ និងកាលបរិច្ឆេទ
-     * GET /api/attendance/sheet
-     */
-    public function getAttendanceSheet(Request $request)
+    
+    public function getTeacherSchedulesToday(Request $request)
+    {
+        $teacher = Teacher::where('user_id', $request->user()->id)->first();
+        if (!$teacher) return response()->json(['message' => 'មិនឃើញទិន្នន័យគ្រូ'], 404);
+        $todayKhmer = $this->getTodayKhmer();
+        $schedules = Schedule::where('teacher_id', $teacher->id)
+            ->where('day', $todayKhmer)
+            ->with(['class'])
+            ->get();
+        return response()->json($schedules);
+    }
+
+
+    public function getStudentsByClass(Request $request, $class_id)
+    {
+        $date = $request->query('date', Carbon::now()->format('Y-m-d'));
+        $classRoom = ClassRoom::find($class_id);
+        if (!$classRoom) return response()->json(['message' => 'មិនឃើញថ្នាក់'], 404);
+        $students = $classRoom->student()->select('students.id', 'students.name_kh', 'students.student_id_card')->get();
+        $existing = Attendance::where('class_id', $class_id)->where('date', $date)->get()->keyBy('student_id');
+        $data = $students->map(function ($student) use ($existing) {
+            return [
+                'student_id' => $student->id,
+                'name_kh' => $student->name_kh,
+                'student_id_card' => $student->student_id_card,
+                'status' => $existing->has($student->id) ? $existing[$student->id]->status : 'present'
+            ];
+        });
+
+        return response()->json($data);
+    }
+
+    public function saveAttendance(Request $request)
+{
+    $request->validate([
+        'class_id' => 'required',
+        'date' => 'required|date',
+        'attendance' => 'required|array' 
+    ]);
+
+    DB::beginTransaction();
+    try {
+        foreach ($request->attendance as $item) {
+            $status = $item['status'] ?? 'present'; 
+
+            Attendance::updateOrCreate(
+                [
+                    'student_id' => $item['student_id'], 
+                    'class_id' => $request->class_id, 
+                    'date' => $request->date
+                ],
+                [
+                    'status' => $status,
+                    'notes' => $item['notes'] ?? null
+                ]
+            );
+        }
+        DB::commit();
+        return response()->json(['success' => true, 'message' => 'រក្សាទុកជោគជ័យ']);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Attendance Save Error: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'មានបញ្ហានៅខាង Server: ' . $e->getMessage()], 500);
+    }
+}
+  
+   public function getAttendanceSheet(Request $request)
     {
         try {
-            // ១. ផ្ទៀងផ្ទាត់ទិន្នន័យដែលផ្ញើមកពី Frontend
             $request->validate([
                 'class_id' => 'required',
-                'date'     => 'required|date',
+                'date' => 'required|date'
             ]);
 
-            $classId = $request->class_id;
-            $date    = $request->date;
-
-            // ២. ទាញយកបញ្ជីឈ្មោះសិស្សនៅក្នុងថ្នាក់រៀននោះ
-            try {
-                // តម្រៀបតាម ID ឬប្អូនអាចដូរទៅ name_kh វិញក៏បានបើប្រាកដថាមាន Column ហ្នឹង
-                $students = Student::where('class_id', $classId)
-                    ->orderBy('id', 'asc') 
-                    ->get();
-            } catch (\Exception $studentError) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'មានបញ្ហាទាញទិន្នន័យសិស្ស (Table Students)៖ ' . $studentError->getMessage()
-                ], 500);
-            }
-
-            // ៣. ទាញយកទិន្នន័យវត្តមានដែលធ្លាប់បានកត់ត្រារួចហើយ (បើមាន)
-            try {
-                $existingAttendance = Attendance::where('class_id', $classId)
-                    ->where('date', $date)
-                    ->get()
-                    ->keyBy('student_id'); 
-            } catch (\Exception $attendanceError) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'មានបញ្ហាទាញទិន្នន័យវត្តមាន (Table Attendances)៖ ' . $attendanceError->getMessage()
-                ], 500);
-            }
-            
-            // ៤. ផ្គូរផ្គងសិស្សជាមួយនឹងទិន្នន័យវត្តមានដើម្បីផ្ញើទៅកាន់ Vue.js
-            $attendanceSheet = $students->map(function ($student) use ($existingAttendance) {
-                $hasRecord = $existingAttendance->has($student->id);
-                
+            $class_id = $request->class_id;
+            $date = $request->date;
+            $students = DB::table('students')
+                ->join('classroom_student', 'students.id', '=', 'classroom_student.student_id')
+                ->where('classroom_student.class_id', $class_id)
+                ->select('students.id', 'students.name_kh')
+                ->get();
+            $existing = Attendance::where('class_id', $class_id)
+                ->where('date', $date)
+                ->get()
+                ->keyBy('student_id');
+            $data = $students->map(function ($student) use ($existing) {
                 return [
                     'student_id'   => $student->id,
-                    'student_name' => $student->name_kh ?? $student->name ?? 'គ្មានឈ្មោះ',
-                    'student_code' => $student->student_code ?? $student->student_id_card ?? null,
-                    'status'       => $hasRecord ? $existingAttendance[$student->id]->status : 'present',
-                    'notes'        => $hasRecord ? $existingAttendance[$student->id]->notes : '',
+                    'student_name' => $student->name_kh,
+                    'status'       => $existing->has($student->id) ? $existing[$student->id]->status : null,
+                    'notes'        => $existing->has($student->id) ? $existing[$student->id]->notes : ''
                 ];
             });
-
-            return response()->json([
-                'success' => true,
-                'data'    => $attendanceSheet
-            ], 200);
-
+            return response()->json(['data' => $data], 200);
         } catch (\Exception $e) {
-            return response()->json([
-                'success'       => false,
-                'error_message' => $e->getMessage(),
-                'line'          => $e->getLine()
-            ], 500);
+            return response()->json(['message' => 'មានបញ្ហាក្នុងការទាញយកទិន្នន័យ!', 'error' => $e->getMessage()], 500);
         }
     }
+   public function getReport(Request $request)
+{
+    $request->validate([
+        'class_id' => 'required',
+        'month' => 'required'
+    ]);
+    
+    $class_id = $request->class_id;
+    $month = $request->month; 
+    $report = Attendance::where('class_id', $class_id)
+        ->where('date', 'like', $month . '%')
+        ->select('student_id',
+            DB::raw("COUNT(CASE WHEN status = 'present' THEN 1 END) as total_present"),
+            DB::raw("COUNT(CASE WHEN status = 'absent' THEN 1 END) as total_absent"),
+            DB::raw("COUNT(CASE WHEN status = 'excused' THEN 1 END) as total_excused")
+        )
+        ->groupBy('student_id')
+        ->get();
 
-    /**
-     * 🎯 មុខងារ៖ រក្សាទុក ឬធ្វើបច្ចុប្បន្នភាពវត្តមានសិស្ស (Bulk Insert/Update)
-     * POST /api/attendance/save
+    $data = $report->map(function ($item) {
+        $student = Student::find($item->student_id);
+        $total_attended = $item->total_present + $item->total_excused;
+        $total_days = $item->total_present + $item->total_absent + $item->total_excused;
+        
+        $percentage = $total_days > 0 ? round(($total_attended / $total_days) * 100, 2) : 0;
+
+        return [
+            'student_id'    => $item->student_id,
+            'student_name'  => $student ? $student->name_kh : 'N/A',
+            'total_present' => $item->total_present,
+            'total_absent'  => $item->total_absent,
+            'total_excused' => $item->total_excused, // Added to response
+            'percentage'    => $percentage
+        ];
+    });
+
+    $top_absentees = $data->sortByDesc('total_absent')->take(5)->values();
+
+    return response()->json([
+        'data' => $data,
+        'top_absentees' => $top_absentees
+    ]);
+}
+
+
+     /**
+     * ៤. មុខងារពិសេស៖ ឆែកមើលម៉ោងបង្រៀនជាក់ស្តែង (Active Schedule)
+     * បើដល់ម៉ោងបង្រៀន ទើបអនុញ្ញាតឱ្យចូលកត់វត្តមាន
      */
-    public function saveAttendance(Request $request)
-    {
-        try {
-            // ១. ផ្ទៀងផ្ទាត់រចនាសម្ព័ន្ធ Array ទិន្នន័យវត្តមានដែលផ្ញើមក
-            $request->validate([
-                'class_id'                => 'required|integer',
-                'date'                    => 'required|date',
-                'attendance'              => 'required|array',
-                'attendance.*.student_id' => 'required|integer',
-                'attendance.*.status'     => 'required|in:present,absent,late',
-                'attendance.*.notes'      => 'nullable|string',
-            ]);
+    // public function getActiveAttendanceSheet(Request $request)
+    // {
+    //     $teacher = Teacher::where('user_id', $request->user()->id)->first();
+    //     if (!$teacher) return response()->json(['message' => 'មិនឃើញទិន្នន័យគ្រូ'], 404);
 
-            $classId = $request->class_id;
-            $date = $request->date;
+    //     $todayKhmer = $this->getTodayKhmer(); 
+    //     $currentTime = now()->format('H:i:s'); 
 
-            // ២. រត់ Loop ដើម្បីរក្សាទុកទិន្នន័យសិស្សម្នាក់ៗ (បើមាន record រួចហើយវានឹង Update បើអត់ទេវានឹងសរសេរចូលថ្មី)
-            foreach ($request->attendance as $record) {
-                Attendance::updateOrCreate(
-                    [
-                        'student_id' => $record['student_id'],
-                        'class_id'   => $classId,
-                        'date'       => $date,
-                    ],
-                    [
-                        'status' => $record['status'],
-                        // 💡 កែសម្រួល៖ បើមកស្រួលបួល (present) មិនបាច់រក្សាទុកចំណាំ (notes) ទេ តែបើ Late/Absent ទើបរក្សាទុក
-                        'notes'  => $record['status'] === 'present' ? null : ($record['notes'] ?? null),
-                    ]
-                );
-            }
+    //     // ឆែកមើលថាតើមានម៉ោងបង្រៀនឥឡូវនេះដែរឬទេ?
+    //     $activeSchedule = Schedule::where('teacher_id', $teacher->id)
+    //         ->where('day', $todayKhmer)
+    //         ->where('start_time', '<=', $currentTime)
+    //         ->where('end_time', '>=', $currentTime)
+    //         ->with('class')
+    //         ->first();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'បានកត់ត្រាវត្តមានសិស្សដោយជោគជ័យ! 🎉'
-            ], 200);
+    //     if (!$activeSchedule) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'លោកគ្រូ/អ្នកគ្រូ មិនមានម៉ោងបង្រៀននៅក្នុងខណៈពេលនេះទេ!'
+    //         ], 403);
+    //     }
 
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'មិនអាចរក្សាទុកទិន្នន័យវត្តមានបានឡើយ៖ ' . $e->getMessage()
-            ], 500);
-        }
-    }
+    //     $students = Student::whereHas('classroom', function($q) use ($activeSchedule) {
+    //         $q->where('class_id', $activeSchedule->class_id);
+    //     })->get();
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'schedule' => [
+    //             'id' => $activeSchedule->id,
+    //             'class_name' => ($activeSchedule->class->grade_level ?? '') . ($activeSchedule->class->name ?? ''),
+    //             'time' => $activeSchedule->start_time . ' - ' . $activeSchedule->end_time
+    //         ],
+    //         'students' => $students
+    //     ]);
+    // }
+
 }

@@ -5,7 +5,9 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\ClassRoom;
 use App\Models\Student;
+use App\Models\Teacher;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ClassController extends Controller
 {
@@ -13,20 +15,42 @@ class ClassController extends Controller
      * ទាញយកបញ្ជីថ្នាក់រៀនទាំងអស់ រួមជាមួយព័ត៌មានឆ្នាំសិក្សា គ្រូ និងចំនួនសិស្ស
      */
     public function index(Request $request)
-    {
-        try {
-            // ប្រាកដថា Relationship ក្នុង Model ClassRoom ឈ្មោះ year និង teacher (ឯកវចនៈ)
-            $query = ClassRoom::with(['year', 'teacher'])->withCount('student');
+{
+    try {
 
-            if ($request->filled('academic_year_id')) {
-                $query->where('year_id', $request->academic_year_id);
-            }
+        $user = Auth::user();
 
-            return response()->json($query->latest()->get());
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+        $query = ClassRoom::with(['year', 'teacher'])
+            ->withCount('student');
+
+        // Filter ឆ្នាំសិក្សា
+        if ($request->filled('academic_year_id')) {
+            $query->where('year_id', $request->academic_year_id);
         }
+
+        // បើមិនមែន Admin ទេ
+        if ($user->role !== 'admin') {
+
+            $teacher = Teacher::where('user_id', $user->id)->first();
+
+            if ($teacher) {
+                $query->where('teacher_id', $teacher->id);
+            } else {
+                // មិនមែន Teacher
+                $query->whereRaw('1 = 0');
+            }
+        }
+
+        return response()->json(
+            $query->latest()->get()
+        );
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * បង្កើតថ្នាក់រៀនថ្មី
@@ -176,4 +200,21 @@ class ClassController extends Controller
         ], 500);
     }
 }
+
+public function removeStudentFromClass($class_id, $student_id)
+{
+    try {
+        $classRoom = \App\Models\ClassRoom::findOrFail($class_id);
+        $classRoom->student()->detach($student_id);
+
+        return response()->json(['message' => 'ដកសិស្សចេញជោគជ័យ!'], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'មិនអាចដកសិស្សចេញបានទេ',
+            'debug' => $e->getMessage() 
+        ], 500);
+    }
+}
+
 }

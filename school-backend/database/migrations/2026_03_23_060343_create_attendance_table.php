@@ -18,14 +18,10 @@ return new class extends Migration
 
         $table->foreignId('student_id')->constrained()->cascadeOnDelete();
         $table->foreignId('class_id')->constrained()->cascadeOnDelete();
-
         $table->date('date');
-        $table->enum('status', ['present', 'absent', 'late']);
+        $table->enum('status', ['present', 'absent', 'excused']);
         $table->text('notes')->nullable();
-
         $table->timestamps();
-
-        // prevent duplicate
         $table->unique(['student_id', 'class_id', 'date']);
     });
 }

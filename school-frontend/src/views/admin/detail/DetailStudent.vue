@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="font-[Battambang] p-6 min-h-screen bg-slate-50/50 text-slate-700">
     
     <div v-if="!activeDetailClass">
@@ -421,4 +421,71 @@ onMounted(() => {
   fetchInitialData()
   fetchClasses()
 })
+</script> -->
+
+
+<template>
+  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+      <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <h2 class="text-xl font-bold text-slate-800 font-[Khmer_OS_Muol_Light]">ព័ត៌មានលម្អិតរបស់សិស្ស</h2>
+        <button @click="$emit('close')" class="p-2 hover:bg-slate-200 rounded-full transition-colors">
+          <X class="w-5 h-5 text-slate-500" />
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InfoCard label="ឈ្មោះ (ខ្មែរ)" :value="student?.name_kh" />
+          <InfoCard label="ឈ្មោះ (ឡាតាំង)" :value="student?.name_en" />
+          <InfoCard label="លេខកូដសិស្ស" :value="student?.student_id_card" customClass="text-indigo-600 font-bold" />
+          <InfoCard label="ថ្ងៃខែឆ្នាំកំណើត" :value="formatDate(student?.date_of_birth)" />
+          <InfoCard label="ភេទ" :value="student?.gender === 'male' ? 'ប្រុស' : 'ស្រី'" />
+          <InfoCard label="លេខទូរស័ព្ទ" :value="student?.phone" />
+        </div>
+
+        <SectionTitle title="ទីកន្លែងកំណើត និងអាសយដ្ឋាន" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InfoCard label="កំណើត (ខេត្ត/ស្រុក)" :value="`${student?.pob_province || ''}, ${student?.pob_district || ''}`" />
+          <InfoCard label="អាសយដ្ឋានបច្ចុប្បន្ន (ខេត្ត/ស្រុក)" :value="`${student?.province || ''}, ${student?.district || ''}`" />
+        </div>
+
+        <SectionTitle title="ព័ត៌មានអាណាព្យាបាល" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InfoCard label="ឈ្មោះឪពុក" :value="student?.guardian_dad_name" />
+          <InfoCard label="ទូរស័ព្ទឪពុក" :value="student?.guardian_dad_phone" />
+          <InfoCard label="ឈ្មោះម្តាយ" :value="student?.guardian_mom_name" />
+          <InfoCard label="ទូរស័ព្ទម្តាយ" :value="student?.guardian_mom_phone" />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<script setup>
+import { X } from 'lucide-vue-next';
+import { defineProps, defineEmits } from 'vue';
+
+// ចុះឈ្មោះ Components នៅក្នុងនេះ
+const InfoCard = {
+  props: ['label', 'value', 'customClass'],
+  template: `
+    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+      <div class="text-xs text-slate-400 uppercase font-bold mb-1">{{ label }}</div>
+      <div :class="['text-sm font-semibold text-slate-700', customClass]">{{ value || 'មិនមានទិន្នន័យ' }}</div>
+    </div>
+  `
+};
+
+const SectionTitle = {
+  props: ['title'],
+  template: `<h3 class="text-sm font-bold text-slate-400 uppercase border-b border-slate-100 pb-2 mb-4">{{ title }}</h3>`
+};
+
+defineProps({ isOpen: Boolean, student: Object });
+defineEmits(['close']);
+
+const formatDate = (date) => {
+  if (!date) return 'N/A';
+  return new Date(date).toLocaleDateString('en-GB');
+};
 </script>

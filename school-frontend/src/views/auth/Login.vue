@@ -55,7 +55,7 @@ const handleLogin = async () => {
         <div class="space-y-4">
           <div>
             <label for="email" class="block text-sm font-semibold text-gray-700 mb-1.5">
-              Email address
+              គណនីសម្រាប់ចូលប្រើប្រាស់
             </label>
             <input v-model="credentials.email" id="email" type="email" required placeholder="name@gmail.com"
               class="block w-full rounded-xl border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none border" />
@@ -63,7 +63,7 @@ const handleLogin = async () => {
 
           <div>
             <label for="password" class="block text-sm font-semibold text-gray-700 mb-1.5">
-              Password
+              លេខសម្ងាត់
             </label>
             <div class="relative">
               <input v-model="credentials.password" id="password" :type="showPassword ? 'text' : 'password'" required

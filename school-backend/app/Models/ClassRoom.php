@@ -42,4 +42,9 @@ class ClassRoom extends Model
     {
         return $this->belongsTo(Teacher::class, 'teacher_id');
     }
+
+    public function attendance() {
+    return $this->hasMany(Attendance::class, 'class_id'); 
+}
+
 }
