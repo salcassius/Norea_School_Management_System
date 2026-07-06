@@ -38,8 +38,8 @@
         </div>
 
         <div class="flex gap-2.5 pt-4">
-          <button type="button" @click="$emit('close')" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm font-semibold transition-all">បោះបង់</button>
-          <button type="submit" :disabled="isSubmitting" class="flex-[1.5] py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-md hover:bg-indigo-700 disabled:opacity-50 transition-all">
+          <button type="button" @click="$emit('close')"  class="px-6 py-2.5 text-slate-700 hover:bg-slate-200 bg-indigo-200 rounded-xl font-medium transition-all text-sm">បោះបង់</button>
+          <button type="submit" :disabled="isSubmitting" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all font-bold text-sm flex items-center gap-2 disabled:opacity-50">
             {{ isSubmitting ? 'កំពុងរក្សាទុក...' : 'រក្សាទុកការកែប្រែ' }}
           </button>
         </div>

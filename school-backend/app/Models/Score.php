@@ -79,6 +79,7 @@ class Score extends Model
         return $this->belongsTo(Student::class, 'student_id');
     }
 
+    
 
     public function class(): BelongsTo
     {

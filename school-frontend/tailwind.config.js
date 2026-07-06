@@ -8,11 +8,11 @@ export default {
   theme: {
     extend: {
        fontFamily: {
-        sans: ['"Battambang"', ' "Roboto" ' , 'sans-serif'],
         khmer: ['Battambang', 'sans-serif'],
-        muol: ['Kantumruy Pro', 'sans-serif'],
-      }
+        moul: ['KhmerMoul', 'sans-serif'],
+      },
     },
   },
+
   plugins: [],
 }

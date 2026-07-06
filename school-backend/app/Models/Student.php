@@ -62,11 +62,15 @@ class Student extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-        // នៅក្នុង App\Models\Student.php
+    
+    public function scores()
+{
+    return $this->hasMany(Score::class, 'student_id');
+}
 
-// នៅក្នុង App\Models\Student.php
+        
 
-public function classroom() // ប្តូរពី class() មក classrooms()
+public function classroom()
 {
     return $this->belongsToMany(ClassRoom::class, 'classroom_student', 'student_id', 'class_id')
                 ->withPivot('status', 'year_id')

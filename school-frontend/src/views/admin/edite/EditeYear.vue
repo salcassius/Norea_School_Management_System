@@ -64,14 +64,13 @@
             <button 
               type="button" 
               @click="closeModal" 
-              class="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-all font-semibold"
-            >
+              class="px-6 py-2.5 text-slate-700 hover:bg-slate-200 bg-indigo-200 rounded-xl font-medium transition-all text-sm">
               បោះបង់
             </button>
             <button 
               type="submit" 
               :disabled="loading"
-              class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-sm transition-all font-semibold flex items-center justify-center gap-2"
+              class="px-6 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-sm transition-all font-semibold flex items-center justify-center gap-2"
             >
               <Loader2 v-if="loading" class="w-4 h-4 animate-spin" />
               {{ loading ? 'កំពុងរក្សាទុក...' : 'រក្សាទុក' }}

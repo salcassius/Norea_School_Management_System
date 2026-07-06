@@ -17,7 +17,13 @@
       </div>
 
       <form @submit.prevent="handleSubmit" class="p-5 space-y-4">
-        
+
+        <!-- Inline error message -->
+        <div v-if="errorMessage" class="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-600 text-xs font-medium rounded-xl px-3.5 py-2.5">
+          <AlertCircle class="w-4 h-4 mt-0.5 shrink-0" />
+          <span class="whitespace-pre-line">{{ errorMessage }}</span>
+        </div>
+
         <div class="space-y-1.5">
           <label class="text-[14px] font-bold text-slate-600 ml-0.5">មុខវិជ្ជា <span class="text-rose-500">*</span></label>
           <div class="relative">
@@ -48,9 +54,9 @@
           <div>ម៉ោងសិក្សា៖ <span class="text-slate-800 font-bold">{{ form.time }}</span></div>
         </div>
 
-        <div class="flex items-center gap-3 mt-6 border-slate-400">
-          <button type="button" @click="$emit('close')" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition-all active:scale-[0.98] outline-none focus:ring-2 focus:ring-slate-300">
-            បោះបង់
+        <div class="flex justify-end gap-3 mt-8">
+          <button type="button" @click="$emit('close')" class="px-6 py-2.5 text-slate-700 hover:bg-slate-200 bg-indigo-200 rounded-xl font-medium transition-all text-sm">
+              បោះបង់
           </button>
           <button type="submit" :disabled="isSubmitting" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-sm transition-all font-semibold flex items-center justify-center gap-2">
             {{ isSubmitting ? 'កំពុងរក្សាទុក...' : 'រក្សាទុក' }}
@@ -64,7 +70,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { BookOpen, X, Layout, ChevronDown, UserRound, MapPin } from 'lucide-vue-next'
+import { BookOpen, X, Layout, ChevronDown, UserRound, MapPin, AlertCircle } from 'lucide-vue-next'
 import api from '@/services/authService'
 
 const props = defineProps({
@@ -76,21 +82,25 @@ const props = defineProps({
 const emit = defineEmits(['close', 'saved'])
 const form = ref({ ...props.initData })
 const isSubmitting = ref(false)
+const errorMessage = ref('')
 
 const handleSubmit = async () => {
   isSubmitting.value = true
+  errorMessage.value = ''
   try {
     // 💡 ជួសជុល Error 404៖ ដក /api ចេញ ពីព្រោះក្នុង authService មានស្រាប់ហើយ
-    const response = await api.post('/schedules', form.value)
-    alert(response.data.message || 'រក្សាទុកបានជោគជ័យ!')
+    await api.post('/schedules', form.value)
     emit('saved')
   } catch (error) {
     console.error(error)
     if (error.response && error.response.status === 422) {
       // បង្ហាញសារកំហុសបើ Validation របស់ Laravel ទាត់ចោល
-      alert('ទិន្នន័យមិនត្រឹមត្រូវ៖ ' + JSON.stringify(error.response.data.errors))
+      const errors = error.response.data.errors
+      errorMessage.value = errors
+        ? Object.values(errors).flat().join('\n')
+        : 'ទិន្នន័យមិនត្រឹមត្រូវ'
     } else {
-      alert('មានកំហុសក្នុងការបង្កើតកាលវិភាគថ្មី!')
+      errorMessage.value = error.response?.data?.message || 'មានកំហុសក្នុងការបង្កើតកាលវិភាគថ្មី!'
     }
   } finally {
     isSubmitting.value = false

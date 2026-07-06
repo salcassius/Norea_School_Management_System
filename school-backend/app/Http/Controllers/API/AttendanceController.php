@@ -114,23 +114,29 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'មានបញ្ហាក្នុងការទាញយកទិន្នន័យ!', 'error' => $e->getMessage()], 500);
         }
     }
-   public function getReport(Request $request)
+
+
+public function getReport(Request $request)
 {
     $request->validate([
         'class_id' => 'required',
-        'month' => 'required'
+        'year_id' => 'required' 
     ]);
     
     $class_id = $request->class_id;
-    $month = $request->month; 
-    $report = Attendance::where('class_id', $class_id)
-        ->where('date', 'like', $month . '%')
-        ->select('student_id',
-            DB::raw("COUNT(CASE WHEN status = 'present' THEN 1 END) as total_present"),
-            DB::raw("COUNT(CASE WHEN status = 'absent' THEN 1 END) as total_absent"),
-            DB::raw("COUNT(CASE WHEN status = 'excused' THEN 1 END) as total_excused")
+    $year_id = $request->year_id; 
+
+    // ប្រើ Join ដើម្បីចូលទៅយក year_id ពីតារាង classes
+    // សន្មតថា table របស់ ClassRoom ឈ្មោះ classes
+    $report = Attendance::join('classes', 'attendance.class_id', '=', 'classes.id')
+        ->where('attendance.class_id', $class_id)
+        ->where('classes.year_id', $year_id)
+        ->select('attendance.student_id',
+            DB::raw("COUNT(CASE WHEN attendance.status = 'present' THEN 1 END) as total_present"),
+            DB::raw("COUNT(CASE WHEN attendance.status = 'absent' THEN 1 END) as total_absent"),
+            DB::raw("COUNT(CASE WHEN attendance.status = 'excused' THEN 1 END) as total_excused")
         )
-        ->groupBy('student_id')
+        ->groupBy('attendance.student_id')
         ->get();
 
     $data = $report->map(function ($item) {
@@ -139,13 +145,13 @@ class AttendanceController extends Controller
         $total_days = $item->total_present + $item->total_absent + $item->total_excused;
         
         $percentage = $total_days > 0 ? round(($total_attended / $total_days) * 100, 2) : 0;
-
+        
         return [
             'student_id'    => $item->student_id,
             'student_name'  => $student ? $student->name_kh : 'N/A',
             'total_present' => $item->total_present,
             'total_absent'  => $item->total_absent,
-            'total_excused' => $item->total_excused, // Added to response
+            'total_excused' => $item->total_excused,
             'percentage'    => $percentage
         ];
     });
@@ -157,7 +163,6 @@ class AttendanceController extends Controller
         'top_absentees' => $top_absentees
     ]);
 }
-
 
      /**
      * ៤. មុខងារពិសេស៖ ឆែកមើលម៉ោងបង្រៀនជាក់ស្តែង (Active Schedule)

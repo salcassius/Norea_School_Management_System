@@ -17,7 +17,8 @@
 
     <!-- Stats Card -->
     <div class="mb-8">
-      <div class="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 max-w-xs transition-all hover:border-indigo-300">
+      <div
+        class="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 max-w-xs transition-all hover:border-indigo-300">
         <div class="p-3 rounded-xl bg-indigo-50">
           <BookOpen class="w-6 h-6 text-indigo-600" />
         </div>
@@ -47,33 +48,48 @@
             <tr class="bg-slate-50/50">
               <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider w-20">#</th>
               <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider">ឈ្មោះមុខវិជ្ជា</th>
-              <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider text-right">សកម្មភាព</th>
+              <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider">ពិន្ទុអតិបរមា</th>
+              <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider text-right">សកម្មភាព
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            <tr v-for="(subject, index) in filteredSubjects" :key="subject.id" class="hover:bg-slate-50/80 transition-colors">
+            <tr v-for="(subject, index) in filteredSubjects" :key="subject.id"
+              class="hover:bg-slate-50/80 transition-colors">
               <td class="px-6 py-4 text-sm font-bold text-slate-500">{{ index + 1 }}</td>
+
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
+                  <div
+                    class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
                     <BookOpen class="w-5 h-5 text-indigo-600" />
                   </div>
                   <span class="text-sm font-bold text-slate-700 uppercase tracking-tight">{{ subject.name }}</span>
                 </div>
               </td>
+
+              <td class="px-6 py-4">
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-[13px] font-bold border border-amber-100">
+                  {{ subject.max_score }} ពិន្ទុ
+                </span>
+              </td>
+
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
-                  <button @click="handleEdit(subject)" class="p-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all shadow-sm active:scale-90">
+                  <button @click="handleEdit(subject)"
+                    class="p-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all shadow-sm active:scale-90">
                     <Edit3 class="w-4 h-4" />
                   </button>
-                  <button @click="openDeleteModal(subject)" class="p-2 text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-all shadow-sm active:scale-90">
+                  <button @click="openDeleteModal(subject)"
+                    class="p-2 text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-all shadow-sm active:scale-90">
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
               </td>
             </tr>
             <tr v-if="filteredSubjects.length === 0">
-              <td colspan="3" class="px-6 py-10 text-center text-slate-400 text-sm">មិនមានទិន្នន័យឡើយ</td>
+              <td colspan="4" class="px-6 py-10 text-center text-slate-400 text-sm">មិនមានទិន្នន័យឡើយ</td>
             </tr>
           </tbody>
         </table>
@@ -81,20 +97,11 @@
     </div>
 
     <!-- Modals -->
-    <SubjectCreateModal 
-  v-if="showCreateModal" 
-  v-model="showCreateModal" 
-  :loading="isLoading"
-  @submit="handleCreateSubject" 
-/>
+    <SubjectCreateModal v-if="showCreateModal" v-model="showCreateModal" :loading="isLoading"
+      @submit="handleCreateSubject" />
 
-<EditeSubject 
-  v-if="showEditModal" 
-  v-model="showEditModal" 
-  :subject-data="selectedSubject" 
-  :loading="isLoading"
-  @submit="handleUpdateSubject" 
-/>
+    <EditeSubject v-if="showEditModal" v-model="showEditModal" :subject-data="selectedSubject" :loading="isLoading"
+      @submit="handleUpdateSubject" />
 
     <!-- Toast Notification -->
     <Teleport to="body">
@@ -122,46 +129,44 @@
 
     <!-- Delete Confirmation Modal -->
     <Teleport to="body">
-  <Transition name="modal-fade">
-    <div v-if="isDeleteModalOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style="background: rgba(15, 15, 20, 0.5);"
-      @click.self="closeDeleteModal">
-      
-      <Transition name="modal-scale">
-        <div v-if="isDeleteModalOpen"
-          class="bg-white rounded-2xl border border-slate-200 w-full max-w-sm p-8 text-center font-[Battambang]">
+      <Transition name="modal-fade">
+        <div v-if="isDeleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style="background: rgba(15, 15, 20, 0.5);" @click.self="closeDeleteModal">
 
-          <div class="w-16 h-16 rounded-full bg-red-200 flex items-center justify-center mx-auto mb-5">
-            <Trash2 class="w-7 h-7 text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
-          </div>
+          <Transition name="modal-scale">
+            <div v-if="isDeleteModalOpen"
+              class="bg-white rounded-2xl border border-slate-200 w-full max-w-sm p-8 text-center font-[Battambang]">
 
-          <p class="text-[17px] font-bold text-slate-800 mb-2">លុបមុខវិជ្ជា</p>
-          <p class="text-sm text-slate-600 leading-relaxed mb-1">
-            តើអ្នកពិតជាចង់លុប
-            <span class="font-bold text-blue-700">{{ deletingSubject?.name }}</span>
-            មែនទេ?
-          </p>
-          <p class="text-sm text-slate-400 mb-7">សកម្មភាពនេះមិនអាចដកវិញបានទេ។</p>
+              <div class="w-16 h-16 rounded-full bg-red-200 flex items-center justify-center mx-auto mb-5">
+                <Trash2 class="w-7 h-7 text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
+              </div>
 
-          <div class="flex gap-3">
-            <button @click="closeDeleteModal" :disabled="isDeleting"
-              class="flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-all active:scale-95 disabled:opacity-50">
-              បោះបង់
-            </button>
-            <button @click="confirmDeleteSubject" :disabled="isDeleting"
-              class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60">
-              <Loader2 v-if="isDeleting" class="w-4 h-4 animate-spin" />
-              <Trash2 v-else class="w-4 h-4" />
-              {{ isDeleting ? 'កំពុងលុប...' : 'លុបចោល' }}
-            </button>
-          </div>
+              <p class="text-[17px] font-bold text-slate-800 mb-2">លុបមុខវិជ្ជា</p>
+              <p class="text-sm text-slate-600 leading-relaxed mb-1">
+                តើអ្នកពិតជាចង់លុប
+                <span class="font-bold text-blue-700">{{ deletingSubject?.name }}</span>
+                មែនទេ?
+              </p>
+              <p class="text-sm text-slate-400 mb-7">សកម្មភាពនេះមិនអាចដកវិញបានទេ។</p>
 
+              <div class="flex gap-3">
+                <button @click="closeDeleteModal" :disabled="isDeleting"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-all active:scale-95 disabled:opacity-50">
+                  បោះបង់
+                </button>
+                <button @click="confirmDeleteSubject" :disabled="isDeleting"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60">
+                  <Loader2 v-if="isDeleting" class="w-4 h-4 animate-spin" />
+                  <Trash2 v-else class="w-4 h-4" />
+                  {{ isDeleting ? 'កំពុងលុប...' : 'លុបចោល' }}
+                </button>
+              </div>
+
+            </div>
+          </Transition>
         </div>
       </Transition>
-    </div>
-  </Transition>
-</Teleport>
+    </Teleport>
 
   </div>
 </template>
@@ -247,7 +252,7 @@ const handleCreateSubject = async (formData) => {
 const handleUpdateSubject = async (formData) => {
   try {
     isLoading.value = true;
-    await fetchSubjects() 
+    await fetchSubjects()
     showToast('កែប្រែមុខវិជ្ជាបានជោគជ័យ!', 'success');
     showEditModal.value = false;
     await fetchSubjects(); // Refresh list
@@ -289,6 +294,7 @@ onMounted(fetchSubjects)
 .modal-fade-leave-active {
   transition: opacity 0.2s ease;
 }
+
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
@@ -298,6 +304,7 @@ onMounted(fetchSubjects)
 .modal-scale-leave-active {
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
+
 .modal-scale-enter-from,
 .modal-scale-leave-to {
   transform: scale(0.95);
@@ -308,6 +315,7 @@ onMounted(fetchSubjects)
 .toast-slide-leave-active {
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
+
 .toast-slide-enter-from,
 .toast-slide-leave-to {
   transform: translateX(100%);

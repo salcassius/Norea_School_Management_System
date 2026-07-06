@@ -16,6 +16,8 @@
           <option v-for="yr in academicYears" :key="yr.id" :value="yr.id">{{ yr.year_name }}</option>
         </select>
       </div>
+
+      
     </div>
 
     <div class="w-full flex justify-end gap-2 my-4">
@@ -106,6 +108,7 @@ const fetchReport = async () => {
   if (!filter.value.class_id || !filter.value.year_id) return
   isLoading.value = true
   try {
+    // ហៅ API ដោយផ្ញើ filter ថ្មី (គ្មានខែ)
     const res = await api.get('/attendance/report', { params: filter.value })
     reportData.value = res.data.data || []
     topAbsentees.value = res.data.top_absentees || []
@@ -138,11 +141,13 @@ const exportExcel = () => {
   XLSX.writeFile(wb, 'attendance-report.xlsx')
 }
 
+// ----- Export: PDF -----
 const exportPDF = () => {
   if (reportData.value.length === 0) return
 
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
 
+  // Header (Latin only — jsPDF's built-in fonts don't render Khmer glyphs)
   doc.setFontSize(15)
   doc.setFont('helvetica', 'bold')
   doc.text('Annual Attendance Report', 148, 18, { align: 'center' })

@@ -1,159 +1,111 @@
 <template>
   <div class="font-[Battambang] p-6 min-h-screen bg-slate-50/50 text-slate-700">
+    <div class="max-w-7xl mx-auto space-y-6">
 
-    <!-- <div class="max-w-7xl mx-auto mb-6 no-print">
-      <div
-        class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-            <School class="w-5 h-5" />
-          </div>
+      <!-- Header + class picker: always visible, never swapped out -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-800 font-[battambang]">គ្រប់គ្រងកាលវិភាគសិក្សា</h1>
+          <p class="text-sm text-slate-500 mt-1">សូមជ្រើសរើសថ្នាក់រៀន ដើម្បីមើល ឬរៀបចំកាលវិភាគសិក្សា</p>
+        </div>
+      </div>
+
+      <div v-if="studentClasses.length === 0"
+        class="p-8 text-center bg-white rounded-2xl border border-slate-200/80 shadow-sm max-w-64">
+        <p class="text-slate-400 font-medium text-sm">មិនមានទិន្នន័យថ្នាក់រៀនសម្រាប់ឆ្នាំសិក្សាដែលបានជ្រើសរើសឡើយ</p>
+      </div>
+
+      <div v-else class="w-full md:w-64">
+        <label class="text-[1៥px] font-bold text-slate-600 ml-1">សូមជ្រើសរើសថ្នាក់</label>
+        <select v-model="filterClass"
+          class="w-full mt-1 bg-slate-50 border border-slate-300 rounded-lg py-2 px-3 text-[14px] outline-none focus:border-indigo-500">
+          <option value="" disabled>ជ្រើសរើសថ្នាក់</option>
+          <option v-for="cls in studentClasses" :key="cls.id" :value="cls.id">{{ cls.grade_level }}{{
+            cls.name }}</option>
+        </select>
+      </div>
+
+      <!-- Schedule section: appears inline below once a class is picked, no view-swap -->
+      <div v-if="selectedClassData" class="space-y-4 animate-in fade-in duration-300">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 no-print">
+
           <div>
-            <label
-              class="block text-xs font-bold text-slate-400 uppercase tracking-wider">ឆ្នាំសិក្សាដែលត្រូវរៀបចំ</label>
-            <select v-model="selectedYearId" @change="handleYearChange"
-              class="mt-0.5 bg-transparent font-bold text-slate-800 outline-none cursor-pointer text-sm focus:text-indigo-600">
-              <option v-for="year in academicYears" :key="year.id" :value="year.id">
-                ឆ្នាំសិក្សា៖ {{ year.year_name }} {{ (year.is_active == 1 || year.is_active == true) ? '(បច្ចុប្បន្ន)' :
-                  '' }}
-              </option>
-            </select>
-          </div>
-        </div>
-        <div class="text-xs text-slate-400 font-medium sm:text-right">
-          * រាល់ទិន្នន័យកាលវិភាគ និងថ្នាក់រៀននឹងបង្ហាញទៅតាមឆ្នាំសិក្សាដែលបានជ្រើសរើស
-        </div>
-      </div>
-    </div> -->
-
-    <div v-if="!isClassSelected" class="max-w-7xl mx-auto">
-      <div class="mb-8">
-        <h1 class="text-2xl font-bold text-slate-800 font-[battambang]">គ្រប់គ្រងកាលវិភាគសិក្សា</h1>
-        <p class="text-sm text-slate-500 mt-1">សូមជ្រើសរើសថ្នាក់រៀន ដើម្បីមើល ឬរៀបចំកាលវិភាគសិក្សា</p>
-      </div>
-
-      <div v-if="filteredClasses.length === 0"
-        class="p-12 text-center bg-white rounded-2xl border border-slate-200/80 shadow-sm">
-        <p class="text-slate-400 font-medium">មិនមានទិន្នន័យថ្នាក់រៀនសម្រាប់ឆ្នាំសិក្សាដែលបានជ្រើសរើសឡើយ</p>
-      </div>
-
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div v-for="cls in filteredClasses" :key="cls.id" @click="handleSelectClass(cls)"
-          class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-500 hover:shadow-md transition-all cursor-pointer group relative overflow-hidden">
-          <div class="absolute -right-4 -top-4 opacity-[0.03] group-hover:opacity-5 transition-all duration-500">
-            <School class="w-24 h-24" />
-          </div>
-          <div
-            class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-            <LayoutDashboard class="w-5 h-5" />
-          </div>
-          <h3 class="text-lg font-bold text-slate-800">ថ្នាក់ទី​​៖​ {{ cls.grade_level }} {{ cls.name }}</h3>
-          <div class="mt-5 flex items-center justify-between">
-            <span
-              :class="['px-2.5 py-0.5 rounded-full text-[13px] font-bold uppercase border', (cls.is_active == 1 || cls.is_active == true) ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100']">
-              {{ (cls.is_active == 1 || cls.is_active == true) ? 'បើកដំណើរការ' : 'បឹទបណ្តោះអាសន្ន' }}
-            </span>
-            <div
-              class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all">
-              <ChevronRight class="w-4 h-4" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div v-else class="space-y-6 animate-in fade-in duration-300 max-w-7xl mx-auto">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div class="flex items-center gap-4">
-          <button @click="isClassSelected = false"
-            class="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm group no-print">
-            <ArrowLeft class="w-4 h-4 text-slate-600 group-hover:text-indigo-600" />
-          </button>
-          <div>
-            <h1 class="text-xl font-bold text-slate-800 font-[Khmer_OS_Muol_Light]">
-              កាលវិភាគថ្នាក់ទី៖ {{ selectedClassData?.grade_level }} {{ selectedClassData?.name }}
-            </h1>
+            <h2 class="text-lg font-bold text-slate-800 font-[Khmer_OS_Muol_Light]">
+              កាលវិភាគថ្នាក់ទី៖ {{ selectedClassData?.grade_level }}{{ selectedClassData?.name }}
+            </h2>
             <p class="text-sm text-slate-500 mt-0.5">រៀបចំ និងតាមដានម៉ោងសិក្សាប្រចាំសប្តាហ៍</p>
           </div>
+
+          <div class="flex items-center gap-3">
+            <button v-if="selectedClassData" @click="importPdf"
+              class="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm active:scale-95">
+              <FileText class="w-4 h-4 text-rose-500" /> ទាញយកជា PDF
+            </button>
+          </div>
+
         </div>
-        <div class="flex flex-wrap items-center gap-3 no-print">
-          <button @click="importPdf"
-            class="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm active:scale-95">
-            <FileText class="w-4 h-4 text-rose-500" /> ទាញយកជា PDF
-          </button>
-        </div>
-      </div>
 
-      <!-- <div class="bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm flex items-center gap-4 no-print">
-        <div class="flex items-center gap-2">
-          <span class="text-sm font-semibold text-slate-600">វេនសិក្សា:</span>
-          <select v-model="selectedShift" @change="fetchSchedules"
-            class="bg-slate-50 border border-slate-200 rounded-xl py-1.5 px-3 text-sm font-semibold outline-none focus:border-indigo-500 cursor-pointer">
-            <option value="morning">ពេលព្រឹក</option>
-            <option value="afternoon">ពេលរសៀល</option>
-          </select>
-        </div>
-      </div> -->
+        <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+          <div v-if="isScheduleLoading" class="p-12 text-center text-slate-400 font-medium">
+            កំពុងទាញយកទិន្នន័យកាលវិភាគ...
+          </div>
+          <div v-else id="scheduleTable" class="overflow-x-auto custom-scrollbar">
+            <table class="w-full min-w-[1200px] border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-100">
+                  <th
+                    class="p-4 text-xs font-bold text-slate-600 uppercase tracking-wider text-center w-36 border-r border-slate-100">
+                    ម៉ោងសិក្សា</th>
+                  <th v-for="day in days" :key="day" class="p-4 text-sm font-bold text-slate-700 text-center">{{ day }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr v-for="(slot, idx) in timeSlots" :key="idx" class="group">
+                  <td class="p-4 border-r border-slate-100 text-center bg-slate-50/50">
+                    <span
+                      class="text-xs font-bold text-indigo-600 bg-indigo-50/60 border border-indigo-100 px-2.5 py-1 rounded-lg">{{
+                        slot.time }}</span>
+                  </td>
+                  <td v-for="day in days" :key="day" class="p-2.5 relative min-h-[110px] align-top">
 
-      <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
-        <div v-if="isLoading" class="p-12 text-center text-slate-400 font-medium">
-          កំពុងទាញយកទិន្នន័យកាលវិភាគ...
-        </div>
-        <div v-else id="scheduleTable" class="overflow-x-auto custom-scrollbar">
-          <table class="w-full min-w-[1200px] border-collapse">
-            <thead>
-              <tr class="bg-slate-50 border-b border-slate-100">
-                <th
-                  class="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-center w-36 border-r border-slate-100">
-                  ម៉ោងសិក្សា</th>
-                <th v-for="day in days" :key="day" class="p-4 text-sm font-bold text-slate-700 text-center">{{ day }}
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr v-for="(slot, idx) in timeSlots" :key="idx" class="group">
-                <td class="p-4 border-r border-slate-100 text-center bg-slate-50/50">
-                  <span
-                    class="text-xs font-bold text-indigo-600 bg-indigo-50/60 border border-indigo-100 px-2.5 py-1 rounded-lg">{{
-                      slot.time }}</span>
-                </td>
-                <td v-for="day in days" :key="day" class="p-2.5 relative min-h-[110px] align-top">
+                    <div v-if="getScheduleEntry(day, slot.time)"
+                      :class="['p-3 h-[85px] rounded-xl border shadow-sm w-full group/card transition-all w-fit min-w-[160px]', getSubjectTheme(getScheduleEntry(day, slot.time).subject?.name)]">
 
-                  <div v-if="getScheduleEntry(day, slot.time)"
-                    :class="['p-3 h-[85px] rounded-xl border shadow-sm w-full group/card transition-all w-fit min-w-[160px]', getSubjectTheme(getScheduleEntry(day, slot.time).subject?.name)]">
+                      <div class="flex justify-between items-start gap-1">
+                        <p class="text-[14px] font-bold truncate">
+                          {{ getScheduleEntry(day, slot.time).subject?.name || '---' }}
+                        </p>
 
-                    <div class="flex justify-between items-start gap-1">
-                      <p class="text-[14px] font-bold truncate">
-                        {{ getScheduleEntry(day, slot.time).subject?.name || '---' }}
-                      </p>
-
-                      <div class="flex gap-0.5 opacity-0 group-hover/card:opacity-100 transition-opacity no-print">
-                        <button @click.stop="openEditModal(getScheduleEntry(day, slot.time))"
-                          class="text-indigo-600 hover:bg-indigo-100 p-0.5 rounded">
-                          <Edit3 class="w-3 h-3" />
-                        </button>
-                        <button @click.stop="deleteEntry(getScheduleEntry(day, slot.time).id)"
-                          class="text-rose-600 hover:bg-rose-100 p-0.5 rounded">
-                          <Trash2 class="w-3 h-3" />
-                        </button>
+                        <div class="flex gap-0.5 opacity-0 group-hover/card:opacity-100 transition-opacity no-print">
+                          <button @click.stop="openEditModal(getScheduleEntry(day, slot.time))"
+                            class="text-indigo-600 hover:bg-indigo-100 p-0.5 rounded">
+                            <Edit3 class="w-3 h-3" />
+                          </button>
+                          <button @click.stop="openDeleteModal(getScheduleEntry(day, slot.time))"
+                            class="text-rose-600 hover:bg-rose-100 p-0.5 rounded">
+                            <Trash2 class="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
+
+                      <p class="text-[14px] text-slate-500 font-medium truncate mt-0.5">
+                        {{ getScheduleEntry(day, slot.time).teacher?.name_kh || 'មិនមានគ្រូ' }}
+                      </p>
                     </div>
 
-                    <p class="text-[14px] text-slate-500 font-medium truncate mt-0.5">
-                      {{ getScheduleEntry(day, slot.time).teacher?.name_kh || 'មិនមានគ្រូ' }}
-                    </p>
-                  </div>
-
-                  <div v-else @click="openCreateModal(day, slot.time)"
-                    class="w-full h-[85px] rounded-xl border border-dashed border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer no-print">
-                    <PlusCircle class="w-5 h-5 text-indigo-400" />
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                    <div v-else @click="openCreateModal(day, slot.time)"
+                      class="w-full h-[85px] rounded-xl border border-dashed border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer no-print">
+                      <PlusCircle class="w-5 h-5 text-indigo-400" />
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+
     </div>
 
     <CreateSchedule v-if="showCreateModal" :initData="modalFormPayload" :subjects="subjects" :teachers="teachers"
@@ -161,12 +113,76 @@
     <EditSchedule v-if="showEditModal" :entryData="modalFormPayload" :subjects="subjects" :teachers="teachers"
       @close="showEditModal = false" @saved="handleScheduleSaved" />
 
+    <!-- Toast Notification -->
+    <Teleport to="body">
+      <Transition name="toast-slide">
+        <div v-if="toast.show" :class="[
+          'fixed top-5 right-5 z-[100] flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-lg min-w-[260px] max-w-xs',
+          toast.type === 'success'
+            ? 'bg-white border-emerald-200 text-emerald-700'
+            : 'bg-white border-rose-200 text-rose-600'
+        ]">
+          <div :class="[
+            'w-8 h-8 rounded-full flex items-center justify-center shrink-0',
+            toast.type === 'success' ? 'bg-emerald-50' : 'bg-rose-50'
+          ]">
+            <CheckCircle2 v-if="toast.type === 'success'" class="w-4 h-4 text-emerald-500" />
+            <XCircle v-else class="w-4 h-4 text-rose-500" />
+          </div>
+          <p class="text-sm font-medium flex-1">{{ toast.message }}</p>
+          <button @click="toast.show = false" class="text-slate-300 hover:text-slate-500 transition-colors">
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Delete Confirmation Modal -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="isDeleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style="background: rgba(15, 15, 20, 0.5);" @click.self="closeDeleteModal">
+
+          <Transition name="modal-scale">
+            <div v-if="isDeleteModalOpen"
+              class="bg-white rounded-2xl border border-slate-200 w-full max-w-sm p-8 text-center font-[Battambang]">
+
+              <div class="w-16 h-16 rounded-full bg-red-200 flex items-center justify-center mx-auto mb-5">
+                <Trash2 class="w-7 h-7 text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
+              </div>
+
+              <p class="text-[17px] font-bold text-slate-800 mb-2">លុបម៉ោងសិក្សា</p>
+              <p class="text-sm text-slate-600 leading-relaxed mb-1">
+                តើអ្នកពិតជាចង់លុប
+                <span class="font-bold text-blue-700">{{ deletingEntry?.subject?.name || 'ម៉ោងសិក្សានេះ' }}</span>
+                មែនទេ?
+              </p>
+              <p class="text-sm text-slate-400 mb-7">សកម្មភាពនេះមិនអាចដកវិញបានទេ។</p>
+
+              <div class="flex gap-3">
+                <button @click="closeDeleteModal" :disabled="isDeleting"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-all active:scale-95 disabled:opacity-50">
+                  បោះបង់
+                </button>
+                <button @click="confirmDeleteEntry" :disabled="isDeleting"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60">
+                  <Loader2 v-if="isDeleting" class="w-4 h-4 animate-spin" />
+                  <Trash2 v-else class="w-4 h-4" />
+                  {{ isDeleting ? 'កំពុងលុប...' : 'លុបចោល' }}
+                </button>
+              </div>
+
+            </div>
+          </Transition>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { FileText, MapPin, ChevronRight, ArrowLeft, School, LayoutDashboard, Edit3, Trash2, PlusCircle } from 'lucide-vue-next'
+import { ref, computed, watch, onMounted } from 'vue'
+import { FileText, MapPin, ChevronRight, ArrowLeft, School, LayoutDashboard, Edit3, Trash2, PlusCircle, Loader2, CheckCircle2, XCircle, X } from 'lucide-vue-next'
 
 import api from '../../services/authService'
 
@@ -177,25 +193,42 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable'
 
+// ─── Toast ────────────────────────────────────────────────────────────────────
 
+const toast = ref({ show: false, message: '', type: 'success' })
+let toastTimer = null
 
-// --- States ---
-const isClassSelected = ref(false)
+const showToast = (message, type = 'success') => {
+  if (toastTimer) clearTimeout(toastTimer)
+  toast.value = { show: true, message, type }
+  toastTimer = setTimeout(() => { toast.value.show = false }, 3500)
+}
+
+// ─── States ───────────────────────────────────────────────────────────────────
+
 const selectedClassData = ref(null)
-
 const selectedShift = ref('morning')
-const isLoading = ref(false)
+
+// Two separate loading flags so fetching one thing doesn't blank out the other
+const isClassesLoading = ref(false)
+const isScheduleLoading = ref(false)
 
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
 const modalFormPayload = ref(null)
 
 const selectedYearId = ref(null)
+const filterClass = ref('') // holds the id of the class picked in the <select>
 const academicYears = ref([])
 const classes = ref([])
 const subjects = ref([])
 const teachers = ref([])
 const scheduleData = ref([])
+
+// Delete modal state
+const isDeleteModalOpen = ref(false)
+const deletingEntry = ref(null)
+const isDeleting = ref(false)
 
 const days = ['ច័ន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍']
 
@@ -216,7 +249,10 @@ const ensureArray = (payload) => {
   return typeof payload === 'object' ? Object.values(payload).filter(i => typeof i === 'object') : []
 }
 
+// ─── Fetch ────────────────────────────────────────────────────────────────────
+
 const fetchInitialData = async () => {
+  isClassesLoading.value = true
   try {
     const [yearsRes, classesRes, subjectsRes, teachersRes] = await Promise.all([
       api.get('/years'),
@@ -236,12 +272,15 @@ const fetchInitialData = async () => {
     }
   } catch (error) {
     console.error('💥 មានកំហុសក្នុងការទាញយកទិន្នន័យដំបូង៖', error)
+    showToast('មិនអាចទាញយកទិន្នន័យដំបូងបានទេ', 'error')
+  } finally {
+    isClassesLoading.value = false
   }
 }
 
 const fetchSchedules = async () => {
   if (!selectedYearId.value || !selectedClassData.value) return
-  isLoading.value = true
+  isScheduleLoading.value = true
   try {
     const response = await api.get('/schedules', {
       params: {
@@ -254,8 +293,9 @@ const fetchSchedules = async () => {
   } catch (error) {
     console.error('មិនអាចទាញទិន្នន័យកាលវិភាគបានឡើយ៖', error)
     scheduleData.value = []
+    showToast('មិនអាចទាញទិន្នន័យកាលវិភាគបានទេ', 'error')
   } finally {
-    isLoading.value = false
+    isScheduleLoading.value = false
   }
 }
 
@@ -263,18 +303,82 @@ onMounted(() => {
   fetchInitialData()
 })
 
+// ─── Create / Edit (actual save happens inside the child modals; this just
+//     reacts once they emit "saved") ───────────────────────────────────────────
+
+const handleScheduleSaved = () => {
+  const wasCreate = showCreateModal.value
+  const wasEdit = showEditModal.value
+
+  showCreateModal.value = false
+  showEditModal.value = false
+
+  fetchSchedules()
+
+  if (wasCreate) {
+    showToast('បង្កើតកាលវិភាគបានជោគជ័យ!', 'success')
+  } else if (wasEdit) {
+    showToast('កែប្រែកាលវិភាគបានជោគជ័យ!', 'success')
+  }
+}
+
+// ─── Delete ───────────────────────────────────────────────────────────────────
+
+const openDeleteModal = (entry) => {
+  if (!entry) return
+  deletingEntry.value = entry
+  isDeleteModalOpen.value = true
+}
+
+const closeDeleteModal = () => {
+  if (isDeleting.value) return
+  isDeleteModalOpen.value = false
+  deletingEntry.value = null
+}
+
+const confirmDeleteEntry = async () => {
+  if (!deletingEntry.value) return
+  try {
+    isDeleting.value = true
+    const response = await api.delete(`/schedules/${deletingEntry.value.id}`)
+    scheduleData.value = scheduleData.value.filter(item => item.id !== deletingEntry.value.id)
+    isDeleteModalOpen.value = false
+    deletingEntry.value = null
+    showToast(response.data?.message || 'បានលុបម៉ោងសិក្សាដោយជោគជ័យ!', 'success')
+  } catch (error) {
+    console.error('មិនអាចលុបម៉ោងសិក្សានេះបានឡើយ៖', error)
+    showToast(error.response?.data?.message || 'មិនអាចលុបម៉ោងសិក្សានេះបានឡើយ!', 'error')
+  } finally {
+    isDeleting.value = false
+  }
+}
+
+// ─── Class / year selection ───────────────────────────────────────────────────
+
 const filteredClasses = computed(() => {
   return classes.value.filter(cls => Number(cls.academic_year_id || cls.year_id) === Number(selectedYearId.value))
 })
 
+// Options shown in the class <select>
+const studentClasses = computed(() => filteredClasses.value)
+
+// As soon as a class is picked from the dropdown, load its schedule inline — no view swap
+watch(filterClass, (newId) => {
+  if (!newId) return
+  const cls = classes.value.find(c => Number(c.id) === Number(newId))
+  if (cls) {
+    handleSelectClass(cls)
+  }
+})
+
 const handleYearChange = () => {
-  isClassSelected.value = false
+  selectedClassData.value = null
+  filterClass.value = ''
   scheduleData.value = []
 }
 
 const handleSelectClass = (cls) => {
   selectedClassData.value = cls
-  isClassSelected.value = true
   fetchSchedules()
 }
 
@@ -329,48 +433,30 @@ const openEditModal = (entry) => {
   showEditModal.value = true
 }
 
-const handleScheduleSaved = () => {
-  showCreateModal.value = false
-  showEditModal.value = false
-  fetchSchedules()
-}
-
-const deleteEntry = async (id) => {
-  if (confirm('តើអ្នកពិតជាចង់លុបម៉ោងសិក្សានេះមែនទេ?')) {
-    try {
-      const response = await api.delete(`/schedules/${id}`)
-      scheduleData.value = scheduleData.value.filter(item => item.id !== id)
-      alert(response.data.message || 'បានលុបដោយជោគជ័យ!')
-    } catch (error) {
-      alert('មិនអាចលុបម៉ោងសិក្សានេះបានឡើយ!')
-    }
-  }
-}
+// ─── Export ───────────────────────────────────────────────────────────────────
 
 const importPdf = async () => {
-  const element = document.getElementById('scheduleTable'); 
+  const element = document.getElementById('scheduleTable');
 
   if (!element) {
-    alert("រកមិនឃើញកាលវិភាគសម្រាប់ទាញយកទេ!");
+    showToast('រកមិនឃើញកាលវិភាគសម្រាប់ទាញយកទេ!', 'error');
     return;
   }
 
   try {
-    // បង្ហាញសញ្ញាថាដំណើរការកំពុងចាប់ផ្តើម
-    isLoading.value = true; 
+    isScheduleLoading.value = true;
 
     const canvas = await html2canvas(element, {
-      scale: 3, // បង្កើន scale ដល់ 3 ដើម្បីឱ្យអក្សរច្បាស់ខ្លាំង
+      scale: 3,
       useCORS: true,
       backgroundColor: '#ffffff',
-      windowWidth: element.scrollWidth, // ថតយកទទឹងពេញរបស់តារាង
+      windowWidth: element.scrollWidth,
       onclone: (clonedDoc) => {
         const clonedElement = clonedDoc.getElementById('scheduleTable');
         if (clonedElement) {
           clonedElement.style.width = '100%';
-          clonedElement.style.overflow = 'visible'; // បង្ហាញ content ទាំងអស់
+          clonedElement.style.overflow = 'visible';
         }
-        // ដោះស្រាយបញ្ហាពណ៌ oklch
         const items = clonedDoc.querySelectorAll('*');
         items.forEach(item => {
           const style = window.getComputedStyle(item);
@@ -382,22 +468,22 @@ const importPdf = async () => {
     });
 
     const imgData = canvas.toDataURL('image/png', 1.0);
-    const pdf = new jsPDF('l', 'mm', 'a4'); 
-    
+    const pdf = new jsPDF('l', 'mm', 'a4');
+
     const imgProps = pdf.getImageProperties(imgData);
     const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-    // ប្រសិនបើកម្ពស់រូបភាពធំជាងក្រដាស វានឹងដាក់រូបភាពឱ្យសមនឹងទទឹង
     pdf.addImage(imgData, 'PNG', 10, 10, pdfWidth, pdfHeight);
-    
+
     pdf.save(`កាលវិភាគ_${selectedClassData.value?.name || 'ថ្នាក់'}.pdf`);
-    
+    showToast('ទាញយក PDF បានជោគជ័យ!', 'success');
+
   } catch (err) {
     console.error("កំហុសក្នុងការបង្កើត PDF:", err);
-    alert("មានបញ្ហាក្នុងការបង្កើត PDF");
+    showToast('មានបញ្ហាក្នុងការបង្កើត PDF', 'error');
   } finally {
-    isLoading.value = false;
+    isScheduleLoading.value = false;
   }
 };
 
@@ -430,16 +516,13 @@ select {
 
 table {
   table-layout: fixed;
-  /* ធ្វើឱ្យ column នីមួយៗស្មើគ្នា */
 }
 
-/* ធ្វើឱ្យកោសិកានីមួយៗមានកម្ពស់ថេរ */
 td {
   height: 80px;
   vertical-align: top;
 }
 
-/* បន្ថែមពណ៌សិស្សនៅពេល Hover */
 .group:hover {
   background-color: #f8fafc;
 }
@@ -448,10 +531,45 @@ td {
   color-interpolation-filters: sRGB;
 }
 
-/* ប្រសិនបើអ្នកប្រើ Tailwind ជាមួយ oklch អ្នកអាចសរសេរ override ពណ៌នៅទីនេះ */
 #scheduleTable {
   background-color: white !important;
 }
 
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
 
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-scale-enter-active,
+.modal-scale-leave-active {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.modal-scale-enter-from,
+.modal-scale-leave-to {
+  transform: scale(0.95);
+  opacity: 0;
+}
+
+.toast-slide-enter-active,
+.toast-slide-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.toast-slide-enter-from,
+.toast-slide-leave-to {
+  transform: translateX(-50%) translateY(-120%);
+  opacity: 0;
+}
+
+.toast-slide-enter-to,
+.toast-slide-leave-from {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
 </style>

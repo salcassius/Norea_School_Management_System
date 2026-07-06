@@ -64,8 +64,7 @@
             <button 
               type="button" 
               @click="closeModal" 
-              class="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-all font-semibold"
-            >
+              class="px-6 py-2.5 text-slate-700 hover:bg-slate-200 bg-indigo-200 rounded-xl font-medium transition-all text-sm">
               បោះបង់
             </button>
             <button 

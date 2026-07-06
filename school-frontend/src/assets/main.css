@@ -48,3 +48,17 @@ a,
     padding: 0 2rem;
   }
 }
+
+@font-face {
+  font-family: 'Battambang';
+  src: url('./fonts/Battambang-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'KhmerMoul';
+  src: url('./fonts/Khmer OS Muol Light Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}

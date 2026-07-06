@@ -18,6 +18,7 @@
       </div>
 
       <form @submit.prevent="handleSubmit" class="p-5 space-y-4">
+        
         <div class="space-y-1.5">
           <label class="text-1xs font-bold text-slate-600 ml-0.5">ឈ្មោះមុខវិជ្ជា <span class="text-blue-500">*</span></label>
           <div class="relative">
@@ -32,7 +33,21 @@
           </div>
         </div>
 
-        <div v-if="errorMessage" class="p-3 bg-rose-50 text-blue-600 text-xs rounded-xl border border-rose-100 flex items-center gap-2">
+        <div class="space-y-1.5">
+          <label class="text-1xs font-bold text-slate-600 ml-0.5">ពិន្ទុអតិបរមា <span class="text-blue-500">*</span></label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">#</span>
+            <input 
+              v-model="form.max_score"
+              type="number" 
+              placeholder="ឧទាហរណ៍៖ 100"
+              required
+              class="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 pl-11 pr-4 text-sm font-medium text-slate-700 focus:bg-white focus:ring-4 focus:ring-amber-500/10 focus:border-blue-500 outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        <div v-if="errorMessage" class="p-3 bg-rose-50 text-blue-600 text-xs rounded-xl border border-rose-100 flex items-center gap-2 animate-shake">
           <AlertCircle class="w-4 h-4 shrink-0" />
           <span>{{ errorMessage }}</span>
         </div>
@@ -67,23 +82,31 @@ const emit = defineEmits(['update:modelValue', 'refresh'])
 const isSubmitting = ref(false)
 const errorMessage = ref(null)
 
-const form = ref({ name: '' })
+const form = ref({ 
+  name: '',
+  max_score: '' 
+})
 
-// ទទួលទិន្នន័យមកបំពេញ Form
 watch(() => props.subjectData, (val) => {
-  if (val) form.value.name = val.name
+  if (val) {
+    form.value.name = val.name
+    form.value.max_score = val.max_score
+  }
 }, { immediate: true })
 
 const closeModal = () => emit('update:modelValue', false)
 
 const handleSubmit = async () => {
-  if (!form.value.name) return
+  if (!form.value.name || !form.value.max_score) return
 
   isSubmitting.value = true
   errorMessage.value = null
   
   try {
-    await api.put(`/subjects/${props.subjectData.id}`, { name: form.value.name }) 
+    await api.put(`/subjects/${props.subjectData.id}`, { 
+      name: form.value.name,
+      max_score: form.value.max_score
+    }) 
     emit('refresh') 
     closeModal() 
   } catch (error) {
@@ -95,12 +118,6 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-select {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-}
-
 .animate-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
 @keyframes shake {
   10%, 90% { transform: translate3d(-1px, 0, 0); }

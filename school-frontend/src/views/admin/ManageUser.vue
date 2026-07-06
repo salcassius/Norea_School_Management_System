@@ -34,37 +34,48 @@
       </div>
     </div>
 
+    <div class="flex flex-wrap items-center justify-end gap-2 mb-4">
+      <button @click="exportToExcel"
+        class="bg-white border border-green-600 text-green-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+         <span>ទាញយក Excel</span>
+      </button>
+
+      <button @click="exportToPDF"
+        class="bg-white border border-red-600 text-red-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+        <span>ទាញយក PDF</span>
+      </button>
+    </div>
+
     <!-- Table Card -->
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
 
       <!-- Toolbar -->
-      <div class="bg-white p-4 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="w-full sm:w-auto flex-1">
-          <div class="relative w-full sm:max-w-xs">
-            <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input v-model="searchQuery" type="text" placeholder="ស្វែងរកតាមឈ្មោះ..."
-              class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
-          </div>
-        </div>
+    <div class="bg-white p-4 border-b border-slate-100 flex flex-col sm:flex-row items-center gap-4">
+  <div class="w-full sm:w-auto">
+    <div class="relative w-full sm:max-w-xs">
+      <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+      <input v-model="searchQuery" type="text" placeholder="ស្វែងរកតាមឈ្មោះ..."
+        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+    </div>
+  </div>
 
-        <div class="flex items-center gap-3 w-full sm:w-auto">
-          <div class="relative flex-1 sm:flex-none">
-            <select v-model="selectedRole"
-              class="w-full sm:w-40 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none cursor-pointer">
-              <option value="all">គ្រប់តួនាទី</option>
-              <option value="teacher">គ្រូបង្រៀន</option>
-              <option value="student">សិស្សានុសិស្ស</option>
-              <option value="admin">អ្នកគ្រប់គ្រង</option>
-            </select>
-            <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </div>
-        </div>
+  <div class="flex items-center gap-3 w-full sm:w-auto">
+    <div class="relative flex-1 sm:flex-none">
+      <select v-model="selectedRole"
+        class="w-full sm:w-40 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none cursor-pointer">
+        <option value="all">គ្រប់តួនាទី</option>
+        <option value="teacher">គ្រូបង្រៀន</option>
+        <option value="student">សិស្សានុសិស្ស</option>
+        <option value="admin">អ្នកគ្រប់គ្រង</option>
+      </select>
+      <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
       </div>
-
+    </div>
+  </div>
+</div>
       <!-- Table -->
       <div class="overflow-x-auto">
         <div v-if="isLoading" class="p-10 text-center text-slate-500">កំពុងទាញទិន្នន័យ...</div>

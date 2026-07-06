@@ -33,28 +33,43 @@
 
     <div class="flex flex-wrap items-center justify-end gap-2 mb-4">
       <button @click="exportToExcel"
-        class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-md active:scale-95 whitespace-nowrap">
-        <span>📄</span> <span>ទាញយក Excel</span>
+        class="bg-white border border-green-600 text-green-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+         <span>ទាញយក Excel</span>
       </button>
 
       <button @click="exportToPDF"
-        class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-md active:scale-95 whitespace-nowrap">
-        <span>📄</span> <span>ទាញយក PDF</span>
+        class="bg-white border border-red-600 text-red-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+        <span>ទាញយក PDF</span>
       </button>
     </div>
 
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div class="flex flex-col md:flex-row items-center justify-between gap-4 w-full p-4">
-        <div class="flex items-center gap-3 w-full md:max-w-sm">
-          <div class="relative w-full">
-            <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input v-model="searchQuery" type="text" placeholder="ស្វែងរកតាមឈ្មោះ, ID..."
-              class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all" />
-          </div>
-          <button v-if="searchQuery" @click="searchQuery = ''"
-            class="text-xs text-indigo-600 font-medium hover:underline shrink-0">លុប</button>
-        </div>
+        <!-- Toolbar -->
+    <div class="bg-white p-4 border-b border-slate-100 flex flex-col sm:flex-row items-center gap-4">
+  <div class="w-full sm:w-auto">
+    <div class="relative w-full sm:max-w-sm">
+      <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+      <input v-model="searchQuery" type="text" placeholder="ស្វែងរកតាមឈ្មោះ..."
+        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3 w-full sm:w-auto">
+    <div class="relative flex-1 sm:flex-none">
+      <select v-model="selectedRole"
+        class="w-full sm:w-40 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none cursor-pointer">
+        <option value="all">គ្រូបង្រៀនទាំងអស់</option>
+        <option value="teacher">នៅបង្រៀន</option>
+        <option value="student">ឈប់បង្រៀន/ព្យួរ</option>
+      </select>
+      <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
       </div>
+    </div>
+  </div>
+</div>
 
       <div class="overflow-x-auto">
         <div v-if="isLoading" class="p-10 text-center text-slate-500 text-sm">កំពុងទាញទិន្នន័យ...</div>
@@ -262,6 +277,7 @@ const isLoading = ref(true)
 const searchQuery = ref('')
 const selectedStatus = ref('')
 const selectedGender = ref('')
+const selectedRole = ref('all')
 const activeFilter = ref('')
 const showCreateModal = ref(false)
 const isEditModalOpen = ref(false)
@@ -362,10 +378,6 @@ const closeDeleteModal = () => {
   deletingTeacher.value = null
 }
 
-// --- Create Teacher Handler ---
-// The create modal already performs the API call itself and only emits
-// 'refresh' once it succeeds, so this just needs to close the modal,
-// refresh the table, and show a toast.
 const handleCreateTeacher = async () => {
   try {
     isLoading.value = true
@@ -422,8 +434,11 @@ const filteredTeachers = computed(() => {
     const matchesStatus = selectedStatus.value === '' || t.status == selectedStatus.value
     const matchesGender = selectedGender.value === '' ||
       ['female', 'ស្រី'].includes(t.gender?.toLowerCase()) === (selectedGender.value === 'female')
+    const matchesRole = selectedRole.value === 'all' ||
+      (selectedRole.value === 'teacher' && t.status == 1) ||
+      (selectedRole.value === 'student' && t.status == 0)
 
-    return matchesSearch && matchesStatus && matchesGender
+    return matchesSearch && matchesStatus && matchesGender && matchesRole
   })
 })
 

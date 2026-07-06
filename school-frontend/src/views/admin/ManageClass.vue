@@ -145,20 +145,22 @@
         </button>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="p-4 bg-slate-50/50 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="p-4 bg-slate-50/50 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div class="font-bold text-sm text-slate-600">👥 សិស្សសរុប៖ {{ classStudents.length }} នាក់</div>
           <div class="flex items-center gap-2">
             <button @click="downloadExcel"
-              class="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-1xs font-bold hover:bg-emerald-700 transition-all">
-              Excel
+              class="bg-white border border-green-600 text-green-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+              ទាញយក Excel
             </button>
             <button @click="downloadPDF"
-              class="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-xl text-1xs font-bold hover:bg-red-700 transition-all">
-              PDF
+              class="bg-white border border-red-600 text-red-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+              ទាញយក​ PDF
             </button>
           </div>
         </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        
 
         <div class="overflow-x-auto w-full">
           <table class="w-full text-left border-collapse min-w-[1200px]">
@@ -182,7 +184,7 @@
                   <div class="text-[14px] font-bold text-slate-800">{{ std.name_kh }}</div>
                   <div class="text-[14px] text-slate-600 uppercase">{{ std.name_en }}</div>
                 </td>
-                <td class="px-4 py-4 font-mono font-bold text-[14px] text-indigo-600 uppercase">{{ std.student_id_card }}</td>
+                <td class="px-4 py-4 font-mono text-[14px] uppercase">{{ std.student_id_card }}</td>
                 <td class="px-4 py-4 text-slate-700 text-[14px]">{{ std.gender === 'male' ? 'ប្រុស' : 'ស្រី' }}</td>
                 <td class="px-4 py-4 text-slate-700 text-[14px]">{{ std.date_of_birth ? new Date(std.date_of_birth).toLocaleDateString('km-KH') : 'N/A' }}</td>
                 <td class="px-4 py-4 text-slate-700 text-[14px]">{{ std.phone }}</td>
@@ -196,7 +198,7 @@
                 </td>
                 <td class="px-4 py-4 text-center sticky right-0 bg-white z-10 border-l border-slate-100">
                   <button @click="openRemoveStudentModal(std)"
-                    class="text-[10px] font-bold text-rose-500 hover:text-white hover:bg-rose-500 px-3 py-1.5 rounded-lg border border-rose-200 transition-all whitespace-nowrap">
+                    class="text-[12px] font-bold text-rose-500 hover:text-white hover:bg-rose-500 px-3 py-1.5 rounded-lg border border-rose-200 transition-all whitespace-nowrap">
                     ដកចេញ
                   </button>
                 </td>

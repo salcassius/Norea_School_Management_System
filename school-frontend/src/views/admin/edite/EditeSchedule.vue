@@ -9,7 +9,7 @@
           </div>
           <div>
             <h3 class="text-base font-bold text-slate-800 tracking-tight">កែសម្រួលម៉ោងសិក្សា</h3>
-            <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">
+            <p class="text-[12px] text-slate-500 uppercase tracking-wider mt-0.5">
               សូមកែប្រែព័ត៌មានខាងក្រោម រួចចុចប៊ូតុងធ្វើបច្ចុប្បន្នភាព
             </p>
           </div>
@@ -20,7 +20,13 @@
       </div>
 
       <form @submit.prevent="handleSubmit" class="p-5 space-y-4">
-        
+
+        <!-- Inline error message -->
+        <div v-if="errorMessage" class="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-600 text-xs font-medium rounded-xl px-3.5 py-2.5">
+          <AlertCircle class="w-4 h-4 mt-0.5 shrink-0" />
+          <span>{{ errorMessage }}</span>
+        </div>
+
         <div class="space-y-1.5">
           <label class="text-xs font-bold text-slate-600 ml-0.5">មុខវិជ្ជា <span class="text-rose-500">*</span></label>
           <div class="relative">
@@ -50,12 +56,12 @@
           <div>ម៉ោងសិក្សា៖ <span class="text-slate-800 font-bold">{{ form.time }}</span></div>
         </div>
 
-        <div class="flex gap-2.5 pt-4 border-t border-slate-100">
-          <button type="button" @click="$emit('close')" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]">
+        <div class="pt-2 flex justify-end gap-3">
+          <button type="button" @click="$emit('close')" class="px-6 py-2.5 text-slate-700 hover:bg-slate-200 bg-indigo-200 rounded-xl font-medium transition-all text-sm">
             បោះបង់
           </button>
-          <button type="submit" :disabled="isSubmitting" class="flex-[1.5] py-2.5 bg-blue-500 text-white rounded-xl text-sm font-bold shadow-md shadow-amber-500/10 hover:bg-amber-900 transition-all active:scale-[0.98] disabled:opacity-50">
-            {{ isSubmitting ? 'កំពុងរក្សាទុក...' : 'ធ្វើបច្ចុប្បន្នភាព' }}
+          <button type="submit" :disabled="isSubmitting" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all font-bold text-sm flex items-center gap-2 disabled:opacity-50">
+            {{ isSubmitting ? 'កំពុងរក្សាទុក...' : 'រក្សាទុកការកែប្រែ' }}
           </button>
         </div>
       </form>
@@ -66,7 +72,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { BookOpen, X, Layout, ChevronDown, UserRound, MapPin } from 'lucide-vue-next'
+import { BookOpen, X, Layout, ChevronDown, UserRound, AlertCircle } from 'lucide-vue-next'
 import api from '../../../services/authService'
 
 const props = defineProps({
@@ -78,16 +84,18 @@ const props = defineProps({
 const emit = defineEmits(['close', 'saved'])
 const form = ref({ ...props.entryData })
 const isSubmitting = ref(false)
+const errorMessage = ref('')
 
 const handleSubmit = async () => {
   isSubmitting.value = true
+  errorMessage.value = ''
   try {
-    const response = await api.put('/schedules/${form.value.id}', form.value)
-    alert(response.data.message || 'ធ្វើបច្ចុប្បន្នភាពបានជោគជ័យ!')
+    await api.put(`/schedules/${form.value.id}`, form.value)
     emit('saved')
+    emit('close')
   } catch (error) {
     console.error(error)
-    alert('មានកំហុសក្នុងការកែសម្រួលកាលវិភាគ!')
+    errorMessage.value = error.response?.data?.message || 'មានកំហុសក្នុងការកែសម្រួលកាលវិភាគ! សូមពិនិត្យមើល ID ឬ Connection។'
   } finally {
     isSubmitting.value = false
   }

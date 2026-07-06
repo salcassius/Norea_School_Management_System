@@ -65,50 +65,46 @@ class ScoreController extends Controller
         return response()->json(['message' => 'រក្សាទុកពិន្ទុបានជោគជ័យ!']);
     }
 
-    /**
-     * ទាញយកពិន្ទុ (សម្រាប់ការបង្ហាញក្នុងតារាង)
-     */
+ 
     public function getScores(Request $request)
 {
-    $this->authorizeAccess($request->class_id);
-
     $request->validate([
-        'exam_id' => 'required|exists:exams,id',
-        'class_id' => 'required|exists:classes,id',
+        'exam_id' => 'required',
+        'class_id' => 'required',
     ]);
 
-    $students = Student::where('class_id', $request->class_id)
-        ->with([
-            'scores' => function ($q) use ($request) {
-                $q->where('exam_id', $request->exam_id);
-            }
-        ])
-        ->get();
+    $scores = Score::with('student')
+        ->where('exam_id', $request->exam_id)
+        ->where('class_id', $request->class_id)
+        ->get()
+        ->groupBy('student_id');
 
-    $result = $students->map(function ($student) {
+    $result = [];
 
-        $scores = [];
+    foreach ($scores as $studentId => $studentScores) {
 
-        foreach ($student->scores as $score) {
-            $scores[$score->subject_id] = $score->score_value;
+        $student = $studentScores->first()->student;
+
+        $subjectScores = [];
+
+        foreach ($studentScores as $score) {
+            $subjectScores[$score->subject_id] = $score->score_value;
         }
 
-        return [
+        $result[] = [
             'student_id' => $student->id,
             'student' => [
                 'name_kh' => $student->name_kh,
                 'gender' => $student->gender,
             ],
-            'scores' => $scores
+            'scores' => $subjectScores,
         ];
-    });
+    }
 
     return response()->json($result);
 }
 
-    /**
-     * នាំទិន្នន័យពិន្ទុចេញជា PDF
-     */
+   
     public function exportPdf(Request $request, $examId, $classId)
     {
         $this->authorizeAccess($classId);

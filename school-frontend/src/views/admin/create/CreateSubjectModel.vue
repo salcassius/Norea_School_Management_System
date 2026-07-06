@@ -9,7 +9,6 @@
           </div>
           <div>
             <h2 class="text-lg font-bold text-slate-800">បន្ថែមមុខវិជ្ជាថ្មី</h2>
-            <!-- <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Add New Subject</p> -->
           </div>
         </div>
         <button @click="$emit('update:modelValue', false)" class="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400 hover:text-slate-600">
@@ -33,15 +32,29 @@
           </div>
         </div>
 
+        <div class="space-y-2">
+          <label class="text-[14px] font-bold text-slate-600 uppercase tracking-wider ml-1">ពិន្ទុអតិបរមា</label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">#</span>
+            <input 
+              v-model="form.max_score"
+              type="number" 
+              placeholder="ឧទាហរណ៍៖ 100"
+              required
+              class="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-3 pl-12 pr-4 text-sm font-medium text-slate-700 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
+            />
+          </div>
+        </div>
+
         <div class="flex justify-end gap-3 mt-8">
           <button type="button" @click="$emit('update:modelValue', false)" 
-           class="px-6 py-2.5 text-slate-700 hover:bg-slate-200 bg-indigo-200 rounded-xl font-medium transition-all text-sm">
-            បោះបង់
+             class="px-6 py-2.5 text-slate-700 hover:bg-slate-200 bg-indigo-200 rounded-xl font-medium transition-all text-sm">
+              បោះបង់
           </button>
           <button type="submit" :disabled="isSubmitting"
             class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all font-bold text-sm flex items-center gap-2 disabled:opacity-50">
             <span v-if="isSubmitting" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full font-bold animate-spin"></span>
-            {{ isSubmitting ? 'កំពុងរក្សាទុក...' : 'រក្សាទុកទិន្នន័យ' }}
+            {{ isSubmitting ? 'កំពុងរក្សាទុក...' : 'រក្សាទុក' }}
           </button>
         </div>
       </form>
@@ -58,17 +71,23 @@ const emit = defineEmits(['update:modelValue', 'refresh'])
 const isSubmitting = ref(false)
 
 const form = ref({
-  name: ''
+  name: '',
+  max_score: '' // បន្ថែម field នេះសម្រាប់ data binding
 })
 
 const handleSubmit = async () => {
   isSubmitting.value = true
   try {
-    await api.post('/subjects', { name: form.value.name }) 
+    await api.post('/subjects', { 
+      name: form.value.name,
+      max_score: form.value.max_score 
+    }) 
     
     emit('refresh')
     emit('update:modelValue', false)
-    form.value.name = '' // Reset form
+
+    form.value.name = ''
+    form.value.max_score = ''
   } catch (error) {
     alert(error.response?.data?.message || 'មានបញ្ហាក្នុងការរក្សាទុក!')
   } finally {
@@ -76,11 +95,3 @@ const handleSubmit = async () => {
   }
 }
 </script>
-
-<style scoped>
-select {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-}
-</style>

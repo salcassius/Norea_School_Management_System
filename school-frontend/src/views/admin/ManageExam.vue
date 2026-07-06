@@ -40,7 +40,8 @@
         </div>
       </div>
 
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div
+        class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label class="text-[14px] font-bold text-slate-600 ml-1">ស្វែងរក</label>
           <div class="relative mt-1">
@@ -150,7 +151,8 @@
             <tr>
               <th class="p-3 text-[15px] font-bold text-slate-600">ល.រ</th>
               <th class="p-3 text-[15px] font-bold text-slate-600">ឈ្មោះសិស្ស</th>
-              <th v-for="sub in subjects" :key="sub.id" class="p-3 text-[15px] font-bold text-slate-600 text-center">{{ sub.name }}</th>
+              <th v-for="sub in subjects" :key="sub.id" class="p-3 text-[15px] font-bold text-slate-600 text-center">{{
+                sub.name }}</th>
               <th class="p-3 text-[15px] font-bold text-indigo-600 text-center">សរុប</th>
               <th class="p-3 text-[15px] font-bold text-indigo-600 text-center">មធ្យមភាគ</th>
               <th class="p-3 text-[15px] font-bold text-red-600 text-center">ចំ.ថ្នាក់</th>
@@ -172,21 +174,34 @@
               <td class="p-3 text-[15px] font-bold text-indigo-700 text-center">{{ calculateTotal(student) }}</td>
               <td class="p-3 text-[15px] text-center">{{ calculateAverage(student) }}</td>
               <td class="p-3 text-[15px] font-bold text-red-600 text-center">{{ index + 1 }}</td>
-              <td class="p-3 text-[15px] text-center font-bold text-emerald-600">{{ getRemarkKh(calculateAverage(student)) }}</td>
-              <td class="p-3 text-[15px] text-center font-bold text-emerald-600">{{ getGradeKh(calculateAverage(student)) }}</td>
-              <td class="p-3 text-[15px] text-center font-bold" :class="getResult(student).color">{{ getResult(student).text }}</td>
+              <td class="p-3 text-[15px] text-center font-bold text-emerald-600">{{
+                getRemarkKh(calculateAverage(student)) }}</td>
+              <td class="p-3 text-[15px] text-center font-bold text-emerald-600">{{
+                getGradeKh(calculateAverage(student)) }}</td>
+              <td class="p-3 text-[15px] text-center font-bold" :class="getResult(student).color">{{
+                getResult(student).text }}</td>
             </tr>
           </tbody>
         </table>
-        <div class="p-4 border-t flex justify-end bg-slate-50">
-          <button @click="saveScores" :disabled="isSaving"
-            class="bg-emerald-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-emerald-700 disabled:opacity-50">
-            {{ isSaving ? 'កំពុងរក្សាទុក...' : 'រក្សាទុក' }}
-          </button>
-        </div>
+
+
+
+        <div class="sticky bottom-0 z-20 right-0 p-4 border-t border-slate-200 bg-slate-50 flex flex-wrap justify-end gap-3 shadow-[0_-2px_6px_rgba(0,0,0,0.05)]">
+        <button @click="exportExcel" class="bg-white border border-green-600 text-green-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all">
+          នាំចេញ Excel
+        </button>
+        <button @click="exportPDF" class="bg-white border border-red-600 text-red-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all">
+          នាំចេញ PDF
+        </button>
+        <button @click="saveScores" :disabled="isSaving" class="bg-emerald-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-emerald-700 disabled:opacity-50">
+          {{ isSaving ? 'កំពុងរក្សាទុក...' : 'រក្សាទុកពិន្ទុ' }}
+        </button>
+      </div>
       </div>
 
-      <div v-else-if="selectedExam && !isLoadingStudents" class="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+
+      <div v-else-if="selectedExam && !isLoadingStudents"
+        class="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
         សូមចុច "បង្ហាញសិស្ស" ដើម្បីចាប់ផ្តើមស្រង់ពិន្ទុ
       </div>
     </div>
@@ -226,18 +241,26 @@
           {{ isLoadingResults ? 'កំពុងផ្ទុក...' : 'មើលលទ្ធផល' }}
         </button>
       </div>
+      <div class="flex flex-wrap items-center justify-end gap-2 mb-4">
+      <button @click="exportExcel" class="bg-white border border-green-600 text-green-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all">
+          នាំចេញ Excel
+        </button>
+        <button @click="exportPDF" class="bg-white border border-red-600 text-red-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all">
+          នាំចេញ PDF
+        </button>
+        </div>
 
       <div v-if="examResults.length > 0" class="overflow-x-auto bg-white rounded-2xl border border-slate-200 shadow-sm">
         <table class="w-full text-left border-collapse min-w-[900px]">
           <thead class="bg-slate-100">
             <tr>
               <th class="p-3 text-[15px] font-bold text-slate-600">ល.រ</th>
-              <th class="p-3 text-xs font-bold text-slate-600">គោត្តនាម-នាម</th>
-              <th class="p-3 text-xs font-bold text-slate-600 text-center">ភេទ</th>
-              <th class="p-3 text-xs font-bold text-indigo-600 text-center">មធ្យមភាគ</th>
-              <th class="p-3 text-xs font-bold text-indigo-600 text-center">ចំណាត់ថ្នាក់</th>
-              <th class="p-3 text-xs font-bold text-indigo-600 text-center">និទ្ទេស</th>
-              <th class="p-3 text-xs font-bold text-slate-600 text-center">មូលវិចារ</th>
+              <th class="p-3 text-[15px] font-bold text-slate-600">គោត្តនាម-នាម</th>
+              <th class="p-3 text-[15px] font-bold text-slate-600 text-center">ភេទ</th>
+              <th class="p-3 text-[15px] font-bold text-indigo-600 text-center">មធ្យមភាគ</th>
+              <th class="p-3 text-[15px] font-bold text-indigo-600 text-center">ចំណាត់ថ្នាក់</th>
+              <th class="p-3 text-[15px] font-bold text-indigo-600 text-center">និទ្ទេស</th>
+              <th class="p-3 text-[15px] font-bold text-slate-600 text-center">មូលវិចារ</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
@@ -247,14 +270,18 @@
               <td class="p-3 text-sm text-center">{{ getGenderKh(student.gender) }}</td>
               <td class="p-3 text-sm text-center font-bold">{{ calculateAverage(student) }}</td>
               <td class="p-3 text-sm text-center font-bold text-indigo-700">{{ student.rank }}</td>
-              <td class="p-3 text-sm text-center font-bold text-emerald-600">{{ getGradeKh(calculateAverage(student)) }}</td>
-              <td class="p-3 text-sm text-center text-slate-500">{{ getRemarkKh(calculateAverage(student)) }}</td>
+              <td class="p-3 text-sm text-center font-bold"
+                :class="getRemarkKh(calculateAverage(student)) === 'ធ្លាក់' ? 'text-rose-600' : 'text-green-600'">
+                {{ getRemarkKh(calculateAverage(student)) }}
+              </td>
+              <td class="p-3 text-[15px] text-center font-bold" :class="getResult(student).color">{{
+                getResult(student).text }}</td>
             </tr>
           </tbody>
         </table>
       </div>
-
-      <div v-else-if="reportSelectedExam && !isLoadingResults" class="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+      <div v-else-if="reportSelectedExam && !isLoadingResults"
+        class="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
         មិនទាន់មានទិន្នន័យពិន្ទុសម្រាប់ការប្រឡងនេះទេ
       </div>
     </div>
@@ -327,6 +354,8 @@
       </Transition>
     </Teleport>
 
+
+
   </div>
 </template>
 
@@ -334,8 +363,11 @@
 import { ref, onMounted, computed } from 'vue'
 import { Plus, Search, ClipboardCheck, CheckCircle2, Clock, Edit3, Trash2, XCircle, X, Loader2 } from 'lucide-vue-next'
 import api from '@/services/authService'
+import * as XLSX from 'xlsx'
+import { jsPDF } from 'jspdf'
 import CreateExamModel from '../admin/create/CreateExamModel.vue'
 import EditExam from '../admin/edite/EditeExam.vue'
+
 
 // Fixed list of exam type options used across the score-entry and report tabs
 const EXAM_TYPES = ['ប្រចាំខែ', 'ឆមាស', 'ប្រចាំឆ្នាំ']
@@ -383,8 +415,8 @@ const filteredExams = computed(() => {
 
 const examStats = computed(() => [
   { label: 'សរុប', value: exams.value.length + ' លើក', icon: ClipboardCheck, bgColor: 'bg-indigo-50', iconColor: 'text-indigo-600' },
-  { label: 'បានបញ្ចប់', value: exams.value.filter(e => e.status === 'បានបញ្ចប់').length + ' លើក', icon: CheckCircle2, bgColor: 'bg-emerald-50', iconColor: 'text-emerald-600' },
-  { label: 'ជិតមកដល់', value: exams.value.filter(e => e.status === 'ជិតមកដល់').length + ' លើក', icon: Clock, bgColor: 'bg-amber-50', iconColor: 'text-amber-600' }
+  //   { label: 'បានបញ្ចប់', value: exams.value.filter(e => e.status === 'បានបញ្ចប់').length + ' លើក', icon: CheckCircle2, bgColor: 'bg-emerald-50', iconColor: 'text-emerald-600' },
+  //   { label: 'ជិតមកដល់', value: exams.value.filter(e => e.status === 'ជិតមកដល់').length + ' លើក', icon: Clock, bgColor: 'bg-amber-50', iconColor: 'text-amber-600' }
 ])
 
 const formatDate = (dateString) => {
@@ -450,8 +482,14 @@ const resetExamSelection = () => { selectedExam.value = ''; students.value = [] 
 const calculateTotal = (student) => Object.values(student.scores || {}).reduce((acc, curr) => acc + (Number(curr) || 0), 0)
 
 const calculateAverage = (student) => {
-  if (subjects.value.length === 0) return 0
-  return (calculateTotal(student) / subjects.value.length).toFixed(2)
+  let totalScore = 0
+  let totalMax = 0
+  subjects.value.forEach(subject => {
+    totalScore += Number(student.scores?.[subject.id] || 0)
+    totalMax += Number(subject.max_score)
+  })
+  if (totalMax === 0) return 0
+  return ((totalScore / totalMax) * 100).toFixed(2)
 }
 
 const getGradeKh = (avg) => {
@@ -500,11 +538,11 @@ const fetchStudentsForScoring = async () => {
     let existingScores = {}
     try {
       const scoreRes = await api.get('/scores', {
-    params: {
-        exam_id: selectedExam.value,
-        class_id: selectedClass.value
-    }
-})
+        params: {
+          exam_id: selectedExam.value,
+          class_id: selectedClass.value
+        }
+      })
       const scoreList = scoreRes.data.data || scoreRes.data || []
       scoreList.forEach(row => { existingScores[row.student_id] = row.scores || row.subject_scores || {} })
     } catch (e) {
@@ -551,6 +589,109 @@ const saveScores = async () => {
   } finally {
     isSaving.value = false
   }
+}
+
+// ----- Score entry export: Excel -----
+// Exports exactly what's shown in the Tab 2 table (per-subject scores, total,
+// average, rank, remark, grade, result) for the currently loaded class/exam.
+const exportExcel = () => {
+  if (sortedStudents.value.length === 0) return
+
+  const exportData = sortedStudents.value.map((student, index) => {
+    const row = {
+      'ល.រ': index + 1,
+      'ឈ្មោះសិស្ស': student.name_kh
+    }
+    subjects.value.forEach(sub => {
+      row[sub.name] = student.scores?.[sub.id] ?? ''
+    })
+    const avg = calculateAverage(student)
+    row['សរុប'] = calculateTotal(student)
+    row['មធ្យមភាគ'] = avg
+    row['ចំ.ថ្នាក់'] = index + 1
+    row['និទ្ទេសខ្មែរ'] = getRemarkKh(avg)
+    row['និទ្ទេស'] = getGradeKh(avg)
+    row['លទ្ធផល'] = getResult(student).text
+    return row
+  })
+
+  const ws = XLSX.utils.json_to_sheet(exportData)
+  ws['!cols'] = [
+    { wch: 6 }, { wch: 24 },
+    ...subjects.value.map(() => ({ wch: 10 })),
+    { wch: 8 }, { wch: 10 }, { wch: 8 }, { wch: 12 }, { wch: 8 }, { wch: 10 }
+  ]
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'ពិន្ទុ')
+  XLSX.writeFile(wb, 'score-entry-report.xlsx')
+}
+
+// ----- Score entry export: PDF -----
+const exportPDF = () => {
+  if (sortedStudents.value.length === 0) return
+
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+
+  // Header (Latin only — jsPDF's built-in fonts don't render Khmer glyphs)
+  doc.setFontSize(15)
+  doc.setFont('helvetica', 'bold')
+  doc.text('Score Entry Report', 148, 18, { align: 'center' })
+
+  doc.setFontSize(10)
+  doc.setFont('helvetica', 'normal')
+  doc.text(`Export: ${new Date().toLocaleDateString()}`, 148, 26, { align: 'center' })
+
+  const subjectHeaders = subjects.value.map((s, i) => `Sub ${i + 1}`)
+  const headers = ['No', 'Name', ...subjectHeaders, 'Total', 'Avg', 'Rank', 'Grade', 'Result']
+  const fixedWidth = 15 + 45 + 15 + 15 + 15 + 15 + 20
+  const subjectColWidth = subjects.value.length
+    ? Math.max(12, Math.floor((267 - fixedWidth) / subjects.value.length))
+    : 0
+  const colWidths = [15, 45, ...subjects.value.map(() => subjectColWidth), 15, 15, 15, 15, 20]
+  const startX = 15
+  let y = 36
+
+  doc.setFillColor(37, 99, 235)
+  doc.rect(startX, y, colWidths.reduce((a, b) => a + b, 0), 9, 'F')
+  doc.setTextColor(255, 255, 255)
+  doc.setFontSize(9)
+  let x = startX
+  headers.forEach((h, i) => {
+    doc.text(h, x + 2, y + 6)
+    x += colWidths[i]
+  })
+
+  doc.setTextColor(30, 30, 30)
+  y += 9
+  sortedStudents.value.forEach((student, idx) => {
+    if (idx % 2 === 0) {
+      doc.setFillColor(248, 250, 252)
+      doc.rect(startX, y, colWidths.reduce((a, b) => a + b, 0), 8, 'F')
+    }
+    const avg = calculateAverage(student)
+    const row = [
+      idx + 1,
+      student.name_kh, // Note: renders blank/garbled with default jsPDF fonts (no Khmer glyphs)
+      ...subjects.value.map(sub => student.scores?.[sub.id] ?? ''),
+      calculateTotal(student),
+      avg,
+      idx + 1,
+      getGradeKh(avg),
+      getResult(student).text === 'ជាប់' ? 'Pass' : 'Fail'
+    ]
+    x = startX
+    row.forEach((cell, i) => {
+      doc.text(String(cell ?? ''), x + 2, y + 5.5)
+      x += colWidths[i]
+    })
+    y += 8
+  })
+
+  doc.setFontSize(8)
+  doc.setTextColor(120, 120, 120)
+  doc.text(`Total students: ${sortedStudents.value.length}`, startX, y + 8)
+
+  doc.save('score-entry-report.pdf')
 }
 
 // --- TAB 3: Results report state ---
@@ -616,7 +757,6 @@ const fetchExamResults = async () => {
   }
 }
 
-// --- Shared fetch ---
 const fetchData = async () => {
   isLoading.value = true
   try {
@@ -642,13 +782,39 @@ onMounted(fetchData)
 </script>
 
 <style>
-.modal-fade-enter-active, .modal-fade-leave-active { transition: opacity 0.3s ease; }
-.modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
 
-.modal-scale-enter-active, .modal-scale-leave-active { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.modal-scale-enter-from, .modal-scale-leave-to { transform: scale(0.9); opacity: 0; }
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
 
-.toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.3s ease; }
-.toast-slide-enter-from { transform: translateX(100%); opacity: 0; }
-.toast-slide-leave-to { transform: translateX(100%); opacity: 0; }
+.modal-scale-enter-active,
+.modal-scale-leave-active {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-scale-enter-from,
+.modal-scale-leave-to {
+  transform: scale(0.9);
+  opacity: 0;
+}
+
+.toast-slide-enter-active,
+.toast-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-slide-enter-from {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.toast-slide-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
+}
 </style>

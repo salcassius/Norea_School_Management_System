@@ -35,18 +35,18 @@
     <!-- Export Buttons -->
     <div class="flex flex-wrap items-center justify-end gap-2 mb-4">
       <button @click="exportToExcel"
-        class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-md active:scale-95 whitespace-nowrap">
-        <span>📄</span> <span>ទាញយក Excel</span>
+        class="bg-white border border-green-600 text-green-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+        <span>ទាញយក Excel</span>
       </button>
       <button @click="exportToPDF"
-        class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-md active:scale-95 whitespace-nowrap">
-        <span>📄</span> <span>ទាញយក PDF</span>
+        class="bg-white border border-red-600 text-red-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+        <span>ទាញយក PDF</span>
       </button>
     </div>
 
     <!-- Table Card -->
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between bg-slate-50/30">
+      <div class="bg-white p-4 border-b border-slate-100 flex flex-col sm:flex-row items-center gap-4">
         <div class="relative max-w-sm w-full">
           <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input v-model="searchQuery" type="text" placeholder="ស្វែងរកតាមឈ្មោះ, ID, ឬលេខទូរស័ព្ទ..."

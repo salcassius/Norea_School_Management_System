@@ -18,7 +18,7 @@
         :class="['pb-3 font-bold text-base transition-all duration-200 border-b-2', 
           currentTab === 'report' ? 'text-indigo-600 border-indigo-600' : 'text-slate-500 border-transparent hover:text-indigo-500']"
       >
-        ២. លទ្ធផលវត្តមានប្រចាំខែ
+        ២. លទ្ធផលវត្តមានប្រចាំឆ្នាំ
       </button>
     </div>
 
