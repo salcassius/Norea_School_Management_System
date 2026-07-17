@@ -1,5 +1,5 @@
 <template>
-  <div class="font-[Battambang] p-6 min-h-screen bg-slate-50/50">
+  <div class="font-[Battambang] p-2 sm:p-2 min-h-screen bg-slate-50/50">
     <!-- Filter bar -->
     <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap gap-4 items-end">
       <div class="flex-1 min-w-[180px]">
@@ -63,10 +63,10 @@
               <td class="p-3 text-sm text-center font-bold text-indigo-700">{{ student.rank }}</td>
               <td class="p-3 text-sm text-center font-bold"
                 :class="getRemarkKh(calculateAverage(student)) === 'ធ្លាក់' ? 'text-rose-600' : 'text-green-600'">
-                {{ getRemarkKh(calculateAverage(student)) }}
+                {{ getGradeKh(calculateAverage(student)) }}
               </td>
               <td class="p-3 text-[15px] text-center font-bold" :class="getResult(student).color">
-                {{ getResult(student).text }}
+                {{ getRemarkKh(calculateAverage(student)) }}
               </td>
             </tr>
           </tbody>
@@ -76,12 +76,12 @@
       <!-- Sticky export bar -->
       <div class="sticky bottom-0 z-20 p-4 border-t border-slate-200 bg-slate-50 flex flex-wrap justify-end gap-3 shadow-[0_-2px_6px_rgba(0,0,0,0.05)]">
         <button @click="exportExcel"
-          class="bg-white border border-green-600 text-green-700 px-5 py-2.5 rounded-xl font-bold hover:bg-green-50 active:scale-[0.98] transition-all">
-          នាំចេញ Excel
+          class="bg-white border border-green-600 text-green-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+        ទាញយក Excel
         </button>
         <button @click="exportPDF"
-          class="bg-white border border-red-600 text-red-700 px-5 py-2.5 rounded-xl font-bold hover:bg-red-50 active:scale-[0.98] transition-all">
-          នាំចេញ PDF
+          class="bg-white border border-red-600 text-red-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+        ទាញយក PDF
         </button>
       </div>
     </div>
@@ -96,7 +96,7 @@
         <span class="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-sm font-bold">
           ចំនួនសិស្សសរុប {{ rankedResults.length }} នាក់
         </span>
-        <span class=" py-1.5 rounded-full bg-pink-50 text-pink-700 text-sm font-bold">
+        <span class="px-3 py-1.5 rounded-full bg-pink-50 text-pink-700 text-sm font-bold">
           ស្រី {{ totalFemaleCount }} នាក់
         </span>
         <span class="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-sm font-bold">
@@ -111,7 +111,7 @@
         <div v-for="row in remarkBreakdown" :key="row.remark"
           class="flex items-center justify-flex gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-100">
           <span class="text-sm font-bold text-slate-700">{{ row.remark }}</span>
-          <span class="text-1xs text-slate-600 whitespace-nowrap">{{ row.total }} នាក់ (ស្រី {{ row.female }})</span>
+          <span class="text-[14px] text-slate-600 whitespace-nowrap">{{ row.total }} នាក់ (ស្រី {{ row.female }})</span>
         </div>
       </div>
     </div>
@@ -136,7 +136,7 @@
       </div>
     </div>
 
-    <!-- ផ្នែកលាក់សម្រាប់បង្កើត PDF ជាទម្រង់លិខិតបទដ្ឋានផ្លូវការ (ក្បាលក្រដាស់រាជរដ្ឋាភិបាល) -->
+    <!-- ផ្នែកលាក់សម្រាប់បង្កើត PDF ជាទម្រង់លិខិតបទដ្ឋានផ្លូវការ -->
     <div ref="printArea" class="pdf-export-area">
       <div class="doc-header">
         <p class="kingdom-title">ព្រះរាជាណាចក្រកម្ពុជា</p>
@@ -172,31 +172,30 @@
         </thead>
         <tbody>
           <tr v-for="(student, index) in rankedResults" :key="'pdf-' + student.id">
-            <td>{{ toKhmerNumber(index + 1) }}</td>
+            <td>{{ index + 1 }}</td>
             <td style="text-align:left">{{ student.name_kh }}</td>
             <td>{{ getGenderKh(student.gender) }}</td>
-            <td>{{ toKhmerNumber(calculateAverage(student)) }}</td>
-            <td>{{ toKhmerNumber(student.rank) }}</td>
+            <td>{{ calculateAverage(student) }}</td>
+            <td>{{ student.rank }}</td>
             <td>{{ getGradeKh(calculateAverage(student)) }}</td>
-            <td>{{ getResult(student).text }}</td>
+            <td>{{ getRemarkKh(calculateAverage(student)) }}</td>
           </tr>
         </tbody>
       </table>
 
       <div class="doc-summary">
         <strong>
-          សរុបចំនួនសិស្ស៖ {{ toKhmerNumber(rankedResults.length) }} នាក់
+          សរុបចំនួនសិស្ស៖ {{ rankedResults.length }} នាក់
           &nbsp;&nbsp;&nbsp;&nbsp;
-          ស្រីចំនួន៖ {{ toKhmerNumber(totalFemaleCount) }} នាក់
+          ស្រីចំនួន៖ {{ totalFemaleCount }} នាក់
         </strong>
       </div>
 
-      <!-- គ្រប់កម្រិត total ទាំងអស់ ជា ២ជួរ ហើយចន្លោះនៃ ២ជួរនៅជិតគ្នា -->
       <div class="doc-remarks" v-if="remarkBreakdown.length">
         <div class="remark-item" v-for="row in remarkBreakdown" :key="row.remark">
-          {{ row.remark }}៖ {{ toKhmerNumber(row.total) }} នាក់
+          {{ row.remark }}៖ {{ row.total }} នាក់
           &nbsp;&nbsp;
-          ស្រី {{ toKhmerNumber(row.female) }} នាក់
+          ស្រី {{ row.female }} នាក់
         </div>
       </div>
 
@@ -226,9 +225,11 @@ defineOptions({ name: 'ReportResult' })
 
 // Fixed list of exam type options
 const EXAM_TYPES = ['ប្រចាំខែ', 'ឆមាស', 'ប្រចាំឆ្នាំ']
-// Average (out of 100) needed to be considered "ជាប់" (passing)
-const PASS_MARK = 50
-// លំដាប់និទ្ទេស/មូលវិចារ ប្រើសម្រាប់ការបូកសរុបតាមភេទ (គ្រប់កម្រិតទាំងអស់ តាមលំដាប់បង្ហាញ)
+
+// Average (out of 50) needed to be considered "ជាប់" (passing)
+const PASS_MARK = 25
+
+// លំដាប់និទ្ទេស/មូលវិចារ
 const REMARK_ORDER = ['ល្អប្រសើរ', 'ល្អណាស់', 'ល្អ', 'ល្អបង្គួរ', 'មធ្យម', 'ធ្លាក់']
 
 // --- Shared data ---
@@ -247,11 +248,9 @@ const isLoadingResults = ref(false)
 const printArea = ref(null)
 const hasViewedResult = ref(false)
 
-// អាចកែសម្រួលឈ្មោះការិយាល័យ/សាលារបស់អ្នកនៅទីនេះ
 const ministryLine1 = ref('មន្ទីរអប់រំ យុវជន និងកីឡាខេត្តបាត់ដំបង')
 const ministryLine2 = ref('អនុវិទ្យាល័យ នរា')
 
-// Helper: unwrap API responses that may come as [...] or { data: [...] }
 const unwrapArray = (payload) => {
   if (Array.isArray(payload)) return payload
   if (Array.isArray(payload?.data)) return payload.data
@@ -259,7 +258,6 @@ const unwrapArray = (payload) => {
   return []
 }
 
-// Exams offered in the report dropdown must match BOTH the selected class and the selected type
 const examsForReport = computed(() => exams.value.filter(e =>
   e.type === reportSelectedType.value &&
   (!reportSelectedClass.value || e.class_id === reportSelectedClass.value || !e.class_id)
@@ -272,7 +270,6 @@ const selectedClassLabel = computed(() => {
   return cls ? `${cls.grade_level}${cls.name}` : ''
 })
 
-// ឈ្មោះគ្រូបន្ទប់ថ្នាក់ (ព្យាយាមទាញពីទំនាក់ទំនង teacher, បន្ទាប់មករក teacher_name, ចុងក្រោយ teacher_id ជា fallback)
 const selectedClassTeacherName = computed(() => {
   const cls = selectedClassObj.value
   if (!cls) return ''
@@ -284,7 +281,6 @@ const selectedExamLabel = computed(() => {
   return exam ? exam.name : ''
 })
 
-// ចំណងជើងឯកសារពេញ៖ ប្រើសម្រាប់ទាំងចំណងជើងក្នុងឯកសារ និងឈ្មោះឯកសារពេលទាញយក
 const reportTitle = computed(() => {
   const parts = ['បញ្ជីលទ្ធផលប្រឡង']
   if (selectedExamLabel.value) parts.push(selectedExamLabel.value)
@@ -292,37 +288,58 @@ const reportTitle = computed(() => {
   return parts.join(' ')
 })
 
-// ធ្វើអោយឈ្មោះឯកសារមានសុវត្ថិភាព (ដកតួអក្សរដែលប្រព័ន្ធឯកសារមិនអនុញ្ញាត)
 const sanitizeFileName = (name) => name.replace(/[\\/:*?"<>|]/g, '-').trim()
-
-const toKhmerNumber = (num) => {
-  const map = { '0': '០', '1': '១', '2': '២', '3': '៣', '4': '៤', '5': '៥', '6': '៦', '7': '៧', '8': '៨', '9': '៩' }
-  return String(num).replace(/[0-9]/g, (s) => map[s])
-}
 
 const resetReportExamSelection = () => { reportSelectedExam.value = ''; examResults.value = [] }
 
-const calculateTotal = (student) => Object.values(student.scores || {}).reduce((acc, curr) => acc + (Number(curr) || 0), 0)
+// =========================================================================
+// ✅ យន្តការគណនាមធ្យមភាគដោយផ្អែកលើមេគុណមុខវិជ្ជា (អតិបរមា ៥០)
+// =========================================================================
 
-const calculateAverage = (student) => {
-  let totalScore = 0
-  let totalMax = 0
-  subjects.value.forEach(subject => {
-    totalScore += Number(student.scores?.[subject.id] || 0)
-    totalMax += Number(subject.max_score)
-  })
-  if (totalMax === 0) return 0
-  return ((totalScore / totalMax) * 100).toFixed(2)
+const getSubjectCoef = (subjectName) => {
+  if (!subjectName) return 1
+  const name = subjectName.trim()
+  if (name.includes('គណិត') || name.includes('ខ្មែរ')) return 2
+  return 1
 }
 
+const totalCoefficient = computed(() => {
+  return subjects.value.reduce((total, sub) => total + getSubjectCoef(sub.name), 0)
+})
+
+const calculateTotal = (student) => {
+  const scores = student.scores || {}
+
+  return subjects.value.reduce((total, subject) => {
+    return total + (Number(scores[subject.id]) || 0)
+  }, 0)
+}
+
+const calculateAverage = (student) => {
+  const coef = totalCoefficient.value || 1
+  return (calculateTotal(student) / coef).toFixed(2)
+}
+
+// Map មធ្យមភាគ (៥០) ទៅជានិទ្ទេស (A-F)
 const getGradeKh = (avg) => {
   avg = Number(avg)
-  if (avg >= 90) return 'A'
-  if (avg >= 80) return 'B'
-  if (avg >= 70) return 'C'
-  if (avg >= 60) return 'D'
-  if (avg >= 50) return 'E'
+  if (avg >= 45) return 'A'
+  if (avg >= 40) return 'B'
+  if (avg >= 35) return 'C'
+  if (avg >= 30) return 'D'
+  if (avg >= 25) return 'E'
   return 'F'
+}
+
+// Map មធ្យមភាគ (៥០) ទៅជាមូលវិចារ
+const getRemarkKh = (avg) => {
+  avg = Number(avg)
+  if (avg >= 45) return 'ល្អប្រសើរ'
+  if (avg >= 40) return 'ល្អណាស់'
+  if (avg >= 35) return 'ល្អ'
+  if (avg >= 30) return 'ល្អបង្គួរ'
+  if (avg >= 25) return 'មធ្យម'
+  return 'ធ្លាក់'
 }
 
 const getGenderKh = (gender) => {
@@ -335,24 +352,12 @@ const getGenderKh = (gender) => {
 
 const isFemale = (gender) => getGenderKh(gender) === 'ស្រី'
 
-const getRemarkKh = (avg) => {
-  avg = Number(avg)
-  if (avg >= 90) return 'ល្អប្រសើរ'
-  if (avg >= 80) return 'ល្អណាស់'
-  if (avg >= 70) return 'ល្អ'
-  if (avg >= 60) return 'ល្អបង្គួរ'
-  if (avg >= 50) return 'មធ្យម'
-  return 'ធ្លាក់'
-}
-
-// Pass/fail based on the pass mark (average out of 100)
 const getResult = (student) => {
   const avg = Number(calculateAverage(student))
   if (avg >= PASS_MARK) return { text: 'ជាប់', color: 'text-emerald-600' }
   return { text: 'ធ្លាក់', color: 'text-rose-700' }
 }
 
-// Ranks students by total score, handling ties with standard competition ranking (1,2,2,4...)
 const rankedResults = computed(() => {
   const sorted = [...examResults.value].sort((a, b) => calculateTotal(b) - calculateTotal(a))
   let rank = 0
@@ -369,14 +374,11 @@ const rankedResults = computed(() => {
   })
 })
 
-// ចំនួនសិស្សស្រីសរុប
 const totalFemaleCount = computed(() => rankedResults.value.filter(s => isFemale(s.gender)).length)
 
-// ជាប់/ធ្លាក់សរុប (គណនាពី calculateAverage ដូចគ្នានឹងតារាង មិនមែនពី s.avg ដែលមិនមាន)
 const countPass = computed(() => rankedResults.value.filter(s => Number(calculateAverage(s)) >= PASS_MARK).length)
 const countFail = computed(() => rankedResults.value.filter(s => Number(calculateAverage(s)) < PASS_MARK).length)
 
-// បូកសរុបចំនួនសិស្ស (សរុប + ស្រី) តាមមូលវិចារ "គ្រប់កម្រិតទាំងអស់" សូម្បីតែកម្រិតគ្មានសិស្ស (០ នាក់) ក៏បង្ហាញដែរ
 const remarkBreakdown = computed(() => {
   const counts = {}
   REMARK_ORDER.forEach(remark => { counts[remark] = { total: 0, female: 0 } })
@@ -410,11 +412,11 @@ const fetchExamResults = async () => {
     const list = unwrapArray(res.data)
 
     examResults.value = list.map(row => ({
-      id: row.student_id,
-      name_kh: row.student?.name_kh || '',
-      gender: row.student?.gender || '',
-      scores: row.scores || row.subject_scores || {}
-    }))
+  id: row.student_id,
+  name_kh: row.student?.name_kh || '',
+  gender: row.student?.gender || '',
+  scores: row.scores || {}
+}))
   } catch (err) {
     console.error('fetchExamResults failed:', err)
     loadError.value = 'មានបញ្ហាក្នុងការទាញយកលទ្ធផលប្រឡង'
@@ -423,7 +425,7 @@ const fetchExamResults = async () => {
   }
 }
 
-// ----- ម៉ូតបែបលិខិតបទដ្ឋាន សម្រាប់ Excel (ដូចគ្នានឹង PDF) -----
+// ----- ម៉ូតបែបលិខិតបទដ្ឋាន សម្រាប់ Excel -----
 const THIN_BORDER = { style: 'thin', color: { rgb: '000000' } }
 const ALL_BORDERS = { top: THIN_BORDER, bottom: THIN_BORDER, left: THIN_BORDER, right: THIN_BORDER }
 
@@ -461,17 +463,14 @@ const remarkLineStyle = {
   font: { name: 'Khmer OS Battambang', sz: 11 },
   alignment: { horizontal: 'left', vertical: 'center' },
 }
-// ជួរកាលបរិច្ឆេទ (ខាងស្តាំ) ប្រើពុម្ពអក្សរធម្មតា Battambang
 const dateLineStyle = {
   font: { name: 'Khmer OS Battambang', sz: 12 },
   alignment: { horizontal: 'right', vertical: 'center' },
 }
-// ចំណងជើងហត្ថលេខាខាងស្តាំ (គ្រូបន្ទប់ថ្នាក់) ប្រើពុម្ពអក្សរ Moul
 const dateMoulRightStyle = {
   font: { name: 'Khmer OS Muol Light', sz: 12 },
   alignment: { horizontal: 'right', vertical: 'center' },
 }
-// ប្លុកខាងឆ្វេង (បានឃើញ និងឯកភាព / នាយកសាលា) ប្រើពុម្ពអក្សរ Moul កណ្តាល
 const approvalMoulStyle = {
   font: { name: 'Khmer OS Muol Light', sz: 12 },
   alignment: { horizontal: 'center', vertical: 'center' },
@@ -483,7 +482,7 @@ const styleCell = (ws, r, c, style) => {
   ws[addr].s = style
 }
 
-// ----- Export: Excel (ជាទម្រង់ក្បាលក្រដាស់រាជរដ្ឋាភិបាល ដូចគ្នានឹង PDF) -----
+// ----- Export: Excel -----
 const exportExcel = () => {
   if (rankedResults.value.length === 0) return
 
@@ -503,13 +502,13 @@ const exportExcel = () => {
   const tableRows = rankedResults.value.map((student, index) => {
     const avg = calculateAverage(student)
     return [
-      toKhmerNumber(index + 1),
+      index + 1,
       student.name_kh,
       getGenderKh(student.gender),
-      toKhmerNumber(avg),
-      toKhmerNumber(student.rank),
+      avg,
+      student.rank,
       getGradeKh(avg),
-      getResult(student).text,
+      getRemarkKh(avg),
     ]
   })
 
@@ -528,7 +527,7 @@ const exportExcel = () => {
   pushRow([])
 
   const summaryRowIdx = pushRow([
-    `សរុបចំនួនសិស្ស៖ ${toKhmerNumber(rankedResults.value.length)} នាក់    ស្រីចំនួន៖ ${toKhmerNumber(totalFemaleCount.value)} នាក់    សិស្សជាប់៖ ${toKhmerNumber(countPass.value)} នាក់    សិស្សធ្លាក់៖ ${toKhmerNumber(countFail.value)} នាក់`
+    `សរុបចំនួនសិស្ស៖ ${rankedResults.value.length} នាក់    ស្រីចំនួន៖ ${totalFemaleCount.value} នាក់    សិស្សជាប់៖ ${countPass.value} នាក់    សិស្សធ្លាក់៖ ${countFail.value} នាក់`
   ])
   styleQueue.push({ r: summaryRowIdx, c: 0, style: totalStyle })
 
@@ -538,8 +537,8 @@ const exportExcel = () => {
     const left = remarkBreakdown.value[i]
     const right = remarkBreakdown.value[i + 1]
 
-    const leftText = left ? `${left.remark}៖ ${toKhmerNumber(left.total)} នាក់  ស្រី ${toKhmerNumber(left.female)} នាក់` : ''
-    const rightText = right ? `${right.remark}៖ ${toKhmerNumber(right.total)} នាក់  ស្រី ${toKhmerNumber(right.female)} នាក់` : ''
+    const leftText = left ? `${left.remark}៖ ${left.total} នាក់  ស្រី ${left.female} នាក់` : ''
+    const rightText = right ? `${right.remark}៖ ${right.total} នាក់  ស្រី ${right.female} នាក់` : ''
 
     const rowValues = []
     rowValues[0] = leftText
@@ -621,7 +620,6 @@ const exportExcel = () => {
 
   ws['!rows'] = [{ hpt: 24 }]
 
-  // Portrait page setup (this report has few columns, so portrait fits comfortably)
   ws['!pageSetup'] = { orientation: 'portrait', fitToWidth: 1, fitToHeight: 0 }
   ws['!printOptions'] = { horizontalCentered: true }
   ws['!margins'] = { left: 0.5, right: 0.5, top: 0.6, bottom: 0.6, header: 0.3, footer: 0.3 }
@@ -631,7 +629,7 @@ const exportExcel = () => {
   XLSX.writeFile(wb, `${sanitizeFileName(reportTitle.value)}.xlsx`)
 }
 
-// ----- Export: PDF (ជាទម្រង់ក្បាលក្រដាស់រាជរដ្ឋាភិបាល ដោយប្រើ html2pdf.js) -----
+// ----- Export: PDF -----
 const exportPDF = async () => {
   if (rankedResults.value.length === 0) return
   if (!printArea.value) return

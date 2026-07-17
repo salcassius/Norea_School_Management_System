@@ -1,1 +1,272 @@
 @import "tailwindcss";
+
+/* ===============================================
+   Mobile-First Responsive Design System
+   =============================================== */
+
+/* Base Typography - Responsive */
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply font-[Battambang] antialiased;
+  }
+
+  /* Responsive heading sizes */
+  h1 {
+    @apply text-2xl md:text-3xl lg:text-4xl;
+  }
+
+  h2 {
+    @apply text-xl md:text-2xl lg:text-3xl;
+  }
+
+  h3 {
+    @apply text-lg md:text-xl lg:text-2xl;
+  }
+
+  /* Responsive spacing defaults */
+  input,
+  select,
+  textarea {
+    @apply focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all;
+  }
+}
+
+/* ===============================================
+   Custom Scrollbar Styles
+   =============================================== */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ===============================================
+   Animation Utilities
+   =============================================== */
+
+@layer components {
+  /* Toast Animations */
+  .toast-slide-enter-active,
+  .toast-slide-leave-active {
+    @apply transition-all duration-300;
+  }
+
+  .toast-slide-enter-from,
+  .toast-slide-leave-to {
+    @apply translate-x-full opacity-0;
+  }
+
+  /* Modal Animations */
+  .modal-fade-enter-active,
+  .modal-fade-leave-active {
+    @apply transition-opacity duration-200;
+  }
+
+  .modal-fade-enter-from,
+  .modal-fade-leave-to {
+    @apply opacity-0;
+  }
+
+  .modal-scale-enter-active,
+  .modal-scale-leave-active {
+    @apply transition-all duration-200;
+  }
+
+  .modal-scale-enter-from,
+  .modal-scale-leave-to {
+    @apply scale-95 opacity-0;
+  }
+
+  /* Button Hover Effects */
+  /* .btn-hover-effect {
+    @apply transition-all duration-200 active:scale-95 focus:outline-none;
+  } */
+
+  /* Touch-friendly target size (minimum 44px for mobile) */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Responsive padding container */
+  .container-px {
+    @apply px-3 md:px-6 lg:px-8;
+  }
+
+  /* Responsive padding Y */
+  .container-py {
+    @apply py-4 md:py-6 lg:py-8;
+  }
+
+  /* Card responsive styles */
+  .card-responsive {
+    @apply bg-white rounded-lg md:rounded-xl lg:rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+}
+
+/* ===============================================
+   Responsive Grid Utilities
+   =============================================== */
+
+@layer components {
+  /* Auto-fit grid for cards */
+  .grid-auto-fit {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 lg:gap-6;
+  }
+
+  /* Sidebar responsive */
+  .sidebar-responsive {
+    @apply fixed lg:static inset-y-0 left-0 z-40 lg:z-20 w-64 transition-transform duration-300 -translate-x-full lg:translate-x-0;
+  }
+
+  .sidebar-overlay {
+    @apply fixed inset-0 z-30 bg-black/40 lg:hidden;
+  }
+
+  /* Mobile menu toggle */
+  .menu-toggle {
+    @apply lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors;
+  }
+}
+
+/* ===============================================
+   Responsive Typography Utilities
+   =============================================== */
+
+@layer components {
+  /* Responsive text sizes */
+  .text-sm-responsive {
+    @apply text-xs md:text-sm lg:text-base;
+  }
+
+  .text-base-responsive {
+    @apply text-sm md:text-base lg:text-lg;
+  }
+
+  .text-lg-responsive {
+    @apply text-base md:text-lg lg:text-xl;
+  }
+
+  .text-xl-responsive {
+    @apply text-lg md:text-xl lg:text-2xl;
+  }
+
+  /* Responsive icon sizes */
+  .icon-sm {
+    @apply w-4 h-4 md:w-5 md:h-5;
+  }
+
+  .icon-md {
+    @apply w-5 h-5 md:w-6 md:h-6;
+  }
+
+  .icon-lg {
+    @apply w-6 h-6 md:w-8 md:h-8;
+  }
+}
+
+/* ===============================================
+   Responsive Button Styles
+   =============================================== */
+
+@layer components {
+  .btn-responsive {
+    @apply px-3 md:px-4 lg:px-5
+           py-2 md:py-2.5
+           text-xs md:text-sm lg:text-base
+           rounded-lg md:rounded-xl
+           transition-all duration-200
+           active:scale-95
+           focus:outline-none;
+  }
+
+  .btn-sm-responsive {
+    @apply px-2 md:px-3
+           py-1.5 md:py-2
+           text-xs md:text-sm
+           rounded-lg
+           transition-all duration-200
+           active:scale-95
+           focus:outline-none;
+  }
+}
+
+/* ===============================================
+   Mobile-First Layout Utilities
+   =============================================== */
+
+@layer components {
+  /* Responsive container max-widths */
+  .container-mobile {
+    @apply max-w-xs mx-auto;
+  }
+
+  .container-tablet {
+    @apply max-w-2xl mx-auto;
+  }
+
+  .container-desktop {
+    @apply max-w-6xl mx-auto;
+  }
+
+  /* Safe area padding for notch devices */
+  /* .safe-area {
+    @apply pt-safe pl-safe pr-safe pb-safe;
+  } */
+
+  .safe-area {
+  padding-top: env(safe-area-inset-top);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+}
+}
+
+/* ===============================================
+   Print Styles for PDF Export
+   =============================================== */
+
+@media print {
+  @page {
+    size: A3 landscape;
+    margin: 10mm;
+  }
+
+  body {
+    @apply bg-white;
+  }
+
+  /* .pdf-export-area {
+    @apply block !important;
+  }
+
+  .no-print {
+    @apply hidden !important;
+  } */
+
+  .pdf-export-area {
+  display: block !important;
+}
+
+.no-print {
+  display: none !important;
+}
+}

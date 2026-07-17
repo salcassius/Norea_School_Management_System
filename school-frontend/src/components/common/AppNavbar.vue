@@ -1,11 +1,17 @@
 <template>
   <div class="relative w-full">
-    <header class="font-[Battambang] h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-[50]">
-      
-      <div class="flex items-center gap-4 flex-1">
-        <button @click="emit('toggle')" class="p-2 rounded-xl hover:bg-slate-100 transition-colors">
+    <header
+      class="font-[Battambang] h-16 bg-white border-b border-slate-200 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30">
+
+      <div class="flex items-center gap-2 sm:gap-4 flex-1">
+        <button @click="emit('toggle')" class="p-2 rounded-xl hover:bg-slate-100 transition-colors shrink-0">
           <Menu class="w-5 h-5 text-slate-600" />
         </button>
+        <!-- <div class="hidden md:flex items-center relative max-w-md w-full">
+          <Search class="absolute left-3 w-4 h-4 text-slate-400" />
+          <input v-model="searchQuery" type="text" placeholder="ស្វែងរកអ្វីមួយ..."
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+        </div> -->
       </div>
 
       <div class="flex items-center gap-4">
@@ -18,7 +24,7 @@
             </div>
             <div class="text-left hidden lg:block leading-none">
               <p class="text-sm font-bold text-slate-700">{{ user.name || 'អ្នកប្រើប្រាស់' }}</p>
-              <p class="text-[11px] text-slate-400 mt-1">{{ user.email }}</p>
+              <p class="text-[13px] text-slate-500 mt-1">{{ user.email }}</p>
             </div>
             <!-- <ChevronDown :class="['w-4 h-4 text-slate-400 transition-transform', isDropdownOpen ? 'rotate-180' : '']" /> -->
           </button>
@@ -33,9 +39,9 @@
             <hr class="my-1 border-slate-50" />
 
             <button 
-              @click="handleLogout"
+              @mousedown.prevent.stop="handleLogout"
               type="button"
-              class="w-full flex items-center gap-3 px-4 py-2 text-sm text-rose-500 hover:bg-rose-50 font-medium cursor-pointer transition-colors relative z-[110]"
+              class="w-full flex items-center gap-3 px-4 py-2 text-sm text-rose-500 hover:bg-rose-50 font-medium cursor-pointer transition-colors"
             >
               <LogOut class="w-4 h-4" />
               <span>ចាកចេញ</span>
@@ -45,10 +51,7 @@
       </div>
     </header>
 
-    <div v-if="isDropdownOpen" 
-      @click="isDropdownOpen = false" 
-      class="fixed inset-0 z-[80] bg-black/5">
-    </div>
+    <div v-if="isDropdownOpen" @click="isDropdownOpen = false" class="fixed inset-0 z-[90] bg-transparent"></div>
   </div>
 </template>
 

@@ -24,7 +24,7 @@
         <!-- Inline error message -->
         <div v-if="errorMessage" class="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-600 text-xs font-medium rounded-xl px-3.5 py-2.5">
           <AlertCircle class="w-4 h-4 mt-0.5 shrink-0" />
-          <span>{{ errorMessage }}</span>
+          <span class="whitespace-pre-line">{{ errorMessage }}</span>
         </div>
 
         <div class="space-y-1.5">
@@ -39,10 +39,16 @@
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-600 ml-0.5">គ្រូបង្រៀន <span class="text-rose-500">*</span></label>
+          <label class="text-xs font-bold text-slate-600 ml-0.5">
+            គ្រូបង្រៀន <span class="text-rose-500">*</span>
+          </label>
           <div class="relative">
-            <UserRound class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400" />
-            <select v-model="form.teacher_id" class="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 pl-11 pr-10 text-sm font-medium text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all appearance-none cursor-pointer" required>
+            <UserRound
+              :class="['absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5', isTeacherFieldInvalid ? 'text-rose-400' : 'text-slate-400']" />
+            <select v-model="form.teacher_id" @change="errorMessage = ''"
+              :class="['w-full bg-slate-50/50 border rounded-xl py-2.5 pl-11 pr-10 text-sm font-medium text-slate-700 outline-none focus:ring-4 transition-all appearance-none cursor-pointer',
+                isTeacherFieldInvalid ? 'border-rose-300 focus:ring-rose-500/10 focus:border-rose-500' : 'border-slate-200 focus:ring-indigo-500/10 focus:border-indigo-500']"
+              required>
               <option v-for="tc in teachers" :key="tc.id" :value="tc.id">
                 {{ tc.name_kh || tc.name }} {{ tc.name_en ? `(${tc.name_en})` : '' }}
               </option>
@@ -81,21 +87,47 @@ const props = defineProps({
   teachers: { type: Array, default: () => [] }
 })
 
-const emit = defineEmits(['close', 'saved'])
+const emit = defineEmits(['close', 'saved', 'error'])
 const form = ref({ ...props.entryData })
 const isSubmitting = ref(false)
 const errorMessage = ref('')
+// ✅ សម្គាល់ថាតើ Error បច្ចុប្បន្ន ទាក់ទងទៅនឹង "គ្រូបង្រៀន" ដែរឬទេ (ដើម្បីធ្វើ highlight field)
+const isTeacherFieldInvalid = ref(false)
 
 const handleSubmit = async () => {
   isSubmitting.value = true
   errorMessage.value = ''
+  isTeacherFieldInvalid.value = false
   try {
     await api.put(`/schedules/${form.value.id}`, form.value)
     emit('saved')
     emit('close')
   } catch (error) {
     console.error(error)
-    errorMessage.value = error.response?.data?.message || 'មានកំហុសក្នុងការកែសម្រួលកាលវិភាគ! សូមពិនិត្យមើល ID ឬ Connection។'
+
+    if (error.response && error.response.status === 422) {
+      const responseData = error.response.data
+      const validationErrors = responseData?.errors
+
+      if (validationErrors) {
+        // ករណី Laravel Validation ធម្មតា បដិសេធ (ឧ. Field ទទេ, ខុសទម្រង់)
+        errorMessage.value = Object.values(validationErrors).flat().join('\n')
+      } else if (responseData?.message) {
+        // ✅ ករណីលក្ខខណ្ឌជំនួញរបស់យើង (ឧ. គ្រូបង្រៀនជាន់ម៉ោង, ថ្នាក់ជាន់ម៉ោង)
+        errorMessage.value = responseData.message
+
+        if (responseData.message.includes('គ្រូ')) {
+          isTeacherFieldInvalid.value = true
+        }
+      } else {
+        errorMessage.value = 'ទិន្នន័យមិនត្រឹមត្រូវ សូមពិនិត្យមើលព័ត៌មានដែលបានបំពេញ'
+      }
+    } else {
+      errorMessage.value = error.response?.data?.message || 'មានកំហុសក្នុងការកែសម្រួលកាលវិភាគ! សូមពិនិត្យមើល ID ឬ Connection។'
+    }
+
+    // ✅ ជូនដំណឹងទៅ Component មេផងដែរ (សម្រាប់ Toast)
+    emit('error', errorMessage.value)
   } finally {
     isSubmitting.value = false
   }

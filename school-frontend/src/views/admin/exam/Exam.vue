@@ -20,9 +20,9 @@
       <button @click="currentTab = 'input'" :class="tabClass('input')">
         ២. ស្រង់ពិន្ទុសិស្ស
       </button>
-      <!-- <button @click="currentTab = 'report'" :class="tabClass('report')">
+      <button @click="currentTab = 'report'" :class="tabClass('report')">
         ៣. លទ្ធផលប្រឡង
-      </button> -->
+      </button>
     </div>
 
     <!-- ============== TAB 1: EXAM LIST ============== -->
@@ -75,18 +75,11 @@
           <div v-if="isLoading" class="p-10 text-center text-sm text-slate-500">កំពុងផ្ទុកទិន្នន័យ...</div>
           <table v-else class="w-full text-left">
             <thead>
-              <tr class="bg-slate-50/50">
-                <th class="px-6 py-4 text-[15px] font-bold text-slate-600 uppercase">ឈ្មោះការប្រឡង</th>
-                <th class="px-6 py-4 text-[15px] font-bold text-slate-600 uppercase">ប្រភេទ</th>
-                <th class="px-6 py-4 text-[15px] font-bold text-slate-600 uppercase">កាលបរិច្ឆេទ</th>
-                <th class="px-6 py-4 text-[15px] font-bold text-slate-600 uppercase text-right">សកម្មភាព</th>
-              </tr>
-
-              <!-- Custom Line Under Header -->
-              <tr>
-                <td colspan="4" class="px-6">
-                  <div class="h-px bg-gradient-to-r from-slate-400 via-slate-400 to-slate-400"></div>
-                </td>
+              <tr class="bg-slate-50/50 border-b border-slate-100">
+                <th class="px-6 py-4 text-[13px] font-bold text-slate-600 uppercase">ឈ្មោះការប្រឡង</th>
+                <th class="px-6 py-4 text-[13px] font-bold text-slate-600 uppercase">ប្រភេទ</th>
+                <th class="px-6 py-4 text-[13px] font-bold text-slate-600 uppercase">កាលបរិច្ឆេទ</th>
+                <th class="px-6 py-4 text-[13px] font-bold text-slate-600 uppercase text-right">សកម្មភាព</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -115,10 +108,16 @@
         </div>
       </div>
     </div>
+
+    <!-- ============== TAB 2: SCORE ENTRY ============== -->
+    <!-- Delegated to its own self-contained component (fetches its own classes/subjects/exams,
+         and handles its own government-letterhead styled, landscape/centered PDF + Excel export). -->
     <div v-if="currentTab === 'input'">
       <ResultInputScore />
     </div>
 
+    <!-- ============== TAB 3: RESULTS REPORT ============== -->
+    <!-- Delegated to its own self-contained component (same pattern as ResultInputScore, portrait export). -->
     <div v-if="currentTab === 'report'">
       <ResultScore />
     </div>
@@ -198,10 +197,10 @@
 import { ref, onMounted, computed } from 'vue'
 import { Plus, Search, ClipboardCheck, Edit3, Trash2, CheckCircle2, XCircle, X, Loader2 } from 'lucide-vue-next'
 import api from '@/services/authService'
-import CreateExamModel from '../admin/create/CreateExamModel.vue'
-import EditExam from '../admin/edite/EditeExam.vue'
-import ResultInputScore from '../admin/report/ReportInput.vue'
-import ResultScore from '../admin/report/ReportResult.vue'
+import CreateExamModel from '../../admin/create/CreateExamModel.vue'
+import EditExam from '../edite/EditeExam.vue'
+import ResultInputScore from './ResultInputScore.vue'
+import ResultScore from './ResultScore.vue'
 
 defineOptions({ name: 'Exam' })
 

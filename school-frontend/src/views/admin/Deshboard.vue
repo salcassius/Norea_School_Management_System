@@ -1,15 +1,15 @@
 <template>
-  <div class="space-y-6 font-[Battambang] pb-10 bg-slate-50/50 min-h-screen p-4 md:p-6">
+  <div class="space-y-6 font-[Battambang] pb-10 bg-slate-50/50 min-h-screen p-3 sm:p-4 md:p-6">
 
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
       <div>
-        <h2 class="text-2xl font-bold text-slate-800 font-[Khmer-[battambang]">ផ្ទាំងគ្រប់គ្រង</h2>
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-800 font-[Battambang]">ផ្ទាំងគ្រប់គ្រង</h2>
         <p class="text-slate-500 text-sm mt-1">ព័ត៌មានសង្ខេបនៃសាលារៀន និងស្ថិតិសំខាន់ៗ</p>
       </div>
 
       <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm w-full md:w-64">
-        <label class="block text-[14px] font-bold text-slate-700 uppercase tracking-wider mb-1">ឆ្នាំសិក្សា</label>
+        <label class="block text-[13px] sm:text-[14px] font-bold text-slate-700 uppercase tracking-wider mb-1">ឆ្នាំសិក្សា</label>
         <select v-model="selectedYearId" @change="fetchDashboardData"
           class="w-full bg-slate-50 border-none text-slate-700 text-sm rounded-lg outline-none cursor-pointer font-bold">
           <option :value="0">គ្រប់ឆ្នាំសិក្សាទាំងអស់</option>
@@ -22,86 +22,93 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
       <div v-for="(stat, index) in statsCards" :key="index" @click="activeStatIndex = index" :class="[
-        'p-5 rounded-2xl border transition-all cursor-pointer shadow-sm flex items-center gap-4',
+        'p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer shadow-sm flex items-center gap-4',
         activeStatIndex === index
           ? 'bg-white border-blue-500 ring-4 ring-blue-50'
           : 'bg-white border-slate-300 hover:border-blue-400'
       ]">
-        <div :class="['p-3 rounded-xl', stat.bgClass]">
+        <div :class="['p-3 rounded-xl shrink-0', stat.bgClass]">
           <component :is="stat.icon" :class="['w-6 h-6', stat.iconClass]" />
         </div>
 
         <div class="overflow-hidden">
-          <p class="text-[14px] text-slate-700 font-medium">{{ stat.title }}</p>
-          <p class="text-xl font-bold text-slate-800">{{ stat.value }}</p>
+          <p class="text-[13px] sm:text-[14px] text-slate-900 font-medium">{{ stat.title }}</p>
+          <p class="text-lg sm:text-xl font-bold text-slate-800">{{ stat.value }}</p>
 
           <!-- Users card: role badges with counts -->
           <div v-if="stat.roles" class="flex gap-1.5 mt-1 flex-wrap">
             <span v-for="role in stat.roles" :key="role.name"
-              :class="['px-2 py-0.5 rounded-md text-[11px] font-bold border', role.class]">
+              :class="['px-1 py-0.5 rounded-md text-[12px] font-bold border', role.class]">
               {{ role.name }} {{ role.count }}
             </span>
           </div>
-          <p v-else-if="stat.subtext" class="text-[12px] text-slate-600 truncate">{{ stat.subtext }}</p>
+          <p v-else-if="stat.subtext" class="text-[13px] sm:text-[14px] text-slate-600 truncate">{{ stat.subtext }}</p>
         </div>
       </div>
     </div>
 
     <!-- Charts Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 mt-6">
 
       <!-- Doughnut Chart: Student Gender -->
-      <div class="lg:col-span-1 bg-white p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/20">
+      <div class="lg:col-span-1 bg-white p-4 sm:p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/20">
         <div class="flex justify-between items-center mb-6">
-          <h4 class="font-bold text-slate-800 text-[16px]">ស្ថិតិសិស្ស</h4>
+          <h4 class="font-bold text-slate-800 text-[15px] sm:text-[16px]">ស្ថិតិសិស្ស</h4>
         </div>
 
-        <div class="h-48 relative flex items-center justify-center">
+        <div class="h-40 sm:h-48 relative flex items-center justify-center">
           <Doughnut v-if="loaded" :data="pieChartData" :options="pieChartOptions" />
-          <div class="absolute text-2xl font-black text-slate-800">{{ statsCards[0].value }}</div>
+          <div class="absolute text-xl sm:text-2xl font-black text-slate-800">{{ statsCards[0].value }}</div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mt-6">
-          <div class="bg-emerald-50/50 p-3 rounded-2xl text-center border border-emerald-100">
-            <div class="text-lg font-black text-emerald-600">{{ pieChartData.datasets[0]?.data[0] || 0 }}</div>
-            <div class="text-[11px] text-emerald-700">សិស្សប្រុស</div>
+        <div class="grid grid-cols-2 gap-3 sm:gap-4 mt-6">
+          <div class="bg-emerald-50/50 p-3 rounded-2xl text-center border border-blue-200">
+            <div class="text-base sm:text-lg font-black text-blue-600">{{ pieChartData.datasets[0]?.data[0] || 0 }}</div>
+            <div class="text-[11px] text-blue-700">សិស្សប្រុស</div>
           </div>
-          <div class="bg-amber-50/50 p-3 rounded-2xl text-center border border-amber-100">
-            <div class="text-lg font-black text-amber-600">{{ pieChartData.datasets[0]?.data[1] || 0 }}</div>
+          <div class="bg-amber-50/50 p-3 rounded-2xl text-center border border-amber-200">
+            <div class="text-base sm:text-lg font-black text-amber-600">{{ pieChartData.datasets[0]?.data[1] || 0 }}</div>
             <div class="text-[11px] text-amber-700">សិស្សស្រី</div>
           </div>
         </div>
       </div>
 
       <!-- Bar Chart: Attendance by Class -->
-      <div class="lg:col-span-3 bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/20">
-        <div class="flex justify-between items-start mb-8">
+      <div class="lg:col-span-3 bg-white p-4 sm:p-6 md:p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/20">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6 sm:mb-8">
           <div>
-            <h4 class="font-bold text-slate-800 text-[16px]">វត្តមានសិស្សតាមថ្នាក់</h4>
-            <p class="text-[14px] text-slate-500">ប្រៀបធៀបសិស្សមកវត្តមាន និងអវត្តមាន</p>
+            <h4 class="font-bold text-slate-800 text-[15px] sm:text-[16px]">វត្តមានសិស្សតាមថ្នាក់</h4>
+            <p class="text-[13px] sm:text-[14px] text-slate-500">ប្រៀបធៀបសិស្សមកវត្តមាន និងអវត្តមាន</p>
           </div>
 
-          <div class="flex items-center gap-4">
+          <div class="flex flex-wrap items-center gap-3 sm:gap-4">
             <div class="flex items-center gap-2">
-              <div class="w-3 h-3 rounded-full bg-[#10b981]"></div>
+              <div class="w-3 h-3 rounded-full bg-[#10b981] shrink-0"></div>
               <span class="text-xs text-slate-500">វត្តមាន</span>
             </div>
             <div class="flex items-center gap-2">
-              <div class="w-3 h-3 rounded-full bg-[#ef4444]"></div>
+              <div class="w-3 h-3 rounded-full bg-[#ed3030] shrink-0"></div>
               <span class="text-xs text-slate-500">អវត្តមាន</span>
+            </div>
+
+             <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-[#f59e0b] shrink-0"></div>
+              <span class="text-xs text-slate-500">មានច្បាប់</span>
             </div>
 
             <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200">
               <input type="date" v-model="selectedDate" @change="fetchDashboardData"
-                class="bg-transparent text-sm text-slate-700 outline-none font-bold cursor-pointer" />
+                class="bg-transparent text-sm text-slate-700 outline-none font-bold cursor-pointer w-[130px] sm:w-auto" />
             </div>
           </div>
         </div>
 
-        <div class="h-80 w-full">
-          <Bar v-if="loaded" :data="barChartData" :options="barChartOptions" />
+        <div class="h-64 sm:h-80 w-full overflow-x-auto">
+          <div class="min-w-[420px] h-full">
+            <Bar v-if="loaded" :data="barChartData" :options="barChartOptions" />
+          </div>
         </div>
       </div>
 
@@ -195,12 +202,19 @@ const barChartOptions = {
     x: { grid: { display: false } }
   }
 }
+ 
 
 const pieChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   cutout: '80%',
   plugins: { legend: { display: false } }
+}
+
+const alignToLabels = (arr, labelCount) => {
+  const safeArr = Array.isArray(arr) ? arr : []
+  if (safeArr.length >= labelCount) return safeArr.slice(0, labelCount)
+  return [...safeArr, ...Array(labelCount - safeArr.length).fill(0)]
 }
 
 // ─── Data Fetching ────────────────────────────────────────────────────────────
@@ -244,7 +258,8 @@ const fetchDashboardData = async () => {
     ]
 
     // Bar chart
-    barChartData.labels = data.chart_classes_labels || []
+    const labels = data.chart_classes_labels || []
+    barChartData.labels = labels
     barChartData.datasets = [
       {
         label: 'វត្តមាន',
@@ -255,10 +270,17 @@ const fetchDashboardData = async () => {
       },
       {
         label: 'អវត្តមាន',
-        backgroundColor: '#ef4444',
+        backgroundColor: '#ed3030',
         borderRadius: 6,
         barThickness: 16,
         data: data.chart_absent_counts || []
+      },
+      {
+        label: 'មានច្បាប់',
+        backgroundColor: '#f59e0b',
+        borderRadius: 6,
+        barThickness: 16,
+        data: alignToLabels(data.chart_excused_counts, labels.length)
       }
     ]
 

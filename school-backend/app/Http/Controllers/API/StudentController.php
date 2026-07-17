@@ -4,11 +4,13 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Student;
+use App\Models\subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 class StudentController extends Controller
 {
@@ -22,6 +24,11 @@ class StudentController extends Controller
         // គាំទ្រការ Filter តាមឆ្នាំសិក្សា
         if ($request->filled('year_id')) {
             $query->where('year_id', $request->year_id);
+        }
+
+        // 💡 Support filtering students by class_id for class detail suggested students
+        if ($request->filled('class_id')) {
+            $query->where('class_id', $request->class_id);
         }
 
         // 💡 បន្ថែមការស្វែងរកសិស្សតាម ឈ្មោះ ឬ លេខកូដសិស្ស (សម្រាប់ Add Student Modal លើ Vue)
@@ -49,8 +56,10 @@ class StudentController extends Controller
                 'name_kh'            => 'required|string|max:255',
                 'name_en'            => 'nullable|string|max:255',
                 'gender'             => 'required|string|in:male,female,other',
-                'password'        => 'required|string|min:6',
-                'email'              => 'required|email|unique:students,email|unique:users,email',
+                // 'password'        => 'required|string|min:6',
+                'password'           => 'nullable|string|min:6',
+                // 'email'              => 'required|email|unique:students,email|unique:users,email',
+                'email' => 'nullable|email|unique:users,email|unique:students,email',
                 'phone'              => 'nullable|string',
                 'status'             => 'nullable|integer',
                 'photo'              => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -84,12 +93,12 @@ class StudentController extends Controller
                 $username = $request->name_en ?? $request->name_kh;
 
                 $user = \App\Models\User::create([
-                    'name'     => $username,
-                    'email'    => $validatedData['email'],
-                    'password' => bcrypt('password'), // 🔒 លេខសម្ងាត់លំនាំដើមសម្រាប់សិស្ស៖ password
-                    'role'     => 'student',          // កំណត់តួនាទីជាសិស្ស
-                    'status'   => $validatedData['status'] ?? 1,
-                ]);
+    'name'     => $username,
+    'email'    => $validatedData['email'] ?? null,
+    'password' => bcrypt('password'),
+    'role'     => 'student',
+    'status'   => $validatedData['status'] ?? 1,
+]);
 
                 // ៣. បញ្ចូល user_id ទៅក្នុងអារេកូដសិស្ស
                 $validatedData['user_id'] = $user->id;
@@ -141,11 +150,16 @@ class StudentController extends Controller
                 return response()->json(['message' => 'រកមិនឃើញថ្នាក់នេះទេ'], 404);
             }
 
-            // ប្រើ Method ដែលមានក្នុង ClassRoom Model (សូមពិនិត្យមើលក្នុង ClassRoom.php ផង)
-            // ប្រសិនបើក្នុង ClassRoom.php អ្នកដាក់ឈ្មោះ students() ត្រូវហៅ students()
+            // Query students via the classroom_student pivot relation so we can
+            // include pivot info (status, year_id, etc.) if needed.
             $students = $classRoom->student()
                 ->with(['user', 'year'])
-                ->get();
+                ->get()
+                ->map(function ($s) {
+                    // expose pivot explicitly on the model for frontend convenience
+                    $s->pivot_data = $s->pivot ?? null;
+                    return $s;
+                });
 
             return response()->json([
                 'success' => true,
@@ -303,6 +317,51 @@ class StudentController extends Controller
         return response()->json(['data' => $students]);
     }
 
+    /**
+ * លុបទិន្នន័យសិស្ស (និងគណនី User ដែលពាក់ព័ន្ធ)
+ */
+public function destroy($id)
+{
+    $student = Student::with(['user'])->find($id);
+
+    if (!$student) {
+        return response()->json([
+            'message' => 'រកមិនឃើញទិន្នន័យសិស្សដែលត្រូវលុបឡើយ'
+        ], 404);
+    }
+
+    try {
+        return DB::transaction(function () use ($student) {
+
+            // ១. លុបឯកសាររូបថត (បើមាន)
+            if ($student->photo) {
+                Storage::disk('public')->delete($student->photo);
+            }
+
+            // ២. រក្សាទុកព័ត៌មាន User ជាមុន មុននឹងលុប Student
+            $user = $student->user;
+
+            // ៣. លុបទិន្នន័យសិស្សពីតារាង students
+            $student->delete();
+
+            // ៤. លុបគណនី User ដែលភ្ជាប់ជាមួយសិស្សនេះ (បើមាន)
+            if ($user) {
+                $user->delete();
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'បានលុបទិន្នន័យសិស្សដោយជោគជ័យ'
+            ], 200);
+        });
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'ការលុបទិន្នន័យសិស្សបរាជ័យ៖ ' . $e->getMessage()
+        ], 500);
+    }
+}
+
 
     // ក្នុង StudentController.php
     public function show($id)
@@ -315,4 +374,345 @@ class StudentController extends Controller
 
         return response()->json($student, 200);
     }
+
+
+    /**
+ * ប្រវត្តិការសិក្សា + លទ្ធផលប្រឡង + វត្តមាន របស់សិស្សម្នាក់
+ */
+public function getStudentHistory($id)
+{
+    try {
+        $student = Student::with(['user', 'year'])->find($id);
+
+        if (!$student) {
+            return response()->json([
+                'message' => 'រកមិនឃើញសិស្ស'
+            ], 404);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | រកឈ្មោះ column ឆ្នាំសិក្សា
+        |--------------------------------------------------------------------------
+        */
+        $yearColumns = Schema::getColumnListing('years');
+
+        $yearNameColumn = collect([
+            'name',
+            'year_name',
+            'title',
+            'label',
+            'year'
+        ])->first(function ($column) use ($yearColumns) {
+            return in_array($column, $yearColumns);
+        }) ?? 'id';
+
+        /*
+        |--------------------------------------------------------------------------
+        | 1. ប្រវត្តិចូលរៀន
+        |--------------------------------------------------------------------------
+        */
+        $enrollments = DB::table('classroom_student')
+            ->join('classes', 'classes.id', '=', 'classroom_student.class_id')
+            ->leftJoin('years', 'years.id', '=', 'classroom_student.year_id')
+            ->where('classroom_student.student_id', $id)
+            ->select(
+                'classroom_student.id',
+                'classes.id as class_id',
+                'classes.name as class_name',
+                'classes.grade_level',
+                "years.{$yearNameColumn} as year_name",
+                'classroom_student.status',
+                'classroom_student.created_at'
+            )
+            ->orderByDesc('classroom_student.created_at')
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2. គណនាមេគុណសរុប
+        |
+        | ត្រូវដូច InputScore.vue:
+        | ខ្មែរ និង គណិត = មេគុណ 2
+        | មុខវិជ្ជាផ្សេង = មេគុណ 1
+        |--------------------------------------------------------------------------
+        */
+        $subjects = Subject::select('id', 'name')->get();
+
+        $totalCoefficient = $subjects->sum(function ($subject) {
+            $subjectName = trim((string) $subject->name);
+
+            if (
+                str_contains($subjectName, 'គណិត') ||
+                str_contains($subjectName, 'ខ្មែរ')
+            ) {
+                return 2;
+            }
+
+            return 1;
+        });
+
+        if ($totalCoefficient <= 0) {
+            $totalCoefficient = 1;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 3. ទាញពិន្ទុតែ subject scores
+        |
+        | សំខាន់: កុំទាញ type = total មកបូកជាមួយ subject score
+        |--------------------------------------------------------------------------
+        */
+        $scoreRows = DB::table('scores')
+            ->join('exams', 'exams.id', '=', 'scores.exam_id')
+            ->join('subjects', 'subjects.id', '=', 'scores.subject_id')
+            ->leftJoin('classes', 'classes.id', '=', 'scores.class_id')
+            ->leftJoin('years', 'years.id', '=', 'classes.year_id')
+            ->where('scores.student_id', $id)
+            ->where('scores.type', 'subject')
+            ->select(
+                'scores.exam_id',
+                'scores.class_id',
+                'scores.subject_id',
+                'scores.score_value',
+                'exams.name as exam_name',
+                'subjects.name as subject_name',
+                'classes.name as class_name',
+                'classes.grade_level',
+                "years.{$yearNameColumn} as year_name"
+            )
+            ->orderByDesc('scores.exam_id')
+            ->orderBy('scores.subject_id')
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 4. ទាញ rank ពី row type = total
+        |
+        | Average មិនយកពី total row ទេ ព្រោះយើងគណនាថ្មីខាងក្រោម។
+        |--------------------------------------------------------------------------
+        */
+        $savedTotals = DB::table('scores')
+            ->where('student_id', $id)
+            ->where('type', 'total')
+            ->select(
+                'exam_id',
+                'class_id',
+                'rank'
+            )
+            ->get()
+            ->keyBy(function ($row) {
+                return $row->exam_id . '-' . $row->class_id;
+            });
+
+        /*
+        |--------------------------------------------------------------------------
+        | 5. រាប់ចំនួនសិស្សក្នុងការប្រឡងនីមួយៗ
+        |--------------------------------------------------------------------------
+        */
+        $studentCounts = DB::table('scores')
+            ->where('type', 'total')
+            ->select(
+                'exam_id',
+                'class_id',
+                DB::raw('COUNT(DISTINCT student_id) as total_students')
+            )
+            ->groupBy('exam_id', 'class_id')
+            ->get()
+            ->keyBy(function ($row) {
+                return $row->exam_id . '-' . $row->class_id;
+            });
+
+        /*
+        |--------------------------------------------------------------------------
+        | 6. រៀបចំ by_exam និង summary
+        |--------------------------------------------------------------------------
+        */
+        $scoresByExam = [];
+        $examSummary = [];
+
+        $groupedScores = $scoreRows->groupBy(function ($row) {
+            return $row->exam_id . '-' . $row->class_id;
+        });
+
+        foreach ($groupedScores as $examClassKey => $rows) {
+            $firstRow = $rows->first();
+
+            if (!$firstRow) {
+                continue;
+            }
+
+            /*
+             * ប្រើ exam name ជា key ដើម្បីត្រូវនឹង DetailStudent.vue
+             */
+            $examName = $firstRow->exam_name;
+
+            /*
+             * ការពារករណីឈ្មោះការប្រឡងដូចគ្នា
+             * តែ class ខុសគ្នា
+             */
+            if (isset($scoresByExam[$examName])) {
+                $examName = $firstRow->exam_name .
+                    ' - ថ្នាក់ទី' .
+                    ($firstRow->grade_level ?? '') .
+                    ($firstRow->class_name ?? '');
+            }
+
+            /*
+             * ពិន្ទុសរុប = បូកតែ subject scores
+             */
+            $totalScore = $rows->sum(function ($row) {
+                return (float) $row->score_value;
+            });
+
+            /*
+             * រូបមន្តដូច inputscore.vue:
+             *
+             * average = totalScore / totalCoefficient
+             */
+            $average = round($totalScore / $totalCoefficient, 2);
+
+            /*
+             * និទ្ទេស និងមូលវិចារ
+             */
+            if ($average >= 45) {
+                $grade = 'A';
+                $remark = 'ល្អប្រសើរ';
+            } elseif ($average >= 40) {
+                $grade = 'B';
+                $remark = 'ល្អណាស់';
+            } elseif ($average >= 35) {
+                $grade = 'C';
+                $remark = 'ល្អ';
+            } elseif ($average >= 30) {
+                $grade = 'D';
+                $remark = 'ល្អបង្គួរ';
+            } elseif ($average >= 25) {
+                $grade = 'E';
+                $remark = 'មធ្យម';
+            } else {
+                $grade = 'F';
+                $remark = 'ធ្លាក់';
+            }
+
+            $savedTotal = $savedTotals->get($examClassKey);
+            $studentCount = $studentCounts->get($examClassKey);
+
+            /*
+             * ពិន្ទុលម្អិតតាមមុខវិជ្ជា
+             */
+            $scoresByExam[$examName] = $rows->map(function ($row) {
+                return [
+                    'subject_id' => $row->subject_id,
+                    'subject_name' => $row->subject_name,
+                    'score_value' => (float) $row->score_value,
+                ];
+            })->values();
+
+            /*
+             * សង្ខេបលទ្ធផល
+             */
+            $examSummary[$examName] = [
+                'exam_id' => $firstRow->exam_id,
+                'class_id' => $firstRow->class_id,
+                'class_name' => $firstRow->class_name,
+                'grade_level' => $firstRow->grade_level,
+                'year_name' => $firstRow->year_name,
+
+                'total_score' => round($totalScore, 2),
+
+                // តម្លៃនេះគណនាថ្មី ដូច InputScore.vue
+                'average' => $average,
+
+                'rank' => $savedTotal?->rank,
+                'total_students' => $studentCount?->total_students ?? 0,
+
+                'grade_kh' => $grade,
+                'remark' => $remark,
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 7. វត្តមាន
+        |--------------------------------------------------------------------------
+        */
+        $attendanceRecords = DB::table('attendance')
+            ->where('student_id', $id)
+            ->select('id', 'date', 'status', 'notes')
+            ->orderByDesc('date')
+            ->get()
+            ->map(function ($record) {
+                $record->notes = (
+                    $record->notes &&
+                    trim($record->notes) !== ''
+                ) ? $record->notes : null;
+
+                return $record;
+            });
+
+        $normalizeStatus = function ($status) {
+            return match (strtolower((string) $status)) {
+                'present', 'p' => 'present',
+                'absent', 'a' => 'absent',
+                'late', 'l' => 'late',
+                'excused', 'permission', 'leave' => 'excused',
+                default => strtolower((string) $status) ?: 'unknown',
+            };
+        };
+
+        $groupedAttendance = $attendanceRecords->groupBy(function ($record) use ($normalizeStatus) {
+            return $normalizeStatus($record->status);
+        });
+
+        $attendanceSummary = [
+            'present' => $groupedAttendance->get('present', collect())->count(),
+            'absent' => $groupedAttendance->get('absent', collect())->count(),
+            'late' => $groupedAttendance->get('late', collect())->count(),
+            'excused' => $groupedAttendance->get('excused', collect())->count(),
+        ];
+
+        $totalDays = $attendanceRecords->count();
+
+        $attendedDays =
+            $attendanceSummary['present'] +
+            $attendanceSummary['late'] +
+            $attendanceSummary['excused'];
+
+        $attendanceSummary['percentage'] = $totalDays > 0
+            ? round(($attendedDays / $totalDays) * 100, 2)
+            : 0;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
+        return response()->json([
+            'student' => $student,
+            'enrollments' => $enrollments,
+
+            'scores' => [
+                'by_exam' => $scoresByExam,
+                'summary' => $examSummary,
+            ],
+
+            'attendance' => [
+                'summary' => $attendanceSummary,
+                'records' => $attendanceRecords,
+            ],
+        ], 200);
+
+    } catch (\Throwable $e) {
+        Log::error('Get Student History Error', [
+            'student_id' => $id,
+            'message' => $e->getMessage(),
+            'line' => $e->getLine(),
+        ]);
+
+        return response()->json([
+            'message' => 'មានបញ្ហាក្នុងការទាញយកព័ត៌មានសិស្ស',
+        ], 500);
+    }
+}
 }

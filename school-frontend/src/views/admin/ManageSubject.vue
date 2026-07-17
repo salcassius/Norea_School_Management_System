@@ -98,10 +98,10 @@
 
     <!-- Modals -->
     <SubjectCreateModal v-if="showCreateModal" v-model="showCreateModal" :loading="isLoading"
-      @submit="handleCreateSubject" />
+      @refresh="handleCreateSubject" @error="handleCreateError" />
 
     <EditeSubject v-if="showEditModal" v-model="showEditModal" :subject-data="selectedSubject" :loading="isLoading"
-      @submit="handleUpdateSubject" />
+      @refresh="handleUpdateSubject" />
 
     <!-- Toast Notification -->
     <Teleport to="body">
@@ -229,46 +229,55 @@ const openDeleteModal = (subject) => {
 }
 
 const closeDeleteModal = () => {
+  if (isDeleting.value) return
   isDeleteModalOpen.value = false
   deletingSubject.value = null
 }
 
 // --- Create Subject Handler ---
-const handleCreateSubject = async (formData) => {
+// NOTE: previously this called an undefined closeModal() function, which
+// would throw a ReferenceError every time a subject was created, and it
+// fetched the list twice. Fixed to close the modal correctly and fetch once.
+const handleCreateSubject = async () => {
   try {
     isLoading.value = true
+    showCreateModal.value = false
     await fetchSubjects()
     showToast('បង្កើតមុខវិជ្ជាបានជោគជ័យ!', 'success')
-    closeModal()
-    await fetchSubjects()
   } catch (err) {
-    showToast(err.response?.data?.message || 'មិនអាចបង្កើតមុខវិជ្ជាបានទេ')
+    showToast(err.response?.data?.message || 'មិនអាចបង្កើតមុខវិជ្ជាបានទេ!', 'error')
   } finally {
     isLoading.value = false
   }
 }
 
+// --- Create Subject Error Handler (bubbled up from the modal, if it emits one) ---
+const handleCreateError = (message) => {
+  showToast(message || 'មិនអាចបង្កើតមុខវិជ្ជាបានទេ!', 'error')
+}
+
 // --- Edit Subject Handler ---
-const handleUpdateSubject = async (formData) => {
+// NOTE: previously fetched the list twice in a row. Fixed to fetch once.
+const handleUpdateSubject = async () => {
   try {
-    isLoading.value = true;
+    isLoading.value = true
+    showEditModal.value = false
     await fetchSubjects()
-    showToast('កែប្រែមុខវិជ្ជាបានជោគជ័យ!', 'success');
-    showEditModal.value = false;
-    await fetchSubjects(); // Refresh list
+    showToast('កែប្រែមុខវិជ្ជាបានជោគជ័យ!', 'success')
   } catch (err) {
-    showToast(err.response?.data?.message || 'មិនអាចកែប្រែមុខវិជ្ជាបានទេ!', 'error');
+    showToast(err.response?.data?.message || 'មិនអាចកែប្រែមុខវិជ្ជាបានទេ!', 'error')
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
+}
 
 const confirmDeleteSubject = async () => {
   if (!deletingSubject.value) return
   try {
     isDeleting.value = true
     await api.delete(`/subjects/${deletingSubject.value.id}`)
-    closeDeleteModal()
+    isDeleteModalOpen.value = false
+    deletingSubject.value = null
     await fetchSubjects()
     showToast('បានលុបមុខវិជ្ជាដោយជោគជ័យ!', 'success')
   } catch (error) {
@@ -277,8 +286,6 @@ const confirmDeleteSubject = async () => {
     isDeleting.value = false
   }
 }
-
-
 
 // --- Computed ---
 const filteredSubjects = computed(() => {

@@ -71,13 +71,14 @@ class TeacherController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'teacher_id_card' => 'required|string|max:50|unique:teachers,teacher_id_card',
+            'teacher_id_card' => 'nullable|string|max:50|unique:teachers,teacher_id_card',
             'name_kh'         => 'required|string|max:255',
             'name_en'         => 'required|string|max:255',
             'email'           => 'required|email|unique:users,email|unique:teachers,email', // ពិនិត្យកុំឱ្យជាន់គ្នាក្នុងតារាងទាំងពីរ
             'password'        => 'required|string|min:6',
             'gender'          => 'required|in:male,female',
             'specialty'       => 'nullable', 
+            'position'        => 'nullable|string|max:255',
             'dob'             => 'nullable|date',
             'phone'           => 'nullable|string',
             
@@ -125,12 +126,13 @@ class TeacherController extends Controller
                 // ៤. បង្កើតប្រវត្តិរូបគ្រូបង្រៀននៅក្នុងតារាង teachers (រួមទាំង email និង password)
                 $teacher = Teacher::create([
                     'user_id'         => $user->id,
-                    'teacher_id_card' => $validated['teacher_id_card'],
+                    'teacher_id_card' => $validated['teacher_id_card'] ?? null,
                     'name_kh'         => $validated['name_kh'],
                     'name_en'         => $validated['name_en'],
                     'email'           => $validated['email'],     // ✅ រក្សាទុកក្នុងតារាង teachers
                     'password'        => $hashedPassword,         // ✅ រក្សាទុកក្នុងតារាង teachers (Hashed)
                     'specialty'       => $specialty, 
+                    'position'        => $validated['position'] ?? null,
                     'gender'          => $validated['gender'],
                     'dob'             => $validated['dob'],
                     'phone'           => $validated['phone'],
@@ -174,7 +176,7 @@ class TeacherController extends Controller
         $teacher = Teacher::findOrFail($id);
         
         $validated = $request->validate([
-            'teacher_id_card' => 'required|string|unique:teachers,teacher_id_card,' . $id,
+            'teacher_id_card' => 'nullable|string|unique:teachers,teacher_id_card,' . $id,
             'name_kh'         => 'required|string',
             'name_en'         => 'required|string',
             'email'           => 'required|email|unique:users,email,' . $teacher->user_id . '|unique:teachers,email,' . $id,
@@ -183,6 +185,7 @@ class TeacherController extends Controller
             'dob'             => 'nullable|date',
             'phone'           => 'nullable|string',
             'specialty'       => 'nullable', 
+            'position'        => 'nullable|string|max:255',
             'status'          => 'nullable', 
             
             // ទីកន្លែងកំណើត

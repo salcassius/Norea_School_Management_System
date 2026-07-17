@@ -11,7 +11,7 @@
             <h2 class="text-lg font-bold text-slate-800">បន្ថែមមុខវិជ្ជាថ្មី</h2>
           </div>
         </div>
-        <button @click="$emit('update:modelValue', false)" class="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400 hover:text-slate-600">
+        <button @click="closeModal" class="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400 hover:text-slate-600">
           <X class="w-5 h-5" />
         </button>
       </div>
@@ -46,8 +46,13 @@
           </div>
         </div>
 
+        <div v-if="errorMessage" class="p-3 bg-rose-50 text-rose-600 text-xs rounded-xl border border-rose-100 flex items-center gap-2 animate-shake">
+          <AlertCircle class="w-4 h-4 shrink-0" />
+          <span>{{ errorMessage }}</span>
+        </div>
+
         <div class="flex justify-end gap-3 mt-8">
-          <button type="button" @click="$emit('update:modelValue', false)" 
+          <button type="button" @click="closeModal" 
              class="px-6 py-2.5 text-slate-700 hover:bg-slate-200 bg-indigo-200 rounded-xl font-medium transition-all text-sm">
               បោះបង់
           </button>
@@ -64,19 +69,23 @@
 
 <script setup>
 import { ref } from 'vue'
-import { X, BookOpen, Type } from 'lucide-vue-next'
+import { X, BookOpen, Type, AlertCircle } from 'lucide-vue-next'
 import api from '../../../services/authService'
 
-const emit = defineEmits(['update:modelValue', 'refresh'])
+const emit = defineEmits(['update:modelValue', 'refresh', 'error'])
 const isSubmitting = ref(false)
+const errorMessage = ref(null)
 
 const form = ref({
   name: '',
   max_score: '' // បន្ថែម field នេះសម្រាប់ data binding
 })
 
+const closeModal = () => emit('update:modelValue', false)
+
 const handleSubmit = async () => {
   isSubmitting.value = true
+  errorMessage.value = null
   try {
     await api.post('/subjects', { 
       name: form.value.name,
@@ -84,14 +93,29 @@ const handleSubmit = async () => {
     }) 
     
     emit('refresh')
-    emit('update:modelValue', false)
+    closeModal()
 
     form.value.name = ''
     form.value.max_score = ''
   } catch (error) {
-    alert(error.response?.data?.message || 'មានបញ្ហាក្នុងការរក្សាទុក!')
+    // NOTE: previously this used alert(), which bypassed the parent's
+    // styled toast entirely (the parent already listens for @error).
+    // Now it shows inline in the modal AND bubbles up to the parent toast.
+    const message = error.response?.data?.message || 'មានបញ្ហាក្នុងការរក្សាទុក!'
+    errorMessage.value = message
+    emit('error', message)
   } finally {
     isSubmitting.value = false
   }
 }
 </script>
+
+<style scoped>
+.animate-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+</style>

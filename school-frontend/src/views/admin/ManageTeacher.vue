@@ -1,209 +1,367 @@
 <template>
-  <div class="font-[Battambang] p-6 min-h-screen bg-slate-50/50">
-    <div class="flex flex-col gap-4 mb-8">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+  <div class="min-h-screen bg-slate-50/50 p-6 font-[Battambang] text-slate-700">
+    <!-- Title & Add Button -->
+    <div class="mb-8 flex flex-col gap-4">
+      <div class="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
           <h1 class="text-2xl font-bold text-slate-800">គ្រប់គ្រងគ្រូបង្រៀន</h1>
-          <p class="text-sm text-slate-500 mt-1">គ្រប់គ្រងព័ត៌មាន និងឯកទេសរបស់លោកគ្រូ អ្នកគ្រូក្នុងប្រព័ន្ធ</p>
+          <p class="mt-1 text-sm text-slate-500">
+            គ្រប់គ្រងព័ត៌មាន និងឯកទេសរបស់លោកគ្រូ អ្នកគ្រូក្នុងប្រព័ន្ធ
+          </p>
         </div>
 
-        <button @click="showCreateModal = true"
-          class="w-full md:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-indigo-200 active:scale-95">
-          <Plus class="w-5 h-5" />
+        <button
+          class="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 font-medium text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 active:scale-95 md:w-auto"
+          @click="showCreateModal = true"
+        >
+          <Plus class="h-5 w-5" />
           បន្ថែមគ្រូបង្រៀនថ្មី
         </button>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div v-for="stat in teacherStats" :key="stat.label" @click="handleStatClick(stat.filterType, stat.filterValue)"
+    <!-- Stats Cards -->
+    <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div
+        v-for="stat in teacherStats"
+        :key="stat.label"
         :class="[
-          'p-5 rounded-2xl border transition-all cursor-pointer shadow-sm flex items-center gap-4 active:scale-95',
-          activeFilter === stat.filterValue ? 'bg-white border-indigo-500 ring-4 ring-indigo-50' : 'bg-white border-slate-300 hover:border-indigo-300'
-        ]">
-        <div :class="['p-3 rounded-xl', stat.bgColor]">
-          <component :is="stat.icon" :class="['w-6 h-6', stat.iconColor]" />
+          'flex cursor-pointer items-center gap-4 rounded-2xl border p-5 shadow-sm transition-all active:scale-95',
+          activeFilter === stat.filterValue
+            ? 'border-indigo-500 bg-white ring-4 ring-indigo-50'
+            : 'border-slate-300 bg-white hover:border-indigo-300',
+        ]"
+        @click="handleStatClick(stat.filterType, stat.filterValue)"
+      >
+        <div :class="['rounded-xl p-3', stat.bgColor]">
+          <component :is="stat.icon" :class="['h-6 w-6', stat.iconColor]" />
         </div>
         <div>
-          <p class="text-[14px] text-slate-500 font-medium uppercase tracking-wider">{{ stat.label }}</p>
+          <p class="text-[14px] font-medium uppercase tracking-wider text-slate-500">
+            {{ stat.label }}
+          </p>
           <p class="text-lg font-bold text-slate-800">{{ stat.value }}</p>
         </div>
       </div>
     </div>
 
-    <div class="flex flex-wrap items-center justify-end gap-2 mb-4">
-      <button @click="exportToExcel"
-        class="bg-white border border-green-600 text-green-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-         <span>ទាញយក Excel</span>
+    <!-- Export Buttons -->
+    <div class="mb-4 flex flex-wrap items-center justify-end gap-2">
+      <button
+        :disabled="filteredTeachers.length === 0"
+        class="rounded-xl border border-green-600 bg-white px-5 py-2.5 font-bold text-green-700 transition-all hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+        @click="exportToExcel"
+      >
+        <span>ទាញយក Excel</span>
       </button>
 
-      <button @click="exportToPDF"
-        class="bg-white border border-red-600 text-red-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+      <button
+        :disabled="filteredTeachers.length === 0"
+        class="rounded-xl border border-red-600 bg-white px-5 py-2.5 font-bold text-red-700 transition-all hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+        @click="exportToPDF"
+      >
         <span>ទាញយក PDF</span>
       </button>
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <!-- Toolbar -->
-    <div class="bg-white p-4 border-b border-slate-100 flex flex-col sm:flex-row items-center gap-4">
-  <div class="w-full sm:w-auto">
-    <div class="relative w-full sm:max-w-sm">
-      <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-      <input v-model="searchQuery" type="text" placeholder="ស្វែងរកតាមឈ្មោះ..."
-        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
-    </div>
-  </div>
+    <!-- Main Table Container -->
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <!-- Toolbar -->
+      <div
+        class="flex flex-col items-center justify-between gap-4 border-b border-slate-100 bg-white p-4 sm:flex-row"
+      >
+        <div class="w-full sm:w-auto">
+          <div class="relative w-full sm:max-w-sm">
+            <Search
+              class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="ស្វែងរកតាមឈ្មោះ ឬលេខទូរស័ព្ទ..."
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+            />
+          </div>
+        </div>
 
-  <div class="flex items-center gap-3 w-full sm:w-auto">
-    <div class="relative flex-1 sm:flex-none">
-      <select v-model="selectedRole"
-        class="w-full sm:w-40 bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none cursor-pointer">
-        <option value="all">គ្រូបង្រៀនទាំងអស់</option>
-        <option value="teacher">នៅបង្រៀន</option>
-        <option value="student">ឈប់បង្រៀន/ព្យួរ</option>
-      </select>
-      <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-        </svg>
+        <div class="flex w-full items-center gap-3 sm:w-auto">
+          <div class="relative flex-1 sm:flex-none">
+            <select
+              v-model="selectedRole"
+              class="w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-600 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 sm:w-48"
+            >
+              <option value="all">គ្រូបង្រៀនទាំងអស់</option>
+              <option value="teacher">នៅបង្រៀន</option>
+              <option value="student">ឈប់បង្រៀន/ព្យួរ</option>
+            </select>
+            <div
+              class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
+            >
+              <svg
+                class="h-4 w-4 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
 
-      <div class="overflow-x-auto">
-        <div v-if="isLoading" class="p-10 text-center text-slate-500 text-sm">កំពុងទាញទិន្នន័យ...</div>
-        <table v-else class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-slate-50/50">
-              <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider">គ្រូបង្រៀន</th>
-              <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider">ឯកទេស</th>
-              <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider">ទំនាក់ទំនង</th>
-              <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider">ថ្ងៃចូលបម្រើការងារ
+      <!-- Table View -->
+      <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
+        <div v-if="isLoading" class="p-10 text-center text-sm text-slate-500">
+          កំពុងទាញទិន្នន័យ...
+        </div>
+
+        <table v-else class="min-w-[1750px] w-full border-collapse text-left">
+          <thead
+            class="sticky top-0 z-10 bg-slate-50 text-[14px] font-bold uppercase text-slate-600"
+          >
+            <tr>
+              <th
+                class="px-6 py-4 text-[14px] font-bold uppercase tracking-wider text-slate-700"
+              >
+                ល.រ
               </th>
-              <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider">ថ្ងៃខែឆ្នាំកំណើត</th>
-              <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider">ទីកន្លែងកំណើត</th>
-              <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider">អាសយដ្ឋានបច្ចុប្បន្ន
-              </th>
-              <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider">ស្ថានភាព</th>
-              <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider text-right">សកម្មភាព
+              <th class="px-6 py-4">គ្រូបង្រៀន</th>
+              <th class="px-6 py-4">ភេទ</th>
+              <th class="px-6 py-4">មុខតំណែង</th>
+              <th class="px-6 py-4">ឯកទេស</th>
+              <th class="px-6 py-4">ទំនាក់ទំនង</th>
+              <th class="px-6 py-4">ថ្ងៃចូលបម្រើការងារ</th>
+              <th class="px-6 py-4">ថ្ងៃខែឆ្នាំកំណើត</th>
+              <th class="px-6 py-4">ទីកន្លែងកំណើត</th>
+              <th class="px-6 py-4">អាសយដ្ឋានបច្ចុប្បន្ន</th>
+              <th class="px-6 py-4 text-center">ស្ថានភាព</th>
+              <th class="sticky right-0 z-20 bg-slate-50 px-6 py-4 text-right">
+                សកម្មភាព
               </th>
             </tr>
           </thead>
+
           <tbody class="divide-y divide-slate-100">
-            <tr v-for="teacher in filteredTeachers" :key="teacher.id"
-              class="hover:bg-slate-50/80 transition-colors group">
+            <tr
+              v-for="(teacher, index) in filteredTeachers"
+              :key="teacher.id"
+              class="hover:bg-slate-50/50"
+            >
+              <td class="px-8 py-3 text-sm text-slate-500">{{ index + 1 }}</td>
+
+              <!-- Teacher -->
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                   <div
-                    class="w-10 h-10 rounded-xl bg-slate-100 overflow-hidden border border-slate-200 shadow-sm flex items-center justify-center">
-                    <!-- Photo loads fine and hasn't errored -->
-                    <img v-if="teacher.photo && !brokenPhotos.has(teacher.id)" :src="getPhotoUrl(teacher.photo)"
-                      @error="onPhotoError(teacher.id)" class="w-full h-full object-cover" />
-                    <!-- No photo on record at all -->
-                    <UserRound v-else-if="!teacher.photo" class="w-5 h-5 text-slate-400" />
-                    <!-- Had a photo path but it failed to load -->
-                    <span v-else class="text-sm font-bold text-indigo-600 uppercase">{{ (teacher.name_kh ||
-                      'T').charAt(0) }}</span>
+                    class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm"
+                  >
+                    <img
+                      v-if="teacher.photo && !brokenPhotos.has(teacher.id)"
+                      :src="getPhotoUrl(teacher.photo)"
+                      class="h-full w-full object-cover"
+                      alt="Teacher"
+                      @error="onPhotoError(teacher.id)"
+                    />
+                    <UserRound
+                      v-else-if="!teacher.photo"
+                      class="h-5 w-5 text-slate-400"
+                    />
+                    <span
+                      v-else
+                      class="text-sm font-bold uppercase text-indigo-600"
+                    >
+                      {{ (teacher.name_kh || 'T').charAt(0) }}
+                    </span>
                   </div>
+
                   <div>
-                    <p class="text-sm font-bold text-slate-700 leading-tight">{{ teacher.name_kh }}</p>
-                    <p class="text-[11px] text-slate-600 mt-1 uppercase tracking-tighter">{{ teacher.name_en }}</p>
+                    <p class="text-[17px] font-bold leading-tight text-slate-700">
+                      {{ teacher.name_kh || '-' }}
+                    </p>
+                    <p
+                      class="mt-1 text-[13px] uppercase tracking-tighter text-slate-500"
+                    >
+                      {{ teacher.name_en || '-' }}
+                    </p>
                   </div>
                 </div>
               </td>
+
+              <!-- Gender -->
               <td class="px-6 py-4">
-                <div class="flex flex-wrap gap-1">
-                  <span v-for="sub in getSpecialties(teacher.specialty).slice(0, 2)" :key="sub"
-                    class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[14px] font-medium border border-slate-200">
-                    {{ sub }}
-                  </span>
-                  <span v-if="getSpecialties(teacher.specialty).length > 2"
-                    class="text-[10px] text-slate-400 font-bold ml-1">
-                    +{{ getSpecialties(teacher.specialty).length - 2 }}
-                  </span>
-                  <span v-if="getSpecialties(teacher.specialty).length === 0"
-                    class="text-[10px] text-slate-300 italic">គ្មាន</span>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <p class="text-sm text-slate-600 font-medium">{{ teacher.phone || 'N/A' }}</p>
-                <p class="text-[13px] text-slate-600 truncate max-w-[150px]">{{ teacher.user?.email || 'គ្មានគណនី' }}
+                <p class="text-[15px] text-slate-600">
+                  {{ getGenderKh(teacher.gender) }}
                 </p>
               </td>
-              <td class="px-6 py-4 text-sm text-slate-600">
-                {{ teacher.hire_date ? new Date(teacher.hire_date).toLocaleDateString('km-KH') : 'N/A' }}
-              </td>
-              <td class="px-6 py-4 text-sm text-slate-600">
-                {{ teacher.dob ? new Date(teacher.dob).toLocaleDateString('km-KH') : 'N/A' }}
-              </td>
-              <td class="px-6 py-4 text-sm text-slate-600">
-                <div class="text-[15px]">
-                  {{ teacher.pob_village }}, {{ teacher.pob_commune }}, {{ teacher.pob_district }}, {{ teacher.province
-                  }}
-                </div>
-              </td>
-              <td class="px-6 py-4 text-sm text-slate-600">
-                <div class="text-[15px]">
-                  {{ teacher.village }}, {{ teacher.commune }}, {{ teacher.district }}, {{ teacher.province }}
-                </div>
-              </td>
+
+              <!-- Position -->
               <td class="px-6 py-4">
-                <span :class="[
-                  'px-3 py-1 rounded-full text-[13px] font-bold uppercase tracking-wider border',
-                  teacher.status == 1 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
-                ]">
+                <span
+                  class="inline-flex whitespace-nowrap rounded-lg border border-indigo-100 bg-indigo-50 px-2.5 py-1 text-[13px] font-semibold text-indigo-700"
+                >
+                  {{ getPositionKh(teacher.position) }}
+                </span>
+              </td>
+
+              <!-- Specialty -->
+              <td class="px-6 py-4">
+                <div class="flex flex-wrap gap-1">
+                  <span
+                    v-for="subject in getSpecialties(teacher.specialty).slice(0, 2)"
+                    :key="subject"
+                    class="rounded border border-slate-200 bg-slate-100 px-2 py-0.5 text-[14px] font-medium text-slate-600"
+                  >
+                    {{ subject }}
+                  </span>
+                  <span
+                    v-if="getSpecialties(teacher.specialty).length > 2"
+                    class="ml-1 self-center text-[10px] font-bold text-slate-400"
+                  >
+                    +{{ getSpecialties(teacher.specialty).length - 2 }}
+                  </span>
+                  <span
+                    v-if="getSpecialties(teacher.specialty).length === 0"
+                    class="text-[12px] italic text-slate-300"
+                  >
+                    គ្មាន
+                  </span>
+                </div>
+              </td>
+
+              <!-- Contact -->
+              <td class="px-6 py-4">
+                <p class="text-sm font-medium text-slate-700">
+                  {{ teacher.phone || 'N/A' }}
+                </p>
+                <p class="max-w-[170px] truncate text-[14px] text-slate-500">
+                  {{ teacher.email || teacher.user?.email || 'គ្មានគណនី' }}
+                </p>
+              </td>
+
+              <td class="px-6 py-4 text-sm text-slate-600">
+                {{ formatDisplayDate(teacher.hire_date) }}
+              </td>
+
+              <td class="px-6 py-4 text-sm text-slate-600">
+                {{ formatDisplayDate(teacher.dob) }}
+              </td>
+
+              <!-- Place of birth -->
+              <td class="px-6 py-4">
+                <div class="max-w-[200px] text-[15px] leading-relaxed text-slate-600">
+                  {{ formatPlaceOfBirth(teacher) }}
+                </div>
+              </td>
+
+              <!-- Current address -->
+              <td class="px-6 py-4">
+                <div class="max-w-[200px] text-[15px] leading-relaxed text-slate-600">
+                  {{ formatCurrentAddress(teacher) }}
+                </div>
+              </td>
+
+              <!-- Status -->
+              <td class="px-6 py-4 text-center">
+                <span
+                  :class="[
+                    'whitespace-nowrap rounded-full border px-3 py-1 text-[12px] font-bold uppercase tracking-wider',
+                    teacher.status == 1
+                      ? 'border-emerald-100 bg-emerald-50 text-emerald-600'
+                      : 'border-rose-100 bg-rose-50 text-rose-600',
+                  ]"
+                >
                   {{ teacher.status == 1 ? 'នៅបង្រៀន' : 'ឈប់បង្រៀន/ផ្អាក' }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-right">
-                <div class="flex items-center justify-end gap-2">
-                  <button @click="openEditModal(teacher)"
-                    class="p-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all active:scale-90 shadow-sm"
-                    title="Edit">
-                    <Edit3 class="w-4 h-4" />
+
+              <!-- Actions -->
+              <td
+                class="sticky right-0 z-10 min-w-[120px] bg-white px-6 py-4 text-right"
+              >
+                <div
+                  class="flex flex-shrink-0 items-center justify-end gap-2 whitespace-nowrap"
+                >
+                  <button
+                    class="rounded-lg bg-blue-600 p-2 text-white shadow-sm transition-all hover:bg-blue-700 active:scale-90"
+                    title="កែប្រែ"
+                    @click="openEditModal(teacher)"
+                  >
+                    <Edit3 class="h-4 w-4" />
                   </button>
-                  <button @click="openDeleteModal(teacher)"
-                    class="p-2 text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-all active:scale-90 shadow-sm"
-                    title="Delete">
-                    <Trash2 class="w-4 h-4" />
+
+                  <button
+                    class="rounded-lg bg-rose-600 p-2 text-white shadow-sm transition-all hover:bg-rose-700 active:scale-90"
+                    title="លុប"
+                    @click="openDeleteModal(teacher)"
+                  >
+                    <Trash2 class="h-4 w-4" />
                   </button>
                 </div>
               </td>
             </tr>
+
             <tr v-if="filteredTeachers.length === 0">
-              <td colspan="9" class="px-6 py-10 text-center text-slate-400 text-sm">មិនមានទិន្នន័យគ្រូបង្រៀនឡើយ</td>
+              <td colspan="12" class="px-6 py-12 text-center text-sm text-slate-400">
+                មិនមានទិន្នន័យគ្រូបង្រៀនឡើយ
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <TeacherCreateModal v-if="showCreateModal" v-model="showCreateModal" :loading="isLoading"
-      @refresh="handleCreateTeacher" />
+    <!-- Modals -->
+    <TeacherCreateModal
+      v-if="showCreateModal"
+      v-model="showCreateModal"
+      :loading="isLoading"
+      @refresh="handleCreateTeacher"
+    />
 
-    <EditeTeacher v-if="isEditModalOpen" v-model="isEditModalOpen" :teacher-data="selectedTeacher" :loading="isLoading"
-      @refresh="handleUpdateTeacher" />
+    <EditeTeacher
+      v-if="isEditModalOpen"
+      v-model="isEditModalOpen"
+      :teacher-data="selectedTeacher"
+      :loading="isLoading"
+      @refresh="handleUpdateTeacher"
+    />
 
     <!-- Toast Notification -->
     <Teleport to="body">
       <Transition name="toast-slide">
-        <div v-if="toast.show" :class="[
-          'fixed top-5 right-5 z-[100] flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-lg min-w-[260px] max-w-xs',
-          toast.type === 'success'
-            ? 'bg-white border-emerald-200 text-emerald-700'
-            : 'bg-white border-rose-200 text-rose-600'
-        ]">
-          <div :class="[
-            'w-8 h-8 rounded-full flex items-center justify-center shrink-0',
-            toast.type === 'success' ? 'bg-emerald-50' : 'bg-rose-50'
-          ]">
-            <CheckCircle2 v-if="toast.type === 'success'" class="w-4 h-4 text-emerald-500" />
-            <XCircle v-else class="w-4 h-4 text-rose-500" />
+        <div
+          v-if="toast.show"
+          :class="[
+            'fixed right-5 top-5 z-[100] flex min-w-[260px] max-w-xs items-center gap-3 rounded-2xl border px-4 py-3 font-[Battambang] shadow-lg',
+            toast.type === 'success'
+              ? 'border-emerald-200 bg-white text-emerald-700'
+              : 'border-rose-200 bg-white text-rose-600',
+          ]"
+        >
+          <div
+            :class="[
+              'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
+              toast.type === 'success' ? 'bg-emerald-50' : 'bg-rose-50',
+            ]"
+          >
+            <CheckCircle2
+              v-if="toast.type === 'success'"
+              class="h-4 w-4 text-emerald-500"
+            />
+            <XCircle v-else class="h-4 w-4 text-rose-500" />
           </div>
-          <p class="text-sm font-medium flex-1">{{ toast.message }}</p>
-          <button @click="toast.show = false" class="text-slate-300 hover:text-slate-500 transition-colors">
-            <X class="w-4 h-4" />
+          <p class="flex-1 text-sm font-medium">{{ toast.message }}</p>
+          <button
+            class="text-slate-300 transition-colors hover:text-slate-500"
+            @click="toast.show = false"
+          >
+            <X class="h-4 w-4" />
           </button>
         </div>
       </Transition>
@@ -212,73 +370,178 @@
     <!-- Delete Confirmation Modal -->
     <Teleport to="body">
       <Transition name="modal-fade">
-        <div v-if="isDeleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style="background: rgba(15, 15, 20, 0.5);" @click.self="closeDeleteModal">
-
+        <div
+          v-if="isDeleteModalOpen"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style="background: rgba(15, 15, 20, 0.5)"
+          @click.self="closeDeleteModal"
+        >
           <Transition name="modal-scale">
-            <div v-if="isDeleteModalOpen"
-              class="bg-white rounded-2xl border border-slate-200 w-full max-w-sm p-8 text-center font-[Battambang]">
-
-              <div class="w-16 h-16 rounded-full bg-red-200 flex items-center justify-center mx-auto mb-5">
-                <Trash2 class="w-7 h-7 text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
+            <div
+              v-if="isDeleteModalOpen"
+              class="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 text-center font-[Battambang]"
+            >
+              <div
+                class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-100"
+              >
+                <Trash2 class="h-7 w-7 text-rose-500" />
               </div>
 
-              <p class="text-[17px] font-bold text-slate-800 mb-2">លុបគ្រូបង្រៀន</p>
-              <p class="text-sm text-slate-600 leading-relaxed mb-1">
+              <p class="mb-2 text-[17px] font-bold text-slate-800">លុបគ្រូបង្រៀន</p>
+              <p class="mb-1 text-sm leading-relaxed text-slate-600">
                 តើអ្នកពិតជាចង់លុបគ្រូបង្រៀន
-                <span class="font-bold text-blue-700">{{ deletingTeacher?.name_kh }}</span>
+                <span class="font-bold text-blue-700">
+                  {{ deletingTeacher?.name_kh }}
+                </span>
                 មែនទេ?
               </p>
-              <p class="text-sm text-slate-400 mb-7">សកម្មភាពនេះមិនអាចដកវិញបានទេ។</p>
+              <p class="mb-7 text-sm text-slate-400">
+                សកម្មភាពនេះមិនអាចដកវិញបានទេ។
+              </p>
 
               <div class="flex gap-3">
-                <button @click="closeDeleteModal" :disabled="isDeleting"
-                  class="flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-all active:scale-95 disabled:opacity-50">
+                <button
+                  :disabled="isDeleting"
+                  class="flex-1 rounded-xl border border-slate-200 bg-slate-100 py-2.5 text-sm font-medium text-slate-600 transition-all hover:bg-slate-200 active:scale-95 disabled:opacity-50"
+                  @click="closeDeleteModal"
+                >
                   បោះបង់
                 </button>
-                <button @click="confirmDeleteTeacher" :disabled="isDeleting"
-                  class="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-rose-500 hover:bg-rose-600 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60">
-                  <Loader2 v-if="isDeleting" class="w-4 h-4 animate-spin" />
-                  <Trash2 v-else class="w-4 h-4" />
+                <button
+                  :disabled="isDeleting"
+                  class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-rose-500 py-2.5 text-sm font-medium text-white transition-all hover:bg-rose-600 active:scale-95 disabled:opacity-60"
+                  @click="confirmDeleteTeacher"
+                >
+                  <Loader2 v-if="isDeleting" class="h-4 w-4 animate-spin" />
+                  <Trash2 v-else class="h-4 w-4" />
                   {{ isDeleting ? 'កំពុងលុប...' : 'លុបចោល' }}
                 </button>
               </div>
-
             </div>
           </Transition>
         </div>
       </Transition>
     </Teleport>
 
+    <!-- Hidden Official Letterhead Export Area -->
+    <div ref="printArea" class="pdf-export-area">
+      <div class="doc-header">
+        <p class="kingdom-title">ព្រះរាជាណាចក្រកម្ពុជា</p>
+        <p class="kingdom-motto">ជាតិ សាសនា ព្រះមហាក្សត្រ</p>
+        <div class="ornament">
+          <span class="ornament-line"></span>
+          <span class="ornament-icon">❖</span>
+          <span class="ornament-icon">❖</span>
+          <span class="ornament-icon">❖</span>
+          <span class="ornament-line"></span>
+        </div>
+      </div>
+
+      <div class="doc-office">
+        <p>{{ ministryLine1 }}</p>
+        <p>{{ ministryLine2 }}</p>
+      </div>
+
+      <h2 class="doc-title">បញ្ជីឈ្មោះគ្រូបង្រៀន</h2>
+
+      <!-- Full teacher data table for landscape PDF export -->
+      <table class="pdf-table">
+        <thead>
+          <tr>
+            <th style="width: 3%">ល.រ</th>
+            <th style="width: 10%">ឈ្មោះ (ខ្មែរ)</th>
+            <th style="width: 10%">ឈ្មោះឡាតាំង</th>
+            <th style="width: 5%">ភេទ</th>
+            <th style="width: 10%">មុខតំណែង</th>
+            <th style="width: 11%">មុខវិជ្ជាជំនាញ</th>
+            <th style="width: 9%">ទូរស័ព្ទ</th>
+            <th style="width: 8%">ថ្ងៃចូលធ្វើការ</th>
+            <th style="width: 8%">ថ្ងៃខែឆ្នាំកំណើត</th>
+            <th style="width: 10%">ទីកន្លែងកំណើត</th>
+            <th style="width: 10%">អាសយដ្ឋានបច្ចុប្បន្ន</th>
+            <th style="width: 6%">ស្ថានភាព</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(teacher, index) in filteredTeachers"
+            :key="'pdf-' + (teacher.id || index)"
+          >
+            <td>{{ toKhmerNumber(index + 1) }}</td>
+            <td class="pdf-text-left pdf-name-cell">
+              {{ teacher.name_kh || '-' }}
+            </td>
+            <td class="pdf-text-left">{{ teacher.name_en || '-' }}</td>
+            <td>{{ getGenderKh(teacher.gender) }}</td>
+            <td class="pdf-text-left">{{ getPositionKh(teacher.position) }}</td>
+            <td class="pdf-text-left">{{ formatSpecialty(teacher.specialty) }}</td>
+            <td>{{ teacher.phone || '-' }}</td>
+            <td>{{ formatDisplayDate(teacher.hire_date, '-') }}</td>
+            <td>{{ formatDisplayDate(teacher.dob, '-') }}</td>
+            <td class="pdf-text-left">{{ formatPlaceOfBirth(teacher) }}</td>
+            <td class="pdf-text-left">{{ formatCurrentAddress(teacher) }}</td>
+            <td>{{ getStatusKh(teacher.status) }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="doc-summary">
+        <strong>
+          សរុបចំនួនគ្រូបង្រៀន៖ {{ toKhmerNumber(filteredTeachers.length) }} នាក់
+          &nbsp;&nbsp;&nbsp;&nbsp; ស្រី៖ {{ toKhmerNumber(totalFemale) }} នាក់
+          &nbsp;&nbsp;&nbsp;&nbsp; កំពុងបង្រៀន៖ {{ toKhmerNumber(totalActive) }} នាក់
+          &nbsp;&nbsp;&nbsp;&nbsp; ឈប់បង្រៀន៖ {{ toKhmerNumber(totalInactive) }} នាក់
+        </strong>
+      </div>
+
+      <div class="doc-footer">
+        <div class="signature-right">
+          <p>ថ្ងៃ............. ខែ............. ឆ្នាំ............. ព.ស...............</p>
+          <p>នរា ថ្ងៃទី........ ខែ........ ឆ្នាំ២០........</p>
+          <p class="moul">នាយកសាលា</p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import teacherService from '../../services/teacherService'
 import {
-  Plus, Search, Edit3, Trash2, UserRound,
-  GraduationCap, Users, UserCheck, UserMinus,
-  CheckCircle2, XCircle, X, Loader2
+  Plus,
+  Search,
+  Edit3,
+  Trash2,
+  UserRound,
+  GraduationCap,
+  Users,
+  UserCheck,
+  UserMinus,
+  CheckCircle2,
+  XCircle,
+  X,
+  Loader2,
 } from 'lucide-vue-next'
 
-// Export Libraries
-import * as XLSX from 'xlsx'
-import { jsPDF } from 'jspdf'
-import autoTable from 'jspdf-autotable'
+// Export libraries
+import * as XLSX from 'xlsx-js-style'
+import html2pdf from 'html2pdf.js'
 
-// Import Modals
+// Modals
 import TeacherCreateModal from '../admin/create/CreateTeacherModel.vue'
 import EditeTeacher from './edite/EditeTeacher.vue'
 
 // --- State ---
 const teachers = ref([])
 const isLoading = ref(true)
+const printArea = ref(null)
 const searchQuery = ref('')
 const selectedStatus = ref('')
 const selectedGender = ref('')
 const selectedRole = ref('all')
 const activeFilter = ref('')
+
 const showCreateModal = ref(false)
 const isEditModalOpen = ref(false)
 const selectedTeacher = ref(null)
@@ -286,17 +549,43 @@ const isDeleteModalOpen = ref(false)
 const isDeleting = ref(false)
 const deletingTeacher = ref(null)
 
-// tracks teacher IDs whose photo failed to load -> falls back to initial-letter avatar
 const brokenPhotos = ref(new Set())
-
 const toast = ref({ show: false, message: '', type: 'success' })
 let toastTimer = null
+
+// អាចកែសម្រួលឈ្មោះស្ថាប័ន / សាលារបស់អ្នកនៅទីនេះ
+const ministryLine1 = ref('មន្ទីរអប់រំ យុវជន និងកីឡាខេត្តបាត់ដំបង')
+const ministryLine2 = ref('អនុវិទ្យាល័យ នរា')
+
+// Position labels must match the values used by CreateTeacher and EditTeacher.
+const positionLabels = {
+  director: 'នាយក',
+  principal: 'នាយក',
+  deputy_director: 'នាយករង',
+  deputy_principal: 'នាយករង',
+  academic_director: 'ប្រធានផ្នែកសិក្សា',
+  head_teacher: 'ប្រធានក្រុមបច្ចេកទេស',
+  teacher: 'គ្រូបង្រៀន',
+  secretary: 'លេខាធិការ',
+  accountant: 'គណនេយ្យករ',
+  administrative_officer: 'មន្ត្រីរដ្ឋបាល',
+  librarian: 'បណ្ណារក្ស',
+  it_officer: 'មន្ត្រីព័ត៌មានវិទ្យា (IT)',
+  laboratory_assistant: 'អ្នកទទួលបន្ទុកបន្ទប់ពិសោធន៍',
+  student_counselor: 'អ្នកប្រឹក្សាសិស្ស',
+  school_nurse: 'គិលានុបដ្ឋាក/គិលានុបដ្ឋាយិកា',
+  security_guard: 'សន្តិសុខ',
+  cleaner: 'បុគ្គលិកអនាម័យ',
+}
 
 // --- Toast ---
 const showToast = (message, type = 'success') => {
   if (toastTimer) clearTimeout(toastTimer)
+
   toast.value = { show: true, message, type }
-  toastTimer = setTimeout(() => { toast.value.show = false }, 3500)
+  toastTimer = setTimeout(() => {
+    toast.value.show = false
+  }, 3500)
 }
 
 const API_BASE_URL = (
@@ -307,8 +596,9 @@ const API_BASE_URL = (
 
 const getPhotoUrl = (path) => {
   if (!path) return null
-  if (/^https?:\/\//i.test(path)) return path // already absolute
-  const cleanPath = path.replace(/^\/?storage\/?/, '') // avoid double "storage/storage"
+  if (/^https?:\/\//i.test(path)) return path
+
+  const cleanPath = String(path).replace(/^\/?storage\/?/, '')
   return `${API_BASE_URL}/storage/${cleanPath}`
 }
 
@@ -316,12 +606,129 @@ const onPhotoError = (teacherId) => {
   brokenPhotos.value.add(teacherId)
 }
 
+// --- Helpers ---
+const unwrapArray = (payload) => {
+  if (Array.isArray(payload)) return payload
+  if (Array.isArray(payload?.data)) return payload.data
+  if (Array.isArray(payload?.data?.data)) return payload.data.data
+  return []
+}
+
+// The earliest-created teacher stays on top.
+const sortByCreatedAsc = (list) => {
+  return [...list].sort((a, b) => {
+    const aCreatedTime = a.created_at ? new Date(a.created_at).getTime() : NaN
+    const bCreatedTime = b.created_at ? new Date(b.created_at).getTime() : NaN
+    const aTime = Number.isFinite(aCreatedTime) ? aCreatedTime : Number(a.id) || 0
+    const bTime = Number.isFinite(bCreatedTime) ? bCreatedTime : Number(b.id) || 0
+    return aTime - bTime
+  })
+}
+
+const getGenderKh = (gender) => {
+  if (!gender) return '-'
+
+  const value = String(gender).toLowerCase()
+  if (value === 'male' || value === 'm' || value === 'ប្រុស') return 'ប្រុស'
+  if (value === 'female' || value === 'f' || value === 'ស្រី') return 'ស្រី'
+  return '-'
+}
+
+const getPositionKh = (position) => {
+  if (!position) return '-'
+
+  const value = String(position).trim()
+  return positionLabels[value.toLowerCase()] || value
+}
+
+const getStatusKh = (status) => {
+  return status == 1 ? 'នៅបង្រៀន' : 'ឈប់បង្រៀន/ផ្អាក'
+}
+
+const getSpecialties = (data) => {
+  if (Array.isArray(data)) return data
+  if (!data) return []
+
+  if (typeof data === 'string') {
+    try {
+      const parsed = JSON.parse(data)
+      if (Array.isArray(parsed)) return parsed
+      if (typeof parsed === 'string' && parsed.trim()) return [parsed.trim()]
+    } catch {
+      // Fall through to comma-separated parsing below.
+    }
+
+    return data
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+  }
+
+  return []
+}
+
+const formatSpecialty = (specialty) => {
+  const list = getSpecialties(specialty)
+  return list.length > 0 ? list.join(', ') : '-'
+}
+
+const formatDisplayDate = (value, fallback = 'N/A') => {
+  if (!value) return fallback
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return fallback
+  return date.toLocaleDateString('km-KH')
+}
+
+const formatPlaceOfBirth = (teacher) => {
+  return (
+    [
+      teacher.pob_village,
+      teacher.pob_commune || teacher.pob_sangkat,
+      teacher.pob_district || teacher.pob_khan,
+      teacher.pob_province || teacher.pob_city,
+    ]
+      .filter(Boolean)
+      .join(', ') || '-'
+  )
+}
+
+const formatCurrentAddress = (teacher) => {
+  return (
+    [teacher.village, teacher.commune, teacher.district, teacher.province]
+      .filter(Boolean)
+      .join(', ') || '-'
+  )
+}
+
+const toKhmerNumber = (num) => {
+  if (num === null || num === undefined || num === '') return ''
+
+  const map = {
+    0: '០',
+    1: '១',
+    2: '២',
+    3: '៣',
+    4: '៤',
+    5: '៥',
+    6: '៦',
+    7: '៧',
+    8: '៨',
+    9: '៩',
+  }
+
+  return String(num).replace(/[0-9]/g, (digit) => map[digit])
+}
+
+const sanitizeFileName = (name) => name.replace(/[\\/:*?"<>|]/g, '-').trim()
+
 // --- Fetch ---
 const fetchTeachers = async () => {
   isLoading.value = true
+
   try {
-    const res = await teacherService.getTeachers()
-    teachers.value = Array.isArray(res) ? res : (res.data || [])
+    const response = await teacherService.getTeachers()
+    teachers.value = sortByCreatedAsc(unwrapArray(response))
     brokenPhotos.value = new Set()
   } catch (error) {
     console.error('Fetch Error:', error)
@@ -349,151 +756,660 @@ const resetFilters = () => {
   selectedStatus.value = ''
   activeFilter.value = ''
   searchQuery.value = ''
+  selectedRole.value = 'all'
 }
 
-// --- Helpers ---
-const getSpecialties = (data) => {
-  if (!data) return []
-  try {
-    return typeof data === 'string' ? JSON.parse(data) : data
-  } catch {
-    return [data]
-  }
-}
+// --- Computed ---
+const filteredTeachers = computed(() => {
+  return teachers.value.filter((teacher) => {
+    const query = searchQuery.value.toLowerCase().trim()
+    const searchablePosition = getPositionKh(teacher.position).toLowerCase()
 
-// --- Edit Modal ---
+    const matchesSearch =
+      !query ||
+      teacher.name_kh?.toLowerCase().includes(query) ||
+      teacher.name_en?.toLowerCase().includes(query) ||
+      teacher.phone?.includes(query) ||
+      searchablePosition.includes(query)
+
+    const matchesStatus =
+      selectedStatus.value === '' || teacher.status == selectedStatus.value
+
+    const teacherGender = String(teacher.gender || '').toLowerCase()
+    const matchesGender =
+      selectedGender.value === '' ||
+      (selectedGender.value === 'female' &&
+        ['female', 'f', 'ស្រី'].includes(teacherGender))
+
+    const matchesRole =
+      selectedRole.value === 'all' ||
+      (selectedRole.value === 'teacher' && teacher.status == 1) ||
+      (selectedRole.value === 'student' && teacher.status == 0)
+
+    return matchesSearch && matchesStatus && matchesGender && matchesRole
+  })
+})
+
+const totalFemale = computed(() => {
+  return filteredTeachers.value.filter((teacher) => {
+    const gender = String(teacher.gender || '').toLowerCase()
+    return ['female', 'f', 'ស្រី'].includes(gender)
+  }).length
+})
+
+const totalActive = computed(
+  () => filteredTeachers.value.filter((teacher) => teacher.status == 1).length,
+)
+
+const totalInactive = computed(
+  () => filteredTeachers.value.filter((teacher) => teacher.status != 1).length,
+)
+
+const teacherStats = computed(() => {
+  const list = teachers.value || []
+
+  return [
+    {
+      label: 'គ្រូសរុប',
+      value: `${list.length} នាក់`,
+      icon: GraduationCap,
+      bgColor: 'bg-indigo-50',
+      iconColor: 'text-indigo-600',
+      filterType: '',
+      filterValue: '',
+    },
+    {
+      label: 'គ្រូសកម្ម',
+      value: `${list.filter((teacher) => teacher.status == 1).length} នាក់`,
+      icon: UserCheck,
+      bgColor: 'bg-emerald-50',
+      iconColor: 'text-emerald-600',
+      filterType: 'status',
+      filterValue: '1',
+    },
+    {
+      label: 'គ្រូស្រី',
+      value: `${
+        list.filter((teacher) =>
+          ['female', 'f', 'ស្រី'].includes(
+            String(teacher.gender || '').toLowerCase(),
+          ),
+        ).length
+      } នាក់`,
+      icon: Users,
+      bgColor: 'bg-rose-50',
+      iconColor: 'text-rose-600',
+      filterType: 'gender',
+      filterValue: 'female',
+    },
+    {
+      label: 'គ្រូផ្អាក',
+      value: `${list.filter((teacher) => teacher.status == 0).length} នាក់`,
+      icon: UserMinus,
+      bgColor: 'bg-slate-100',
+      iconColor: 'text-slate-500',
+      filterType: 'status',
+      filterValue: '0',
+    },
+  ]
+})
+
+// --- Modal Handlers ---
 const openEditModal = (teacher) => {
   selectedTeacher.value = teacher
   isEditModalOpen.value = true
 }
 
-// --- Delete Modal ---
 const openDeleteModal = (teacher) => {
   deletingTeacher.value = teacher
   isDeleteModalOpen.value = true
 }
 
 const closeDeleteModal = () => {
+  if (isDeleting.value) return
+
   isDeleteModalOpen.value = false
   deletingTeacher.value = null
 }
 
 const handleCreateTeacher = async () => {
   try {
-    isLoading.value = true
     showCreateModal.value = false
     await fetchTeachers()
     showToast('បង្កើតគ្រូបង្រៀនបានជោគជ័យ!', 'success')
-  } catch (err) {
-    showToast(err.response?.data?.message || 'មិនអាចបង្កើតគ្រូបង្រៀនបានទេ', 'error')
-  } finally {
-    isLoading.value = false
+  } catch (error) {
+    showToast(
+      error.response?.data?.message || 'មិនអាចបង្កើតគ្រូបង្រៀនបានទេ',
+      'error',
+    )
   }
 }
 
-// --- Edit Teacher Handler ---
-// Same idea: EditeTeacher.vue already performed the API update itself.
 const handleUpdateTeacher = async () => {
   try {
-    isLoading.value = true
     isEditModalOpen.value = false
+    selectedTeacher.value = null
     await fetchTeachers()
     showToast('កែប្រែគ្រូបង្រៀនបានជោគជ័យ!', 'success')
-  } catch (err) {
-    showToast(err.response?.data?.message || 'មិនអាចកែប្រែគ្រូបង្រៀនបានទេ!', 'error')
-  } finally {
-    isLoading.value = false
+  } catch (error) {
+    showToast(
+      error.response?.data?.message || 'មិនអាចកែប្រែគ្រូបង្រៀនបានទេ!',
+      'error',
+    )
   }
 }
 
 const confirmDeleteTeacher = async () => {
   if (!deletingTeacher.value) return
+
   try {
     isDeleting.value = true
     await teacherService.deleteTeacher(deletingTeacher.value.id)
-    closeDeleteModal()
+    isDeleteModalOpen.value = false
+    deletingTeacher.value = null
     await fetchTeachers()
     showToast('បានលុបឈ្មោះគ្រូដោយជោគជ័យ!', 'success')
-  } catch (err) {
-    showToast('មិនអាចលុបគ្រូនេះបានទេ: ' + (err.response?.data?.message || 'Error'), 'error')
+  } catch (error) {
+    showToast(
+      `មិនអាចលុបគ្រូនេះបានទេ: ${
+        error.response?.data?.message || 'Error'
+      }`,
+      'error',
+    )
   } finally {
     isDeleting.value = false
   }
 }
 
-// --- Computed ---
-const filteredTeachers = computed(() => {
-  return teachers.value.filter(t => {
-    const query = searchQuery.value.toLowerCase().trim()
-    const matchesSearch = !query ||
-      t.name_kh?.toLowerCase().includes(query) ||
-      t.name_en?.toLowerCase().includes(query) ||
-      t.phone?.includes(query) ||
-      t.teacher_id_card?.toLowerCase().includes(query)
-
-    const matchesStatus = selectedStatus.value === '' || t.status == selectedStatus.value
-    const matchesGender = selectedGender.value === '' ||
-      ['female', 'ស្រី'].includes(t.gender?.toLowerCase()) === (selectedGender.value === 'female')
-    const matchesRole = selectedRole.value === 'all' ||
-      (selectedRole.value === 'teacher' && t.status == 1) ||
-      (selectedRole.value === 'student' && t.status == 0)
-
-    return matchesSearch && matchesStatus && matchesGender && matchesRole
-  })
-})
-
-const teacherStats = computed(() => {
-  const list = teachers.value || []
-  return [
-    { label: 'គ្រូសរុប', value: list.length + ' នាក់', icon: GraduationCap, bgColor: 'bg-indigo-50', iconColor: 'text-indigo-600', filterType: '', filterValue: '' },
-    { label: 'គ្រូសកម្ម', value: list.filter(t => t.status == 1).length + ' នាក់', icon: UserCheck, bgColor: 'bg-emerald-50', iconColor: 'text-emerald-600', filterType: 'status', filterValue: '1' },
-    { label: 'គ្រូស្រី', value: list.filter(t => ['female', 'ស្រី'].includes(t.gender?.toLowerCase())).length + ' នាក់', icon: Users, bgColor: 'bg-rose-50', iconColor: 'text-rose-600', filterType: 'gender', filterValue: 'female' },
-    { label: 'គ្រូផ្អាក', value: list.filter(t => t.status == 0).length + ' នាក់', icon: UserMinus, bgColor: 'bg-slate-100', iconColor: 'text-slate-500', filterType: 'status', filterValue: '0' }
-  ]
-})
-
-// --- Export ---
-const exportToExcel = () => {
-  const data = filteredTeachers.value.map(t => ({
-    'ឈ្មោះខ្មែរ': t.name_kh || '',
-    'ឈ្មោះអង់គ្លេស': t.name_en || '',
-    'ឯកទេស': getSpecialties(t.specialty).join(', '),
-    'លេខទូរស័ព្ទ': t.phone || '',
-    'អ៊ីម៉ែល': t.user?.email || '',
-    'ថ្ងៃចូលបម្រើការងារ': t.hire_date ? new Date(t.hire_date).toLocaleDateString('km-KH') : '',
-    'ថ្ងៃខែឆ្នាំកំណើត': t.dob ? new Date(t.dob).toLocaleDateString('km-KH') : '',
-    'ស្ថានភាព': t.status == 1 ? 'សកម្ម' : 'ផ្អាក'
-  }))
-  const ws = XLSX.utils.json_to_sheet(data)
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Teachers')
-  XLSX.writeFile(wb, 'teachers.xlsx')
+// --- Excel Styles ---
+const THIN_BORDER = { style: 'thin', color: { rgb: '000000' } }
+const ALL_BORDERS = {
+  top: THIN_BORDER,
+  bottom: THIN_BORDER,
+  left: THIN_BORDER,
+  right: THIN_BORDER,
 }
 
-const exportToPDF = () => {
-  const doc = new jsPDF({ orientation: 'landscape' })
-  const rows = filteredTeachers.value.map(t => [
-    t.name_kh || '',
-    t.name_en || '',
-    getSpecialties(t.specialty).join(', '),
-    t.phone || '',
-    t.user?.email || '',
-    t.hire_date ? new Date(t.hire_date).toLocaleDateString('km-KH') : '',
-    t.status == 1 ? 'Active' : 'Inactive'
+const kingdomStyle = {
+  font: { name: 'Khmer OS Muol Light', bold: true, sz: 15 },
+  alignment: { horizontal: 'center', vertical: 'center' },
+}
+
+const mottoStyle = {
+  font: { name: 'Khmer OS Muol Light', bold: true, sz: 12 },
+  alignment: { horizontal: 'center', vertical: 'center' },
+}
+
+const officeStyle = {
+  font: { name: 'Khmer OS Muol Light', bold: true, sz: 12 },
+  alignment: { horizontal: 'left', vertical: 'center' },
+}
+
+const titleStyle = {
+  font: { name: 'Khmer OS Muol Light', bold: true, sz: 14 },
+  alignment: { horizontal: 'center', vertical: 'center' },
+}
+
+const tableHeaderStyle = {
+  font: { name: 'Khmer OS Battambang', bold: true, sz: 11 },
+  alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+  border: ALL_BORDERS,
+  fill: { fgColor: { rgb: 'F1F5F9' } },
+}
+
+const tableCellStyle = {
+  font: { name: 'Khmer OS Battambang', sz: 11 },
+  alignment: { horizontal: 'center', vertical: 'center' },
+  border: ALL_BORDERS,
+}
+
+const tableCellLeftStyle = {
+  font: { name: 'Khmer OS Battambang', sz: 10 },
+  alignment: {
+    horizontal: 'left',
+    vertical: 'center',
+    wrapText: true,
+  },
+  border: ALL_BORDERS,
+}
+
+const totalStyle = {
+  font: { name: 'Khmer OS Battambang', bold: true, sz: 11 },
+  alignment: { horizontal: 'left', vertical: 'center' },
+}
+
+const dateLineStyle = {
+  font: { name: 'Khmer OS Battambang', sz: 11 },
+  alignment: { horizontal: 'right', vertical: 'center' },
+}
+
+const dateMoulRightStyle = {
+  font: { name: 'Khmer OS Muol Light', sz: 11 },
+  alignment: { horizontal: 'right', vertical: 'center' },
+}
+
+const styleCell = (worksheet, row, column, style) => {
+  const address = XLSX.utils.encode_cell({ r: row, c: column })
+  if (!worksheet[address]) worksheet[address] = { t: 's', v: '' }
+  worksheet[address].s = style
+}
+
+// --- Export: Excel ---
+const exportToExcel = () => {
+  if (filteredTeachers.value.length === 0) return
+
+  // Export every important teacher field in landscape orientation.
+  const tableHeader = [
+    'ល.រ',
+    'ឈ្មោះ (ខ្មែរ)',
+    'ឈ្មោះឡាតាំង',
+    'ភេទ',
+    'មុខតំណែង',
+    'មុខវិជ្ជាជំនាញ',
+    'ទូរស័ព្ទ',
+    'ថ្ងៃចូលធ្វើការ',
+    'ថ្ងៃខែឆ្នាំកំណើត',
+    'ទីកន្លែងកំណើត',
+    'អាសយដ្ឋានបច្ចុប្បន្ន',
+    'ស្ថានភាព',
+  ]
+  const columnCount = tableHeader.length
+
+  const headerRows = [
+    ['ព្រះរាជាណាចក្រកម្ពុជា'],
+    ['ជាតិ សាសនា ព្រះមហាក្សត្រ'],
+    [],
+    [ministryLine1.value],
+    [ministryLine2.value],
+    ['បញ្ជីឈ្មោះគ្រូបង្រៀន'],
+    [],
+  ]
+
+  const tableRows = filteredTeachers.value.map((teacher, index) => [
+    toKhmerNumber(index + 1),
+    teacher.name_kh || '-',
+    teacher.name_en || '-',
+    getGenderKh(teacher.gender),
+    getPositionKh(teacher.position),
+    formatSpecialty(teacher.specialty),
+    teacher.phone || '-',
+    formatDisplayDate(teacher.hire_date, '-'),
+    formatDisplayDate(teacher.dob, '-'),
+    formatPlaceOfBirth(teacher),
+    formatCurrentAddress(teacher),
+    getStatusKh(teacher.status),
   ])
-  autoTable(doc, {
-    head: [['ឈ្មោះខ្មែរ', 'ឈ្មោះអង់គ្លេស', 'ឯកទេស', 'ទូរស័ព្ទ', 'អ៊ីម៉ែល', 'ថ្ងៃចូលបម្រើ', 'ស្ថានភាព']],
-    body: rows,
-    styles: { fontSize: 9 },
-    headStyles: { fillColor: [79, 70, 229] }
+
+  let cursor = headerRows.length + 1 + tableRows.length
+  const extraRows = []
+  const styleQueue = []
+  const mergeQueue = []
+
+  const pushRow = (rowValues) => {
+    extraRows.push(rowValues)
+    const row = cursor
+    cursor += 1
+    return row
+  }
+
+  pushRow([])
+
+  const summaryRowIndex = pushRow([
+    `សរុបចំនួនគ្រូបង្រៀន៖ ${toKhmerNumber(
+      filteredTeachers.value.length,
+    )} នាក់    ស្រី៖ ${toKhmerNumber(
+      totalFemale.value,
+    )} នាក់    កំពុងបង្រៀន៖ ${toKhmerNumber(
+      totalActive.value,
+    )} នាក់    ឈប់បង្រៀន៖ ${toKhmerNumber(totalInactive.value)} នាក់`,
+  ])
+
+  styleQueue.push({ r: summaryRowIndex, c: 0, style: totalStyle })
+  mergeQueue.push({ r: summaryRowIndex, c1: 0, c2: columnCount - 1 })
+
+  pushRow([])
+
+  // Put the signature block on the right side of the wide landscape sheet.
+  const signatureStartColumn = columnCount - 6
+  const createSignatureRow = (text) => {
+    const row = Array(signatureStartColumn).fill('')
+    row.push(text)
+    return row
+  }
+
+  const dateRow1Index = pushRow(
+    createSignatureRow(
+      'ថ្ងៃ............. ខែ............. ឆ្នាំ............. ព.ស...............',
+    ),
+  )
+  const dateRow2Index = pushRow(
+    createSignatureRow('នរា ថ្ងៃទី........ ខែ........ ឆ្នាំ២០........'),
+  )
+  const teacherTitleIndex = pushRow(createSignatureRow('នាយកសាលា'))
+
+  mergeQueue.push({
+    r: dateRow1Index,
+    c1: signatureStartColumn,
+    c2: columnCount - 1,
   })
-  doc.save('teachers.pdf')
+  mergeQueue.push({
+    r: dateRow2Index,
+    c1: signatureStartColumn,
+    c2: columnCount - 1,
+  })
+  mergeQueue.push({
+    r: teacherTitleIndex,
+    c1: signatureStartColumn,
+    c2: columnCount - 1,
+  })
+
+  styleQueue.push({
+    r: dateRow1Index,
+    c: signatureStartColumn,
+    style: dateLineStyle,
+  })
+  styleQueue.push({
+    r: dateRow2Index,
+    c: signatureStartColumn,
+    style: dateLineStyle,
+  })
+  styleQueue.push({
+    r: teacherTitleIndex,
+    c: signatureStartColumn,
+    style: dateMoulRightStyle,
+  })
+
+  const worksheetData = [
+    ...headerRows,
+    tableHeader,
+    ...tableRows,
+    ...extraRows,
+  ]
+  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
+
+  const tableHeaderRowIndex = headerRows.length
+  const tableStartRowIndex = tableHeaderRowIndex + 1
+  const tableEndRowIndex = tableStartRowIndex + tableRows.length - 1
+
+  worksheet['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: columnCount - 1 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: columnCount - 1 } },
+    { s: { r: 3, c: 0 }, e: { r: 3, c: columnCount - 1 } },
+    { s: { r: 4, c: 0 }, e: { r: 4, c: columnCount - 1 } },
+    { s: { r: 5, c: 0 }, e: { r: 5, c: columnCount - 1 } },
+    ...mergeQueue.map((merge) => ({
+      s: { r: merge.r, c: merge.c1 },
+      e: { r: merge.r, c: merge.c2 },
+    })),
+  ]
+
+  styleCell(worksheet, 0, 0, kingdomStyle)
+  styleCell(worksheet, 1, 0, mottoStyle)
+  styleCell(worksheet, 3, 0, officeStyle)
+  styleCell(worksheet, 4, 0, officeStyle)
+  styleCell(worksheet, 5, 0, titleStyle)
+
+  for (let column = 0; column < columnCount; column += 1) {
+    styleCell(worksheet, tableHeaderRowIndex, column, tableHeaderStyle)
+  }
+
+  // Left-align text-heavy fields; center short fields and dates.
+  const leftAlignedColumns = [1, 2, 4, 5, 9, 10]
+
+  for (let row = tableStartRowIndex; row <= tableEndRowIndex; row += 1) {
+    for (let column = 0; column < columnCount; column += 1) {
+      const style = leftAlignedColumns.includes(column)
+        ? tableCellLeftStyle
+        : tableCellStyle
+      styleCell(worksheet, row, column, style)
+    }
+  }
+
+  styleQueue.forEach(({ r, c, style }) => {
+    styleCell(worksheet, r, c, style)
+  })
+
+  worksheet['!cols'] = [
+    { wch: 7 },  // ល.រ
+    { wch: 22 }, // ឈ្មោះខ្មែរ
+    { wch: 22 }, // ឈ្មោះឡាតាំង
+    { wch: 10 }, // ភេទ
+    { wch: 24 }, // មុខតំណែង
+    { wch: 28 }, // ជំនាញ
+    { wch: 16 }, // ទូរស័ព្ទ
+    { wch: 17 }, // ថ្ងៃចូលធ្វើការ
+    { wch: 17 }, // ថ្ងៃកំណើត
+    { wch: 36 }, // ទីកន្លែងកំណើត
+    { wch: 36 }, // អាសយដ្ឋានបច្ចុប្បន្ន
+    { wch: 20 }, // ស្ថានភាព
+  ]
+
+  const worksheetRows = []
+  worksheetRows[0] = { hpt: 26 }
+  worksheetRows[tableHeaderRowIndex] = { hpt: 34 }
+  for (let row = tableStartRowIndex; row <= tableEndRowIndex; row += 1) {
+    worksheetRows[row] = { hpt: 32 }
+  }
+  worksheet['!rows'] = worksheetRows
+
+  worksheet['!pageSetup'] = {
+    orientation: 'landscape',
+    paperSize: 9,
+    fitToWidth: 1,
+    fitToHeight: 0,
+  }
+  worksheet['!printOptions'] = {
+    horizontalCentered: true,
+    verticalCentered: false,
+  }
+  worksheet['!margins'] = {
+    left: 0.25,
+    right: 0.25,
+    top: 0.5,
+    bottom: 0.5,
+    header: 0.2,
+    footer: 0.2,
+  }
+
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'គ្រូបង្រៀន')
+  XLSX.writeFile(
+    workbook,
+    `${sanitizeFileName('បញ្ជីឈ្មោះគ្រូបង្រៀន')}.xlsx`,
+  )
+}
+
+// --- Export: PDF ---
+const exportToPDF = async () => {
+  if (filteredTeachers.value.length === 0 || !printArea.value) return
+
+  const options = {
+    margin: [8, 8, 8, 8],
+    filename: `${sanitizeFileName('បញ្ជីឈ្មោះគ្រូបង្រៀន')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      scrollX: 0,
+      scrollY: 0,
+    },
+    pagebreak: {
+      mode: ['css', 'legacy'],
+      avoid: ['tr'],
+    },
+    jsPDF: {
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'landscape',
+    },
+  }
+
+  if (document.fonts?.ready) {
+    await document.fonts.ready
+  }
+
+  printArea.value.style.display = 'block'
+
+  try {
+    await html2pdf().set(options).from(printArea.value).save()
+  } catch (error) {
+    console.error('PDF export failed:', error)
+    showToast('មានបញ្ហាក្នុងការទាញយក PDF', 'error')
+  } finally {
+    printArea.value.style.display = 'none'
+  }
 }
 
 onMounted(fetchTeachers)
+
+onBeforeUnmount(() => {
+  if (toastTimer) clearTimeout(toastTimer)
+})
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Moul&display=swap');
+
+/* --- Hidden PDF Export Template Styles --- */
+.pdf-export-area {
+  display: none;
+  box-sizing: border-box;
+  width: 277mm;
+  margin: 0 auto;
+  padding: 10px 12px 18px;
+  background: #ffffff;
+  color: #000000;
+  font-family: 'Battambang', sans-serif;
+}
+
+.doc-header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.kingdom-title {
+  font-family: 'Moul', serif;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.kingdom-motto {
+  font-family: 'Moul', serif;
+  font-weight: 500;
+  font-size: 14px;
+  margin: 3px 0 10px;
+}
+
+.ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.ornament-line {
+  width: 70px;
+  height: 1px;
+  background: #000000;
+}
+
+.ornament-icon {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.doc-office {
+  font-family: 'Moul', serif, Arial, Helvetica, sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  margin: 14px 0 18px;
+}
+
+.doc-office p {
+  font-family: 'Moul', serif;
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 2px 0;
+}
+
+.doc-title {
+  font-family: 'Moul', Arial, sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  text-align: center;
+  margin: 10px 0 16px;
+}
+
+.pdf-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 8.5px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.pdf-table thead {
+  display: table-header-group;
+}
+
+.pdf-table tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.pdf-table th,
+.pdf-table td {
+  border: 1px solid #000000;
+  padding: 4px 3px;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.pdf-table th {
+  font-weight: 700;
+  text-align: center;
+  background: #ffffff;
+}
+
+.pdf-text-left {
+  text-align: left;
+}
+
+.pdf-name-cell {
+  font-weight: 700;
+}
+
+.doc-summary {
+  margin-top: 15px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.doc-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 25px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.signature-right {
+  width: 50%;
+  text-align: center;
+}
+
+.moul {
+  font-family: 'Moul', serif;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* --- General UI Transitions & Scrollbar --- */
 .custom-scrollbar::-webkit-scrollbar {
   height: 6px;
 }
@@ -515,7 +1431,9 @@ onMounted(fetchTeachers)
 
 .modal-scale-enter-active,
 .modal-scale-leave-active {
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .modal-scale-enter-from,
@@ -526,7 +1444,9 @@ onMounted(fetchTeachers)
 
 .toast-slide-enter-active,
 .toast-slide-leave-active {
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .toast-slide-enter-from,

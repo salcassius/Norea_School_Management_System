@@ -17,12 +17,10 @@
       </div>
 
       <form @submit.prevent="handleSubmit" class="p-5 space-y-4">
-        
         <div class="space-y-1.5">
           <label class="text-[14px] font-bold text-slate-600 ml-0.5">ឈ្មោះការប្រឡង <span class="text-rose-500">*</span></label>
           <input v-model="form.name" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm outline-none focus:border-indigo-500 transition-all" placeholder="ឧ. ប្រឡងប្រចាំខែឧសភា" required />
         </div>
-
 
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-1.5">
@@ -34,7 +32,8 @@
             <select v-model="form.type" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm outline-none" required>
               <option value="ប្រចាំខែ">ប្រចាំខែ</option>
               <option value="ឆមាស">ឆមាស</option>
-              <option value="ចុងឆ្នាំ">ប្រចាំឆ្នាំ</option>
+              <!-- ✅ កែ value មកជា ប្រចាំឆ្នាំ វិញ -->
+              <option value="ប្រចាំឆ្នាំ">ប្រចាំឆ្នាំ</option>
             </select>
           </div>
         </div>
@@ -51,14 +50,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { ClipboardCheck, X } from 'lucide-vue-next'
 import api from '@/services/authService'
 
 const props = defineProps({
   subjects: { type: Array, default: () => [] },
   classes: { type: Array, default: () => [] },
-  activeYearId: { type: [Number, String], default: 1 } 
+  activeYearId: { type: [Number, String], default: 1 }
 })
 
 const emit = defineEmits(['close', 'saved'])
@@ -67,7 +66,7 @@ const isSubmitting = ref(false)
 const form = ref({
   name: '',
   type: 'ប្រចាំខែ',
-  year_id: props.activeYearId, 
+  year_id: props.activeYearId,
   exam_date: new Date().toISOString().split('T')[0],
   status: 'ជិតមកដល់'
 })

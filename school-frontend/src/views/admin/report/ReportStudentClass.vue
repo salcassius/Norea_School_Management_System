@@ -1,11 +1,11 @@
 <template>
-    <div class="bg-blue-400 text-white rounded-t-xl p-5 shadow-sm">
+    <div class="bg-blue-400 text-white rounded-t-xl p-4 sm:p-5 shadow-sm">
         <p class="text-sm font-medium mb-3 opacity-90">តម្រងស្វែងរក</p>
-        <div class="flex flex-col md:flex-row items-end gap-6">
+        <div class="flex flex-col md:flex-row items-stretch md:items-end gap-4 md:gap-6">
             <div class="w-full md:w-64">
                 <label class="block text-sm font-medium mb-1.5 opacity-90">ឆ្នាំសិក្សា</label>
                 <select v-model="filterYear"
-                    class="w-full text-gray-800 rounded-lg px-3 py-2 text-sm cursor-pointer focus:ring-2 focus:ring-blue-300">
+                    class="w-full text-gray-800 rounded-lg px-3 py-2.5 md:py-2 text-sm cursor-pointer focus:ring-2 focus:ring-blue-300">
                     <option value="" disabled>ជ្រើសរើសឆ្នាំ</option>
                     <option v-for="year in academicYears" :key="year.id" :value="year.id">{{ year.year_name }}
                     </option>
@@ -14,14 +14,14 @@
             <div class="w-full md:w-64">
                 <label class="block text-sm font-medium mb-1.5 opacity-90">ថ្នាក់</label>
                 <select v-model="filterClass"
-                    class="w-full text-gray-800 rounded-lg px-3 py-2 text-sm cursor-pointer focus:ring-2 focus:ring-blue-300">
+                    class="w-full text-gray-800 rounded-lg px-3 py-2.5 md:py-2 text-sm cursor-pointer focus:ring-2 focus:ring-blue-300">
                     <option value="" disabled>ជ្រើសរើសថ្នាក់</option>
                     <option v-for="cls in studentClasses" :key="cls.id" :value="cls.id">{{ cls.grade_level }}{{
                         cls.name }}</option>
                 </select>
             </div>
             <button @click="fetchReportData" :disabled="loading"
-                class="bg-emerald-500 hover:bg-emerald-600 px-6 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                class="w-full md:w-auto bg-emerald-500 hover:bg-emerald-600 px-6 py-2.5 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2 disabled:opacity-60">
                 {{ loading ? 'កំពុងផ្ទុក...' : 'បង្ហាញទិន្នន័យ' }}
             </button>
         </div>
@@ -33,29 +33,29 @@
 
     <div class="bg-white rounded-b-xl border border-gray-200 shadow-sm overflow-hidden min-h-[300px]">
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full min-w-[720px] text-left border-collapse">
                 <thead>
-                    <tr class="bg-gray-50 border-b border-gray-200 text-gray-700 text-sm">
-                        <th class="py-3 px-4 text-center">ល.រ</th>
-                        <th class="py-3 px-4">ឈ្មោះសិស្ស</th>
-                        <th class="py-3 px-4">ភេទ</th>
-                        <th class="py-3 px-4">ថ្ងៃ ខែ ឆ្នាំកំណើត</th>
-                        <th class="py-3 px-4">ថ្នាក់ទី</th>
-                        <th class="py-3 px-4">មកពី</th>
-                        <th class="py-3 px-4">ផ្សេងៗ</th>
+                    <tr class="bg-gray-50 border-b border-gray-200 text-gray-700 text-xs sm:text-sm">
+                        <th class="py-2.5 px-3 sm:py-3 sm:px-4 text-center">ល.រ</th>
+                        <th class="py-2.5 px-3 sm:py-3 sm:px-4">ឈ្មោះសិស្ស</th>
+                        <th class="py-2.5 px-3 sm:py-3 sm:px-4">ភេទ</th>
+                        <th class="py-2.5 px-3 sm:py-3 sm:px-4 whitespace-nowrap">ថ្ងៃ ខែ ឆ្នាំកំណើត</th>
+                        <th class="py-2.5 px-3 sm:py-3 sm:px-4">ថ្នាក់ទី</th>
+                        <th class="py-2.5 px-3 sm:py-3 sm:px-4">មកពី</th>
+                        <th class="py-2.5 px-3 sm:py-3 sm:px-4">ផ្សេងៗ</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100 text-sm">
+                <tbody class="divide-y divide-gray-100 text-xs sm:text-sm">
                     <tr v-for="(student, index) in students" :key="student.id" class="hover:bg-gray-50">
-                        <td class="py-3 px-4 text-center text-gray-500">{{ toKhmerNumber(index + 1) }}</td>
-                        <td class="py-3 px-4 font-medium text-gray-900">{{ student.name_kh || student.name }}</td>
-                        <td class="py-3 px-4">
+                        <td class="py-2.5 px-3 sm:py-3 sm:px-4 text-center text-gray-500">{{ toKhmerNumber(index + 1) }}</td>
+                        <td class="py-2.5 px-3 sm:py-3 sm:px-4 font-medium text-gray-900">{{ student.name_kh || student.name }}</td>
+                        <td class="py-2.5 px-3 sm:py-3 sm:px-4">
                             {{ student.gender === 'male' ? 'ប្រុស' : 'ស្រី' }}
                         </td>
-                        <td class="py-3 px-4">{{ formatDate(student.date_of_birth) }}</td>
-                        <td class="py-3 px-4 font-medium text-gray-900">{{ student.from_class }}</td>
-                        <td class="py-3 px-4 font-medium text-gray-900">{{ student.pri_school }}</td>
-                        <td class="py-3 px-4 text-gray-600">{{ student.note }}</td>
+                        <td class="py-2.5 px-3 sm:py-3 sm:px-4 whitespace-nowrap">{{ formatDate(student.date_of_birth) }}</td>
+                        <td class="py-2.5 px-3 sm:py-3 sm:px-4 font-medium text-gray-900">{{ student.from_class }}</td>
+                        <td class="py-2.5 px-3 sm:py-3 sm:px-4 font-medium text-gray-900">{{ student.pri_school }}</td>
+                        <td class="py-2.5 px-3 sm:py-3 sm:px-4 text-gray-600">{{ student.note }}</td>
                     </tr>
                     <tr v-if="students.length === 0 && !loading">
                         <td colspan="7" class="py-10 text-center text-gray-400">មិនទាន់មានទិន្នន័យសម្រាប់បង្ហាញ</td>
@@ -64,41 +64,36 @@
             </table>
         </div>
 
-        <div class="p-4 bg-white border-t border-gray-100 flex justify-between items-center">
-            <div class="text-sm text-gray-600">ទិន្នន័យសរុប៖ <span class="font-bold text-gray-900">{{
+        <div class="p-4 bg-white border-t border-gray-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <div class="text-sm text-gray-600 text-center sm:text-left">ទិន្នន័យសរុប៖ <span class="font-bold text-gray-900">{{
                 toKhmerNumber(students.length) }}</span> នាក់</div>
-            <div class="space-x-3">
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button @click="exportExcel"
+                    class="w-full sm:w-auto bg-white border border-green-600 text-green-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                    ទាញយក Excel
+                </button>
                 <button @click="exportPDF"
-                    class="bg-white border border-blue-400 text-blue-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition">
+                     class="w-full sm:w-auto bg-white border border-red-600 text-red-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                     ទាញយក PDF
                 </button>
-                <button @click="exportExcel"
-                    class="bg-white border border-green-300 text-green-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition">
-                    នាំចេញ Excel
-                </button>
+
             </div>
         </div>
     </div>
 
-    <div class="mt-10 text-right leading-8 justify-end">
-        <div class=" flex flex-col items-end ">
-            <div class="text-center">
-                <p>ថ្ងៃ............. ខែ............. ឆ្នាំ............. ព.ស...............</p>
-                <p>នរា ថ្ងៃទី........ ខែ........ ឆ្នាំ២០........</p>
-                <p>គ្រូបន្ទប់ថ្នាក់</p>
-            </div>
+    <div class="mt-10 flex flex-col items-center md:items-end gap-8 md:gap-0 leading-8">
+        <div class="text-center">
+            <p>ថ្ងៃ............. ខែ............. ឆ្នាំ............. ព.ស...............</p>
+            <p>នរា ថ្ងៃទី........ ខែ........ ឆ្នាំ២០........</p>
+            <p>គ្រូបន្ទប់ថ្នាក់</p>
         </div>
-        <div class="flex justify-between">
-
-            <div class="text-center font-moul ">
+        <div class="w-full flex justify-center md:justify-between">
+            <div class="text-center font-moul">
                 <p>បានឃើញ និងឯកភាព</p>
                 <p>នាយកសាលា</p>
             </div>
         </div>
     </div>
-
-
-
 
     <div ref="printArea" class="pdf-export-area">
         <div class="doc-header">
@@ -271,7 +266,7 @@ const formatDate = (dateString) => {
     const day = String(d.getDate()).padStart(2, '0');
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
-    return toKhmerNumber(`${day}/${month}/${year}`);
+    return `${day}/${month}/${year}`;
 }
 
 onMounted(loadFilters)

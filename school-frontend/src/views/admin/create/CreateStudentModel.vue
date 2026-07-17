@@ -309,7 +309,7 @@ const initialState = {
     district: '',
     commune: '',
     village: '',
-    email: '',
+    email: null,
     password: '',
     phone: '',
     guardian_mom_name: '',

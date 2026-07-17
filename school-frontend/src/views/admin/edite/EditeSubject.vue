@@ -78,7 +78,7 @@ const props = defineProps({
   subjectData: Object
 })
 
-const emit = defineEmits(['update:modelValue', 'refresh'])
+const emit = defineEmits(['update:modelValue', 'refresh', 'error'])
 const isSubmitting = ref(false)
 const errorMessage = ref(null)
 

@@ -9,7 +9,6 @@ const showPassword = ref(false);
 const isLoading = ref(false);
 const errorMessage = ref('');
 
-
 const credentials = reactive({
   email: '',
   password: ''
@@ -28,19 +27,18 @@ const handleLogin = async () => {
     });
   } catch (err) {
     console.error("Login component error:", err);
-    
   }
 };
 </script>
 
 <template>
-  <div class="font-[Battambang] min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-700 via-blue-800 to-blue-900 p-6">
+  <div class="font-[Battambang] min-h-screen flex items-center justify-center bg-gray-300 p-6">
     <div class="w-full max-w-md space-y-8 bg-white p-10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
       
       <div class="text-center">
         <img class="mx-auto h-24 w-auto" :src="logo" alt="Logo" />
         <h2 class="mt-4 text-xl font-extrabold tracking-tight text-gray-900">
-          ស្វាគមន៍មកកាន់សាលាអនុវិទ្យាល័យនរា
+          ប្រព័ន្ធគ្រប់គ្រងសាលារៀនអនុវិទ្យាល័យនរា
         </h2>
         <p class="text-gray-500 mt-2">
           ចូលគណនីរបស់អ្នកដើម្បីប្រើប្រាស់
@@ -58,18 +56,30 @@ const handleLogin = async () => {
             <label for="email" class="block text-sm font-semibold text-gray-700 mb-1.5">
               គណនីសម្រាប់ចូលប្រើប្រាស់
             </label>
-            <input v-model="credentials.email" id="email" type="email" required placeholder="name@gmail.com"
-              class="block w-full rounded-xl border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none border" />
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <input v-model="credentials.email" id="email" type="email" required placeholder="បញ្ចូលឈ្មោះអ្នកប្រើរបស់អ្នក"
+                class="block w-full rounded-xl border-gray-300 bg-gray-50 pl-10 pr-4 py-3 text-gray-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none border" />
+            </div>
           </div>
 
           <div>
             <label for="password" class="block text-sm font-semibold text-gray-700 mb-1.5">
-              លេខសម្ងាត់
+              ពាក្យសម្ងាត់
             </label>
             <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
               <input v-model="credentials.password" id="password" :type="showPassword ? 'text' : 'password'" required
-                placeholder="••••••••"
-                class="block w-full rounded-xl border-gray-300 bg-gray-50 px-4 py-3 pr-12 text-gray-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none border" />
+                placeholder="បញ្ចូលពាក្យសម្ងាត់របស់អ្នក"
+                class="block w-full rounded-xl border-gray-300 bg-gray-50 pl-10 pr-12 py-3 text-gray-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none border" />
               
               <button type="button" @click="showPassword = !showPassword" 
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600 focus:outline-none">
@@ -92,7 +102,7 @@ const handleLogin = async () => {
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            {{ isLoading ? 'កំពុងផ្ទៀងផ្ទាត់...' : 'ចូលប្រើប្រាស់' }}
+            {{ isLoading ? 'កំពុងផ្ទៀងផ្ទាត់...' : 'ចូលប្រព័ន្ធ' }}
           </button>
         </div>
       </form>

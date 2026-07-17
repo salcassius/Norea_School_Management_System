@@ -35,7 +35,7 @@
     <!-- Year Cards -->
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div
-        v-for="year in academicYears"
+        v-for="year in sortedYears"
         :key="year.id"
         :class="[
           'relative p-5 rounded-2xl border transition-all duration-300 bg-white group shadow-sm',
@@ -90,7 +90,7 @@
         </div>
       </div>
 
-      <div v-if="academicYears.length === 0" class="col-span-full py-16 text-center text-slate-400 text-sm">
+      <div v-if="sortedYears.length === 0" class="col-span-full py-16 text-center text-slate-400 text-sm">
         មិនមានឆ្នាំសិក្សាទេ
       </div>
     </div>
@@ -191,9 +191,23 @@ const isDeleteModalOpen = ref(false)
 const isDeleting = ref(false)
 const deletingYear = ref(null)
 
-
 // --- Computed ---
 const activeYear = computed(() => academicYears.value.find(y => y.is_active))
+
+// ✅ Sorted Years: Active first + Newest to Oldest
+const sortedYears = computed(() => {
+  const sorted = [...academicYears.value].sort((a, b) => {
+    return b.year_name.localeCompare(a.year_name)
+  })
+
+  const activeIndex = sorted.findIndex(y => y.is_active)
+  if (activeIndex > -1) {
+    const active = sorted.splice(activeIndex, 1)[0]
+    sorted.unshift(active)
+  }
+
+  return sorted
+})
 
 // --- Toast ---
 const toast = ref({ show: false, message: '', type: 'success' })
@@ -240,10 +254,7 @@ const handleCreateYear = async () => {
     await fetchYears()
     showToast('បានបង្កើតឆ្នាំសិក្សាដោយជោគជ័យ!', 'success')
   } catch (error) {
-    showToast(
-      error.response?.data?.message || 'មិនអាចបង្កើតឆ្នាំសិក្សាបានទេ!',
-      'error'
-    )
+    showToast(error.response?.data?.message || 'មិនអាចបង្កើតឆ្នាំសិក្សាបានទេ!', 'error')
   }
 }
 
@@ -253,10 +264,7 @@ const handleUpdateYear = async () => {
     await fetchYears()
     showToast('បានកែប្រែឆ្នាំសិក្សាដោយជោគជ័យ!', 'success')
   } catch (error) {
-    showToast(
-      error.response?.data?.message || 'មិនអាចកែប្រែឆ្នាំសិក្សាបានទេ!',
-      'error'
-    )
+    showToast(error.response?.data?.message || 'មិនអាចកែប្រែឆ្នាំសិក្សាបានទេ!', 'error')
   }
 }
 

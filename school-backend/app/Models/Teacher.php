@@ -15,6 +15,7 @@ class Teacher extends Model
         'name_kh',
         'name_en',
         'specialty',
+        'position',
         'gender',
         'dob',
         // ទីកន្លែងកំណើត (POB) ដែលបំបែករួច

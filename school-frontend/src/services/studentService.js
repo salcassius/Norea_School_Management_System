@@ -23,7 +23,6 @@ const studentService = {
 
             if (formData instanceof FormData) {
                 for (let [key, value] of formData.entries()) {
-                    // ប្រសិនបើតម្លៃជាអក្សរ null, undefined ឬទទេ មិនបាច់ញាត់ចូលទៅក្នុងកញ្ចប់ទិន្នន័យផ្ញើទៅទេ
                     if (value !== 'null' && value !== 'undefined' && value !== null && value !== undefined && value !== '') {
                         cleanedFormData.append(key, value);
                     }
@@ -37,10 +36,8 @@ const studentService = {
                 });
             }
 
-            // បន្ថែមល្បិចបន្លំ Method _method = PUT ចូលទៅក្នុង FormData ស្អាត
             cleanedFormData.append('_method', 'PUT');
-            
-            // ផ្ញើកញ្ចប់ទិន្នន័យដែលបានសម្អាតរួចទៅកាន់ Laravel
+
             const response = await api.post(`/students/${id}`, cleanedFormData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -56,6 +53,16 @@ const studentService = {
     async deleteStudent(id) {
         const response = await api.delete(`/students/${id}`);
         return response.data;
+    },
+
+    async getStudentHistory(id) {
+        try {
+            const response = await api.get(`/students/${id}/history`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching student history:', error.response?.data || error);
+            throw error;
+        }
     }
 };
 

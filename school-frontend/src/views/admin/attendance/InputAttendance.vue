@@ -1,5 +1,5 @@
 <template>
-  <div class="font-[Battambang] p-6 min-h-screen bg-slate-50/50 text-slate-700">
+  <div class="font-[Battambang] p-3 sm:p-6 min-h-screen bg-slate-50/50 text-slate-700">
 
     <!-- <div class="mb-6">
       <h1 class="text-2xl font-bold text-slate-800 font-[Khmer_OS_Muol_Light]">គ្រប់គ្រងអវត្តមានសិស្ស (Attendance)</h1>
@@ -7,9 +7,9 @@
     </div> -->
 
     <div
-      class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 font-[Battambang]">
+      class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 font-[Battambang]">
       <div class="space-y-1">
-        <label class="text-[14px] font-bold text-slate-600 uppercase font-[Battambang]">១. ជ្រើសរើសថ្នាក់រៀន</label>
+        <label class="text-[13px] sm:text-[14px] font-bold text-slate-600 uppercase font-[Battambang]">១. ជ្រើសរើសថ្នាក់រៀន</label>
         <select v-model="selectedClassId" @change="fetchAttendanceSheet"
           class=" text-[14px] w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 font-semibold outline-none focus:border-indigo-500 cursor-pointer">
           <option value="" disabled>--- ជ្រើសរើសថ្នាក់ ---</option>
@@ -20,7 +20,7 @@
       </div>
 
       <div class="space-y-1">
-        <label class="text-[14px] font-bold text-slate-600 uppercase font-[Battambang]">២. កាលបរិច្ឆេទ</label>
+        <label class="text-[13px] sm:text-[14px] font-bold text-slate-600 uppercase font-[Battambang]">២. កាលបរិច្ឆេទ</label>
         <input v-model="selectedDate" type="date" @change="fetchAttendanceSheet"
           class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-semibold outline-none focus:border-indigo-500 text-slate-800" />
       </div>
@@ -34,7 +34,7 @@
 
       <div v-else>
         <div
-          class="p-4 bg-slate-50/50 border-b border-slate-100 flex flex-wrap gap-2 items-center justify-between text-[15px] font-bold text-slate-700">
+          class="p-4 bg-slate-50/50 border-b border-slate-100 flex flex-wrap gap-2 items-center justify-between text-[14px] sm:text-[15px] font-bold text-slate-700">
           <span>បញ្ជីឈ្មោះសិស្សសរុប៖ {{ attendanceRows.length }} នាក់</span>
           <div class="flex gap-2">
             <button @click="markAllStatus('present')"
@@ -47,7 +47,7 @@
         </div>
 
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
+          <table class="w-full text-left border-collapse min-w-[560px]">
             <thead>
               <tr class="bg-slate-50/30 border-b border-slate-100">
                 <th class="px-4 py-4 text-sm font-bold text-slate-600 text-center">ល.រ</th>
@@ -86,9 +86,9 @@
           </table>
         </div>
 
-        <div class="p-5 border-t border-slate-100 bg-slate-50/50 flex justify-end items-center">
+        <div class="p-4 sm:p-5 border-t border-slate-100 bg-slate-50/50 flex justify-end items-center">
           <button @click="submitAttendance" :disabled="isSaving"
-            class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-indigo-200 active:scale-95 disabled:opacity-50">
+            class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 sm:px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-indigo-200 active:scale-95 disabled:opacity-50 w-full sm:w-auto justify-center">
             {{ isSaving ? 'កំពុងរក្សាទុក...' : 'រក្សាទុក' }}
           </button>
         </div>

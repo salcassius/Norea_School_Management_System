@@ -1,3 +1,4 @@
+<!-- EditClassModal.vue -->
 <template>
   <Transition name="fade">
     <div v-if="modelValue" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
@@ -12,14 +13,14 @@
             <X class="w-6 h-6" />
           </button>
         </div>
-
+  
         <form @submit.prevent="submitForm" class="p-6 space-y-4 font-[Battambang] overflow-y-auto custom-scrollbar flex-1">
-          
+            
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-1.5">ឈ្មោះថ្នាក់រៀន <span class="text-rose-500">*</span></label>
-            <input v-model="form.name" type="text" placeholder="ឧទាហរណ៍៖ ៧អា, ៩បេ" :class="inputClass" required />
+            <input v-model="form.name" type="text" placeholder="ឧទាហរណ៍៖ A, B,..." :class="inputClass" required />
           </div>
-
+  
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-semibold text-slate-700 mb-1.5">កម្រិតថ្នាក់ <span class="text-rose-500">*</span></label>
@@ -29,27 +30,72 @@
                 <option :value="9">ថ្នាក់ទី ៩</option>
               </select>
             </div>
-
+  
             <div>
-  <label class="block text-sm font-semibold text-slate-700 mb-1.5">ឆ្នាំសិក្សា <span class="text-rose-500">*</span></label>
-  <select v-model="form.year_id" :class="inputClass" class="cursor-pointer" required>
-    <option v-for="year in academicYears" :key="year.id" :value="year.id">
-      {{ year.year_name || year.name }} 
-    </option>
-  </select>
-</div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1.5">ឆ្នាំសិក្សា <span class="text-rose-500">*</span></label>
+              <select v-model="form.year_id" :class="inputClass" class="cursor-pointer" required>
+                <option v-for="year in academicYears" :key="year.id" :value="year.id">
+                  {{ year.year_name || year.name }}
+                </option>
+              </select>
+            </div>
           </div>
-
+  
+          <!-- Custom Teacher Dropdown -->
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-1.5">គ្រូបន្ទុកថ្នាក់ (បើមាន)</label>
-            <select v-model="form.teacher_id" :class="inputClass" class="cursor-pointer">
-              <option :value="null">-- ជ្រើសរើសគ្រូបន្ទុកថ្នាក់ --</option>
-              <option v-for="teacher in teachers" :key="teacher.id" :value="teacher.id">
-                {{ teacher.name_kh }}
-              </option>
-            </select>
-          </div>
+            
+            <div class="relative">
+              <button
+                ref="teacherButtonRef"
+                type="button"
+                @click="toggleTeacherDropdown"
+                :class="inputClass + ' flex items-center justify-between text-left w-full'"
+              >
+                <span class="truncate">
+                  {{ selectedTeacherName || '-- ជ្រើសរើសគ្រូបន្ទុកថ្នាក់ --' }}
+                </span>
+                <ChevronDown class="w-4 h-4 text-slate-400 shrink-0" />
+              </button>
 
+              <Teleport to="body">
+                <Transition name="dropdown">
+                  <div 
+                    v-if="showTeacherDropdown"
+                    ref="dropdownRef"
+                    class="fixed z-[9999] bg-white border border-slate-200 rounded-xl shadow-2xl py-1 max-h-[140px] overflow-y-auto custom-scrollbar min-w-[260px]"
+                    :style="{ 
+                      top: dropdownPosition.top + 'px', 
+                      left: dropdownPosition.left + 'px',
+                      width: dropdownPosition.width + 'px'
+                    }"
+                  >
+                    <!-- No teacher option -->
+                    <div 
+                      @click="selectTeacher(null)"
+                      class="px-4 py-2.5 text-sm hover:bg-slate-100 cursor-pointer flex items-center gap-2 text-slate-500"
+                      :class="{ 'bg-slate-100 text-slate-700': !form.teacher_id }"
+                    >
+                      -- ជ្រើសរើសគ្រូបន្ទុកថ្នាក់ --
+                    </div>
+                    
+                    <div 
+                      v-for="teacher in teachers" 
+                      :key="teacher.id"
+                      @click="selectTeacher(teacher)"
+                      class="px-4 py-2.5 text-sm hover:bg-indigo-50 cursor-pointer flex items-center gap-2 transition-colors"
+                      :class="{ 
+                        'bg-indigo-50 text-indigo-700 font-medium': form.teacher_id === teacher.id 
+                      }"
+                    >
+                      {{ teacher.name_kh || teacher.name }}
+                    </div>
+                  </div>
+                </Transition>
+              </Teleport>
+            </div>
+          </div>
+  
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-1.5">ស្ថានភាពថ្នាក់ <span class="text-rose-500">*</span></label>
             <select v-model="form.is_active" :class="inputClass" class="cursor-pointer">
@@ -57,13 +103,13 @@
               <option :value="false">បិទបណ្តោះអាសន្ន</option>
             </select>
           </div>
-
+  
           <div v-if="errorMessage" class="p-3 bg-rose-50 text-rose-600 text-xs rounded-xl border border-rose-100 flex items-center gap-2 animate-shake">
             <AlertCircle class="w-4 h-4 shrink-0" />
             <span>{{ errorMessage }}</span>
           </div>
         </form>
-
+  
         <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50 font-[Battambang]">
           <button type="button" @click="closeModal" class="px-6 py-2.5 text-slate-700 hover:bg-slate-200 bg-indigo-200 rounded-xl font-medium transition-all text-sm">
             បោះបង់
@@ -79,23 +125,23 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
-import { X, GraduationCap, AlertCircle } from 'lucide-vue-next'
-import api from '../../../services/authService' // កែតម្រូវទៅតាម path text share setup របស់អ្នក
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
+import { X, GraduationCap, AlertCircle, ChevronDown } from 'lucide-vue-next'
+import api from '../../../services/authService'
 
 const props = defineProps({
   modelValue: Boolean,
-  classData: Object // ទទួលទិន្នន័យថ្នាក់ដែលត្រូវកែប្រែពី Parent Component
+  classData: Object
 })
 
-const emit = defineEmits(['update:modelValue', 'refresh'])
+const emit = defineEmits(['update:modelValue', 'refresh', 'error'])
 
 const loading = ref(false)
 const errorMessage = ref(null)
-const academicYears = ref([]) // សម្រាប់ផ្ទុកបញ្ជីឆ្នាំសិក្សាទាញពី API
-const teachers = ref([])      // សម្រាប់ផ្ទុកបញ្ជីឈ្មោះគ្រូទាញពី API
+const academicYears = ref([])
+const teachers = ref([])
 
-const inputClass = "w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-[Battambang]";
+const inputClass = "w-full border border-slate-300 rounded-xl px-4 py-2.5 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-[Battambang]"
 
 const form = ref({
   id: null,
@@ -106,14 +152,26 @@ const form = ref({
   teacher_id: null
 })
 
+// Custom dropdown state
+const showTeacherDropdown = ref(false)
+const teacherButtonRef = ref(null)
+const dropdownRef = ref(null)
+const dropdownPosition = ref({ top: 0, left: 0, width: 0 })
+
+const selectedTeacherName = computed(() => {
+  if (!form.value.teacher_id) return null
+  const teacher = teachers.value.find(t => t.id === form.value.teacher_id)
+  return teacher ? (teacher.name_kh || teacher.name) : null
+})
+
 const fetchDropdownData = async () => {
   try {
     const [yearsResponse, teachersResponse] = await Promise.all([
-      api.get('/years'), 
+      api.get('/years'),
       api.get('/teachers')
     ])
-    academicYears.value = yearsResponse.data
-    teachers.value = teachersResponse.data
+    academicYears.value = yearsResponse.data || []
+    teachers.value = teachersResponse.data || []
   } catch (error) {
     console.error('បរាជ័យក្នុងការទាញទិន្នន័យជំនួយ:', error)
   }
@@ -133,7 +191,44 @@ watch(() => props.classData, (newData) => {
   }
 }, { immediate: true, deep: true })
 
-const closeModal = () => emit('update:modelValue', false)
+const closeModal = () => {
+  showTeacherDropdown.value = false
+  emit('update:modelValue', false)
+}
+
+const calculateDropdownPosition = () => {
+  if (!teacherButtonRef.value) return
+  
+  const rect = teacherButtonRef.value.getBoundingClientRect()
+  dropdownPosition.value = {
+    top: rect.bottom + window.scrollY + 4,
+    left: rect.left + window.scrollX,
+    width: rect.width
+  }
+}
+
+const toggleTeacherDropdown = () => {
+  if (!showTeacherDropdown.value) {
+    calculateDropdownPosition()
+  }
+  showTeacherDropdown.value = !showTeacherDropdown.value
+}
+
+const selectTeacher = (teacher) => {
+  form.value.teacher_id = teacher ? teacher.id : null
+  showTeacherDropdown.value = false
+}
+
+const handleClickOutside = (e) => {
+  if (!showTeacherDropdown.value) return
+  
+  const clickedButton = teacherButtonRef.value && teacherButtonRef.value.contains(e.target)
+  const clickedDropdown = dropdownRef.value && dropdownRef.value.contains(e.target)
+  
+  if (!clickedButton && !clickedDropdown) {
+    showTeacherDropdown.value = false
+  }
+}
 
 const submitForm = async () => {
   loading.value = true
@@ -159,6 +254,11 @@ const submitForm = async () => {
 
 onMounted(() => {
   fetchDropdownData()
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 
@@ -182,5 +282,16 @@ onMounted(() => {
   20%, 80% { transform: translate3d(2px, 0, 0); }
   30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
   40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+/* Custom dropdown animation */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.15s ease;
+}
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 </style>

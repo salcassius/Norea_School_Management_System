@@ -23,7 +23,7 @@
             <component :is="item.icon" class="w-6 h-6" :class="item.iconColor" />
           </div>
           <div>
-            <p class="text-[14px] text-slate-500 font-medium uppercase tracking-wider">{{ item.label }}</p>
+            <p class="text-[15px] text-slate-500 font-medium uppercase tracking-wider">{{ item.label }}</p>
             <p class="text-lg font-bold text-slate-800">{{ item.value }}</p>
           </div>
         </div>
@@ -40,13 +40,14 @@
             </div>
             <div class="relative min-w-[180px]">
               <select v-model="filters.academic_year_id" @change="fetchClasses"
-                class="w-full bg-white border border-slate-200 rounded-lg py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer">
+                class="w-full bg-white border border-slate-200 rounded-lg py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all appearance-none cursor-pointer ">
                 <option value="">គ្រប់ឆ្នាំសិក្សាទាំងអស់</option>
                 <option v-for="year in academicYears" :key="year.id" :value="year.id">
                   {{ year.year_name || year.name }}
                 </option>
               </select>
-              <ChevronDown class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <ChevronDown
+                class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             </div>
           </div>
         </div>
@@ -60,7 +61,8 @@
                 <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider">គ្រូទទួលបន្ទុក</th>
                 <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider">សិស្សសរុប</th>
                 <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider">ស្ថានភាព</th>
-                <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider text-right">សកម្មភាព</th>
+                <th class="px-6 py-4 text-[14px] font-bold text-slate-500 uppercase tracking-wider text-right">សកម្មភាព
+                </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -68,12 +70,15 @@
                 class="hover:bg-slate-50/80 transition-colors group cursor-pointer">
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
+                    <div
+                      class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
                       <Layout class="w-5 h-5 text-indigo-600" />
                     </div>
                     <div>
-                      <p class="text-sm font-bold text-slate-700 leading-tight">ថ្នាក់ទី {{ cls.grade_level }}{{ cls.name }}</p>
-                      <p class="text-[12px] text-slate-600 mt-0.5 uppercase">{{ cls.year?.year_name || cls.year?.name || 'N/A' }}</p>
+                      <p class="text-sm font-bold text-slate-700 leading-tight">ថ្នាក់ទី {{ cls.grade_level }}{{
+                        cls.name }}</p>
+                      <p class="text-[12px] text-slate-600 mt-0.5 uppercase">{{ cls.year?.year_name || cls.year?.name ||
+                        'N/A' }}</p>
                     </div>
                   </div>
                 </td>
@@ -91,24 +96,27 @@
                 </td>
                 <td class="px-6 py-4">
                   <span :class="[
-                    'px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border',
+                    'px-3 py-1 rounded-full text-[12px] font-bold uppercase tracking-wider border',
                     cls.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
                   ]">
-                    {{ cls.is_active ? 'សកម្ម' : 'មិនសកម្ម' }}
+                    {{ cls.is_active ? 'ដំណើរការ' : 'បឹទដំណើរការ' }}
                   </span>
                 </td>
                 <td class="px-6 py-4 text-right" @click.stop>
                   <div class="flex items-center justify-end gap-2">
                     <button @click="viewDetail(cls)"
-                      class="p-2 text-white bg-slate-600 hover:bg-slate-700 rounded-lg transition-all shadow-sm active:scale-90" title="View Detail">
+                      class="p-2 text-white bg-slate-600 hover:bg-slate-700 rounded-lg transition-all shadow-sm active:scale-90"
+                      title="View Detail">
                       <ChevronRight class="w-4 h-4" />
                     </button>
                     <button @click="editClass(cls)"
-                      class="p-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all shadow-sm active:scale-90" title="Edit">
+                      class="p-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all shadow-sm active:scale-90"
+                      title="Edit">
                       <Edit3 class="w-4 h-4" />
                     </button>
                     <button @click="openDeleteModal(cls)"
-                      class="p-2 text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-all shadow-sm active:scale-90" title="Delete">
+                      class="p-2 text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-all shadow-sm active:scale-90"
+                      title="Delete">
                       <Trash2 class="w-4 h-4" />
                     </button>
                   </div>
@@ -126,17 +134,26 @@
     <!-- ===== DETAIL VIEW ===== -->
     <div v-else class="animate-in fade-in duration-200">
       <button @click="activeDetailClass = null"
-        class="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-800 mb-4 transition-colors">
-        ← ត្រឡប់ទៅបញ្ជីថ្នាក់វិញ
+        class="inline-flex items-center gap-2.5 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-2xl shadow-sm transition-all duration-200 mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>ត្រឡប់ទៅបញ្ជីថ្នាក់វិញ</span>
       </button>
 
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div
+        class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div>
-          <span class="bg-indigo-50 text-indigo-700 text-xs font-bold px-3 py-1 rounded-md uppercase">ព័ត៌មានលម្អិតថ្នាក់</span>
-          <h2 class="text-2xl font-bold text-slate-800 mt-2">ថ្នាក់ទី៖ {{ activeDetailClass.grade_level }}{{ activeDetailClass.name }}</h2>
+          <span
+            class="bg-indigo-50 text-indigo-700 text-xs font-bold px-3 py-1 rounded-md uppercase">ព័ត៌មានលម្អិតថ្នាក់</span>
+          <h2 class="text-2xl font-bold text-slate-800 mt-2">ថ្នាក់ទី៖ {{ activeDetailClass.grade_level }}{{
+            activeDetailClass.name }}</h2>
           <p class="text-sm text-slate-500 mt-1">
-            គ្រូបន្ទុក៖ <span class="font-bold text-slate-700">{{ activeDetailClass.teacher?.name_kh || 'មិនទាន់មាន' }}</span> |
-            ឆ្នាំសិក្សា៖ <span class="font-bold text-slate-700">{{ activeDetailClass.year?.year_name || activeDetailClass.year?.name || 'N/A' }}</span>
+            គ្រូបន្ទុក៖ <span class="font-bold text-slate-700">{{ activeDetailClass.teacher?.name_kh || 'មិនទាន់មាន'
+              }}</span> |
+            ឆ្នាំសិក្សា៖ <span class="font-bold text-slate-700">{{ activeDetailClass.year?.year_name ||
+              activeDetailClass.year?.name || 'N/A' }}</span>
           </p>
         </div>
         <button @click="isAddStudentModalOpen = true"
@@ -145,22 +162,23 @@
         </button>
       </div>
 
-      <div class="p-4 bg-slate-50/50 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div class="font-bold text-sm text-slate-600">👥 សិស្សសរុប៖ {{ classStudents.length }} នាក់</div>
-          <div class="flex items-center gap-2">
-            <button @click="downloadExcel"
-              class="bg-white border border-green-600 text-green-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-              ទាញយក Excel
-            </button>
-            <button @click="downloadPDF"
-              class="bg-white border border-red-600 text-red-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-              ទាញយក​ PDF
-            </button>
-          </div>
+      <div
+        class="p-4 bg-slate-50/50 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="font-bold text-sm text-slate-600">👥 សិស្សសរុប៖ {{ classStudents.length }} នាក់</div>
+        <div class="flex items-center gap-2">
+          <button @click="downloadExcel"
+            class="bg-white border border-green-600 text-green-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+            ទាញយក Excel
+          </button>
+          <button @click="downloadPDF"
+            class="bg-white border border-red-600 text-red-700 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+            ទាញយក​ PDF
+          </button>
         </div>
+      </div>
 
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        
+
 
         <div class="overflow-x-auto w-full">
           <table class="w-full text-left border-collapse min-w-[1200px]">
@@ -186,7 +204,8 @@
                 </td>
                 <td class="px-4 py-4 font-mono text-[14px] uppercase">{{ std.student_id_card }}</td>
                 <td class="px-4 py-4 text-slate-700 text-[14px]">{{ std.gender === 'male' ? 'ប្រុស' : 'ស្រី' }}</td>
-                <td class="px-4 py-4 text-slate-700 text-[14px]">{{ std.date_of_birth ? new Date(std.date_of_birth).toLocaleDateString('km-KH') : 'N/A' }}</td>
+                <td class="px-4 py-4 text-slate-700 text-[14px]">{{ std.date_of_birth ? new
+                  Date(std.date_of_birth).toLocaleDateString('km-KH') : 'N/A' }}</td>
                 <td class="px-4 py-4 text-slate-700 text-[14px]">{{ std.phone }}</td>
                 <td class="px-4 py-4 text-slate-700 text-[14px]">
                   <div>{{ std.guardian_dad_name }}</div>
@@ -209,68 +228,84 @@
       </div>
     </div>
 
-<div v-if="isAddStudentModalOpen" 
-         class="fixed inset-0 z-50 flex items-center justify-center p-4"
-         style="background: rgba(15, 15, 20, 0.5);" 
-         @click.self="isAddStudentModalOpen = false">
-      
+    <div v-if="isAddStudentModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style="background: rgba(15, 15, 20, 0.5);" @click.self="isAddStudentModalOpen = false">
+
       <Transition name="modal-scale">
         <div v-if="isAddStudentModalOpen"
-             class="bg-white rounded-2xl border border-slate-200 w-full max-w-lg p-8 shadow-2xl font-[Battambang]">
-          
+          class="bg-white rounded-2xl border border-slate-200 w-full max-w-lg p-8 shadow-2xl font-[Battambang]">
+
           <h3 class="text-xl font-bold text-slate-800 mb-2">ស្វែងរកសិស្សបញ្ចូលទៅក្នុងថ្នាក់</h3>
           <p class="text-sm text-slate-500 mb-6">ប្អូនអាចវាយបញ្ចូលឈ្មោះ ឬលេខកូដសិស្ស ដើម្បីស្វែងរកសិស្ស</p>
 
           <div class="relative mb-6">
             <Search class="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
-            <input v-model="studentSearchQuery" 
-                   @input="searchStudentsToAssign" 
-                   type="text"
-                   placeholder="វាយឈ្មោះខ្មែរ ឬ កូដសិស្ស..."
-                   class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+            <input v-model="studentSearchQuery" @input="searchStudentsToAssign" type="text"
+              placeholder="វាយឈ្មោះខ្មែរ ឬ កូដសិស្ស..."
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
           </div>
 
-          <div class="max-h-60 overflow-y-auto border border-slate-100 rounded-xl bg-slate-50/50 mb-6 divide-y divide-slate-100">
+          <div
+            class="max-h-60 overflow-y-auto border border-slate-100 rounded-xl bg-slate-50/50 mb-6 divide-y divide-slate-100">
             <div v-if="searchingStudents" class="p-4 text-center text-sm text-slate-400 italic">កំពុងស្វែងរក...</div>
-            
+
             <div v-else v-for="student in foundStudents" :key="student.id"
-                 class="p-4 flex items-center justify-between hover:bg-white transition-colors">
+              class="p-4 flex items-center justify-between hover:bg-white transition-colors">
               <div>
                 <p class="text-sm font-bold text-slate-700">{{ student.name_kh || student.name }}</p>
                 <p class="text-xs font-mono text-indigo-500 mt-0.5">{{ student.student_id_card || 'គ្មានកូដ' }}</p>
               </div>
               <button @click="assignStudentToClass(student.id)"
-                      class="px-4 py-2 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all active:scale-95">
+                class="px-4 py-2 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all active:scale-95">
                 + បញ្ចូល
               </button>
             </div>
 
             <div v-if="foundStudents.length === 0 && studentSearchQuery.trim() !== ''"
-                 class="p-4 text-center text-sm text-slate-400">
+              class="p-4 text-center text-sm text-slate-400">
               រកមិនឃើញសិស្សម្នាក់នេះឡើយ
             </div>
           </div>
 
           <button @click="isAddStudentModalOpen = false"
-                  class="w-full py-3 rounded-xl text-sm font-bold text-blue-600 bg-slate-100 hover:bg-slate-200 transition-all">
+            class="w-full py-3 rounded-xl text-sm font-bold text-blue-600 bg-slate-100 hover:bg-slate-200 transition-all">
             បិទផ្ទាំង
           </button>
         </div>
       </Transition>
     </div>
-    
-    
-      
-   
+
+
+
+
 
     <!-- ===== MODAL: Create Class ===== -->
-    <CreateClassModel :is-open="isCreateModalOpen" @close="closeCreateModal" @refresh="handleClassCreated" />
+    <!--
+      ចំណាំសំខាន់៖ CreateClassModel.vue ត្រូវ emit 2 events:
+        1. @refresh  -> ពេលបង្កើតជោគជ័យ (200/201)
+        2. @error    -> ពេលមានបញ្ហា (ឧ. គ្រូមានថ្នាក់រួចហើយ) ដោយផ្ញើសារមកជា payload
+           ឧទាហរណ៍ក្នុង CreateClassModel.vue:
+             try {
+               await api.post('/classes', form)
+               emit('refresh')
+             } catch (error) {
+               emit('error', error.response?.data?.message || 'មិនអាចបង្កើតថ្នាក់រៀនបានទេ!')
+             }
+    -->
+    <CreateClassModel :is-open="isCreateModalOpen" @close="closeCreateModal" @refresh="handleClassCreate"
+      @error="handleCreateError" />
 
     <!-- ===== MODAL: Detail Student ===== -->
     <DetailStudent :is-open="showModal" :student="selectedStudent" @close="showModal = false" />
 
     <!-- ===== MODAL: Edit Class ===== -->
-    <EditeClass v-model="isEditModalOpen" :classData="selectedClass" @refresh="fetchClasses" />
+    <!--
+      ចំណាំសំខាន់៖ EditeClass.vue ត្រូវ emit 2 events ដូចគ្នា៖
+        1. @refresh -> ពេលកែប្រែជោគជ័យ
+        2. @error   -> ពេលមានបញ្ហា (ឧ. គ្រូមានថ្នាក់ផ្សេងទៀតរួចហើយ)
+    -->
+    <EditeClass v-model="isEditModalOpen" :classData="selectedClass" @refresh="handleUpdateClass"
+      @error="handleUpdateError" />
 
     <!-- Toast Notification -->
     <Teleport to="body">
@@ -299,10 +334,8 @@
     <!-- Delete Class Modal -->
     <Teleport to="body">
       <Transition name="modal-fade">
-        <div v-if="isDeleteModalOpen"
-          class="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style="background: rgba(15, 15, 20, 0.5);"
-          @click.self="closeDeleteModal">
+        <div v-if="isDeleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style="background: rgba(15, 15, 20, 0.5);" @click.self="closeDeleteModal">
           <Transition name="modal-scale">
             <div v-if="isDeleteModalOpen"
               class="bg-white rounded-2xl border border-slate-200 w-full max-w-sm p-8 text-center font-[Battambang]">
@@ -337,10 +370,8 @@
     <!-- Remove Student from Class Modal -->
     <Teleport to="body">
       <Transition name="modal-fade">
-        <div v-if="isRemoveStudentModalOpen"
-          class="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style="background: rgba(15, 15, 20, 0.5);"
-          @click.self="closeRemoveStudentModal">
+        <div v-if="isRemoveStudentModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style="background: rgba(15, 15, 20, 0.5);" @click.self="closeRemoveStudentModal">
           <Transition name="modal-scale">
             <div v-if="isRemoveStudentModalOpen"
               class="bg-white rounded-2xl border border-slate-200 w-full max-w-sm p-8 text-center font-[Battambang]">
@@ -377,6 +408,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   Plus, Search, Edit3, Trash2, UserCheck, Users, BookOpen,
   Layout, ChevronRight, ChevronDown,
@@ -426,6 +458,7 @@ const removingStudent = ref(null)
 // Toast
 const toast = ref({ show: false, message: '', type: 'success' })
 let toastTimer = null
+const router = useRouter()
 
 // --- Toast ---
 const showToast = (message, type = 'success') => {
@@ -438,7 +471,7 @@ const showToast = (message, type = 'success') => {
 const summaryStats = computed(() => [
   { label: 'ថ្នាក់រៀនសរុប', value: classes.value.length, icon: Layout, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600' },
   { label: 'សិស្សសរុប', value: classes.value.reduce((acc, curr) => acc + (parseInt(curr.students_count || curr.student_count) || 0), 0), icon: Users, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
-  { label: 'ថ្នាក់សកម្ម', value: classes.value.filter(c => c.is_active).length, icon: BookOpen, iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
+  { label: 'ថ្នាក់ដំណើរការ', value: classes.value.filter(c => c.is_active).length, icon: BookOpen, iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
 ])
 
 const filteredClasses = computed(() => {
@@ -483,13 +516,27 @@ const fetchClasses = async () => {
 const fetchStudentsByClass = async (classId) => {
   try {
     const response = await api.get(`/classes/${classId}/students`)
-    if (response.data && Array.isArray(response.data)) {
-      classStudents.value = response.data
-    } else if (response.data && Array.isArray(response.data.data)) {
-      classStudents.value = response.data.data
-    } else {
-      classStudents.value = []
-    }
+    
+    // ដកស្រង់យក Array ទិន្នន័យចេញមកសិន (ទោះជា response.data ឬ response.data.data)
+    const rawData = Array.isArray(response.data) 
+      ? response.data 
+      : (response.data && Array.isArray(response.data.data)) 
+        ? response.data.data 
+        : []
+
+    // ធ្វើការតម្រៀបទិន្នន័យពីតូចទៅធំ (7A -> 7B -> 8A)
+    const sortedData = rawData.sort((a, b) => {
+      // ប្រៀបធៀបលេខថ្នាក់ (Grade 7, 8, 9)
+      if (Number(a.grade_level) !== Number(b.grade_level)) {
+        return Number(a.grade_level) - Number(b.grade_level)
+      }
+      // បើថ្នាក់ស្មើគ្នា ប្រៀបធៀបអក្សរ (A, B, C)
+      return String(a.name).localeCompare(String(b.name))
+    })
+
+    // រក្សាទុកក្នុងអថេរតែមួយឱ្យបានច្បាស់លាស់ (ឧទាហរណ៍៖ classStudents)
+    classStudents.value = sortedData
+
   } catch (error) {
     console.error('Error fetching class students:', error)
     classStudents.value = []
@@ -498,8 +545,7 @@ const fetchStudentsByClass = async (classId) => {
 
 // --- Detail View ---
 const viewDetail = async (cls) => {
-  activeDetailClass.value = cls
-  fetchStudentsByClass(cls.id)
+  router.push({ name: 'ClassDetail', params: { id: cls.id } })
 }
 
 // --- Search Students ---
@@ -594,14 +640,51 @@ const confirmDeleteClass = async () => {
   }
 }
 
-// --- Create / Edit ---
+// --- Create Class ---
 const openCreateModal = () => { isCreateModalOpen.value = true }
 const closeCreateModal = () => { isCreateModalOpen.value = false }
-const handleClassCreated = () => { fetchClasses(); closeCreateModal() }
 
+// ✅ ហៅពេលបង្កើតថ្នាក់ជោគជ័យ (emit 'refresh' ពី CreateClassModel.vue)
+const handleClassCreate = async () => {
+  try {
+    closeCreateModal()
+    await fetchClasses()
+    showToast('បានបង្កើតថ្នាក់រៀនដោយជោគជ័យ!', 'success')
+  } catch (error) {
+    showToast('បង្កើតបានប៉ុន្តែផ្ទុកទិន្នន័យឡើងវិញមិនបានទេ!', 'error')
+  }
+}
+
+// ✅ ហៅពេលបង្កើតថ្នាក់បរាជ័យ (ឧ. គ្រូនេះមានថ្នាក់រួចហើយ) (emit 'error' ពី CreateClassModel.vue)
+const handleCreateError = (message) => {
+  showToast(message || 'មិនអាចបង្កើតថ្នាក់រៀនបានទេ!', 'error')
+}
+
+// --- Edit Class ---
 const editClass = (cls) => {
   selectedClass.value = { ...cls }
   isEditModalOpen.value = true
+}
+
+const closeEditModal = () => {
+  isEditModalOpen.value = false
+  selectedClass.value = null
+}
+
+// ✅ ហៅពេលកែប្រែថ្នាក់ជោគជ័យ (emit 'refresh' ពី EditeClass.vue)
+const handleUpdateClass = async () => {
+  try {
+    closeEditModal()
+    await fetchClasses()
+    showToast('បានកែប្រែថ្នាក់រៀនដោយជោគជ័យ!', 'success')
+  } catch (error) {
+    showToast('កែប្រែបានប៉ុន្តែផ្ទុកទិន្នន័យឡើងវិញមិនបានទេ!', 'error')
+  }
+}
+
+// ✅ ហៅពេលកែប្រែថ្នាក់បរាជ័យ (ឧ. គ្រូនេះមានថ្នាក់ផ្សេងទៀតរួចហើយ) (emit 'error' ពី EditeClass.vue)
+const handleUpdateError = (message) => {
+  showToast(message || 'មិនអាចកែប្រែថ្នាក់រៀនបានទេ!', 'error')
 }
 
 // --- Export ---
@@ -658,6 +741,7 @@ onMounted(() => {
 .modal-fade-leave-active {
   transition: opacity 0.2s ease;
 }
+
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
@@ -667,6 +751,7 @@ onMounted(() => {
 .modal-scale-leave-active {
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
+
 .modal-scale-enter-from,
 .modal-scale-leave-to {
   transform: scale(0.95);
@@ -677,6 +762,7 @@ onMounted(() => {
 .toast-slide-leave-active {
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
+
 .toast-slide-enter-from,
 .toast-slide-leave-to {
   transform: translateX(100%);

@@ -1,7 +1,7 @@
 <template>
-  <div class="font-[Battambang] p-6 min-h-screen bg-slate-50/50">
+  <div class="font-[Battambang] p-1 sm:p-2 md:p-2 min-h-screen bg-slate-50/50">
     <div class="mb-8">
-      <h1 class="text-2xl font-bold text-slate-800">កាលវិភាគបង្រៀន</h1>
+      <h1 class="text-[22px] font-bold text-slate-800">កាលវិភាគបង្រៀន</h1>
       <p class="text-sm text-slate-500 mt-1">ពិនិត្យមើលកាលវិភាគបង្រៀនរបស់អ្នកសម្រាប់សប្តាហ៍នេះ</p>
     </div>
 
@@ -16,7 +16,7 @@
 
         <div v-if="day.lessons.length > 0" class="space-y-3">
           <div v-for="lesson in day.lessons" :key="lesson.id"
-            class="p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-indigo-200 transition-all">
+            class="p-3 bg-slate-50 rounded-xl border border-slate-300 hover:border-indigo-200 transition-all">
             <div class="flex justify-between items-start">
               <span class="text-[15px] font-bold text-slate-600">{{ lesson.time }}</span>
               <span class="text-[13px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">
@@ -24,7 +24,7 @@
               </span>
             </div>
             <p class="text-sm font-bold text-slate-800 mt-1">{{ lesson.subject }}</p>
-            <p class="text-[14px] text-slate-600">ថ្នាក់៖ {{ lesson.className }}</p>
+            <p class="text-[14px] text-slate-600">ថ្នាក់ទី៖ {{ lesson.className }}</p>
           </div>
         </div>
 

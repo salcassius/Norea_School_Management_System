@@ -15,7 +15,22 @@ use Illuminate\Support\Facades\DB;
 
 class AttendanceController extends Controller
 {
-    
+    private function getTodayKhmer()
+    {
+        $days = [
+            0 => 'អាទិត្យ',
+            1 => 'ច័ន្ទ',
+            2 => 'អង្គារ',
+            3 => 'ពុធ',
+            4 => 'ព្រហស្បតិ៍',
+            5 => 'សុក្រ',
+            6 => 'សៅរ៍',
+        ];
+
+        return $days[Carbon::now()->dayOfWeek];
+    }
+
+   
     public function getTeacherSchedulesToday(Request $request)
     {
         $teacher = Teacher::where('user_id', $request->user()->id)->first();
@@ -28,7 +43,7 @@ class AttendanceController extends Controller
         return response()->json($schedules);
     }
 
-
+   
     public function getStudentsByClass(Request $request, $class_id)
     {
         $date = $request->query('date', Carbon::now()->format('Y-m-d'));
@@ -49,40 +64,40 @@ class AttendanceController extends Controller
     }
 
     public function saveAttendance(Request $request)
-{
-    $request->validate([
-        'class_id' => 'required',
-        'date' => 'required|date',
-        'attendance' => 'required|array' 
-    ]);
+    {
+        $request->validate([
+            'class_id' => 'required',
+            'date' => 'required|date',
+            'attendance' => 'required|array'
+        ]);
 
-    DB::beginTransaction();
-    try {
-        foreach ($request->attendance as $item) {
-            $status = $item['status'] ?? 'present'; 
+        DB::beginTransaction();
+        try {
+            foreach ($request->attendance as $item) {
+                $status = $item['status'] ?? 'present';
 
-            Attendance::updateOrCreate(
-                [
-                    'student_id' => $item['student_id'], 
-                    'class_id' => $request->class_id, 
-                    'date' => $request->date
-                ],
-                [
-                    'status' => $status,
-                    'notes' => $item['notes'] ?? null
-                ]
-            );
+                Attendance::updateOrCreate(
+                    [
+                        'student_id' => $item['student_id'],
+                        'class_id' => $request->class_id,
+                        'date' => $request->date
+                    ],
+                    [
+                        'status' => $status,
+                        'notes' => $item['notes'] ?? null
+                    ]
+                );
+            }
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'រក្សាទុកជោគជ័យ']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Attendance Save Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'មានបញ្ហានៅខាង Server: ' . $e->getMessage()], 500);
         }
-        DB::commit();
-        return response()->json(['success' => true, 'message' => 'រក្សាទុកជោគជ័យ']);
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Attendance Save Error: ' . $e->getMessage());
-        return response()->json(['success' => false, 'message' => 'មានបញ្ហានៅខាង Server: ' . $e->getMessage()], 500);
     }
-}
-  
-   public function getAttendanceSheet(Request $request)
+
+    public function getAttendanceSheet(Request $request)
     {
         try {
             $request->validate([
@@ -115,53 +130,121 @@ class AttendanceController extends Controller
         }
     }
 
+  
+    public function getReport(Request $request)
+    {
+        $request->validate([
+            'class_id' => 'required',
+            'year_id' => 'required'
+        ]);
 
-public function getReport(Request $request)
-{
-    $request->validate([
-        'class_id' => 'required',
-        'year_id' => 'required' 
-    ]);
-    
-    $class_id = $request->class_id;
-    $year_id = $request->year_id; 
+        $class_id = $request->class_id;
+        $year_id = $request->year_id;
 
-    // ប្រើ Join ដើម្បីចូលទៅយក year_id ពីតារាង classes
-    // សន្មតថា table របស់ ClassRoom ឈ្មោះ classes
-    $report = Attendance::join('classes', 'attendance.class_id', '=', 'classes.id')
-        ->where('attendance.class_id', $class_id)
-        ->where('classes.year_id', $year_id)
-        ->select('attendance.student_id',
-            DB::raw("COUNT(CASE WHEN attendance.status = 'present' THEN 1 END) as total_present"),
-            DB::raw("COUNT(CASE WHEN attendance.status = 'absent' THEN 1 END) as total_absent"),
-            DB::raw("COUNT(CASE WHEN attendance.status = 'excused' THEN 1 END) as total_excused")
-        )
-        ->groupBy('attendance.student_id')
-        ->get();
+        $report = Attendance::join('classes', 'attendance.class_id', '=', 'classes.id')
+            ->where('attendance.class_id', $class_id)
+            ->where('classes.year_id', $year_id)
+            ->select(
+                'attendance.student_id',
+                DB::raw("COUNT(CASE WHEN attendance.status = 'present' THEN 1 END) as total_present"),
+                DB::raw("COUNT(CASE WHEN attendance.status = 'absent' THEN 1 END) as total_absent"),
+                DB::raw("COUNT(CASE WHEN attendance.status = 'excused' THEN 1 END) as total_excused"),
+                DB::raw("COUNT(CASE WHEN attendance.status = 'late' THEN 1 END) as total_late")
+            )
+            ->groupBy('attendance.student_id')
+            ->get();
 
-    $data = $report->map(function ($item) {
-        $student = Student::find($item->student_id);
-        $total_attended = $item->total_present + $item->total_excused;
-        $total_days = $item->total_present + $item->total_absent + $item->total_excused;
-        
-        $percentage = $total_days > 0 ? round(($total_attended / $total_days) * 100, 2) : 0;
-        
-        return [
-            'student_id'    => $item->student_id,
-            'student_name'  => $student ? $student->name_kh : 'N/A',
-            'total_present' => $item->total_present,
-            'total_absent'  => $item->total_absent,
-            'total_excused' => $item->total_excused,
-            'percentage'    => $percentage
-        ];
-    });
+        $data = $report->map(function ($item) {
+            $student = Student::find($item->student_id);
+            $total_attended = $item->total_present + $item->total_excused + $item->total_late;
+            $total_days = $total_attended + $item->total_absent;
 
-    $top_absentees = $data->sortByDesc('total_absent')->take(5)->values();
+            $percentage = $total_days > 0 ? round(($total_attended / $total_days) * 100, 2) : 0;
 
-    return response()->json([
-        'data' => $data,
-        'top_absentees' => $top_absentees
-    ]);
+            return [
+                'student_id'    => $item->student_id,
+                'student_name'  => $student ? $student->name_kh : 'N/A',
+                'total_present' => $item->total_present,
+                'total_absent'  => $item->total_absent,
+                'total_excused' => $item->total_excused,
+                'total_late'    => $item->total_late,
+                'percentage'    => $percentage
+            ];
+        });
+
+        $top_absentees = $data->sortByDesc('total_absent')->take(5)->values();
+
+        return response()->json([
+            'data' => $data,
+            'top_absentees' => $top_absentees
+        ]);
+    }
+
+   
+    public function getMyClassReport(Request $request)
+    {
+        $request->validate([
+            'class_id' => 'required',
+            'year_id'  => 'required'
+        ]);
+
+        $teacher = Teacher::where('user_id', $request->user()->id)->first();
+        if (!$teacher) {
+            return response()->json(['message' => 'មិនឃើញទិន្នន័យគ្រូ'], 404);
+        }
+
+        $class_id = $request->class_id;
+        $year_id  = $request->year_id;
+
+       
+        $ownsClass = ClassRoom::where('id', $class_id)
+            ->where('teacher_id', $teacher->id)
+            ->exists();
+
+        if (!$ownsClass) {
+            return response()->json([
+                'message' => 'អ្នកមិនមែនជាគ្រូបន្ទប់ថ្នាក់នេះទេ ដូច្នេះមិនអាចមើលរបាយការណ៍នេះបានទេ!'
+            ], 403);
+        }
+
+        $report = Attendance::join('classes', 'attendance.class_id', '=', 'classes.id')
+            ->where('attendance.class_id', $class_id)
+            ->where('classes.year_id', $year_id)
+            ->select(
+                'attendance.student_id',
+                DB::raw("COUNT(CASE WHEN attendance.status = 'present' THEN 1 END) as total_present"),
+                DB::raw("COUNT(CASE WHEN attendance.status = 'absent' THEN 1 END) as total_absent"),
+                DB::raw("COUNT(CASE WHEN attendance.status = 'excused' THEN 1 END) as total_excused"),
+                DB::raw("COUNT(CASE WHEN attendance.status = 'late' THEN 1 END) as total_late")
+            )
+            ->groupBy('attendance.student_id')
+            ->get();
+
+        $data = $report->map(function ($item) {
+            $student = Student::find($item->student_id);
+            $total_attended = $item->total_present + $item->total_excused + $item->total_late;
+            $total_days = $total_attended + $item->total_absent;
+
+            $percentage = $total_days > 0 ? round(($total_attended / $total_days) * 100, 2) : 0;
+
+            return [
+                'student_id'    => $item->student_id,
+                'student_name'  => $student ? $student->name_kh : 'N/A',
+                'total_present' => $item->total_present,
+                'total_absent'  => $item->total_absent,
+                'total_excused' => $item->total_excused,
+                'total_late'    => $item->total_late,
+                'percentage'    => $percentage
+            ];
+        });
+
+        $top_absentees = $data->sortByDesc('total_absent')->take(5)->values();
+
+        return response()->json([
+            'data' => $data,
+            'top_absentees' => $top_absentees
+        ]);
+    }
 }
 
      /**
@@ -206,4 +289,4 @@ public function getReport(Request $request)
     //     ]);
     // }
 
-}
+

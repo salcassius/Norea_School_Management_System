@@ -60,6 +60,7 @@ const routes = [
       { path: 'teacher', name: 'Teachers', component: ManageTeacher },
       { path: 'student', name: 'Students', component: ManageStudent },
       { path: 'class', name: 'Classes', component: ManageClass },
+      { path: 'class/:id', name: 'ClassDetail', component: () => import('../views/admin/ClassDetail.vue'), props: true },
       { path: 'year', name: 'Years', component: ManageYear },
       { path: 'subject', name: 'Subjects', component: ManageSubject },
       {path: 'attendance', name: 'AdminAttendance', component: ManageAttendance},

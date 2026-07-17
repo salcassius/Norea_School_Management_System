@@ -37,6 +37,10 @@ class DashboardController extends Controller
             },
             'attendance as absent_count' => function ($query) use ($date) {
                 $query->where('status', 'absent')->whereDate('date', $date);
+            },
+            // ✅ ខ្វះមុន — នេះជាមូលហេតុដែល "មានច្បាប់" មិនបង្ហាញលើ column chart
+            'attendance as excused_count' => function ($query) use ($date) {
+                $query->where('status', 'excused')->whereDate('date', $date);
             }
         ])->get();
 
@@ -45,6 +49,8 @@ class DashboardController extends Controller
         $chartClassesLabels = $classes->map(fn($c) => $c->grade_level . $c->name)->toArray();
         $chartPresentCounts = $classes->pluck('present_count')->toArray();
         $chartAbsentCounts = $classes->pluck('absent_count')->toArray();
+        // ✅ បន្ថែម៖ ទាញយកចំនួន "មានច្បាប់" តាមថ្នាក់ ក្នុងលំដាប់ដូចគ្នានឹង labels
+        $chartExcusedCounts = $classes->pluck('excused_count')->toArray();
 
         return response()->json([
             'success' => true,
@@ -60,6 +66,8 @@ class DashboardController extends Controller
                 'chart_classes_labels' => $chartClassesLabels,
                 'chart_present_counts' => $chartPresentCounts,
                 'chart_absent_counts' => $chartAbsentCounts,
+                // ✅ បន្ថែម key នេះ — Dashboard.vue អាន data.chart_excused_counts ដោយផ្ទាល់
+                'chart_excused_counts' => $chartExcusedCounts,
                 'attendance_stats' => [85, 5, 7, 3] // គំរូ
             ]
         ]);
@@ -70,12 +78,11 @@ class DashboardController extends Controller
         try {
             $user = $request->user();
             $teacher = Teacher::where('user_id', $user->id)->first();
-            if (!$teacher) return response()->json(['total_students' => 0, 'attendance_rate' => 0, 'total_hours' => 0, 'today_schedule' => []]);
+            if (!$teacher) return response()->json(['total_students' => 0, 'present_count' => 0, 'total_hours' => 0, 'today_schedule' => []]);
 
             $myClass = ClassRoom::where('teacher_id', $teacher->id)->first();
             $totalStudents = 0;
-            $attendanceRate = 0;
-
+            $presentCount = 0;
             if ($myClass) {
                 $totalStudents = $myClass->student()->count();
                 if ($totalStudents > 0) {
@@ -84,21 +91,51 @@ class DashboardController extends Controller
                         ->whereDate('date', now()->format('Y-m-d'))
                         ->whereIn('student_id', $studentIds)
                         ->count();
-                    $attendanceRate = ($presentCount / $totalStudents) * 100;
+                    $presentCount = $presentCount ?? 0;
                 }
             }
 
-            $schedules = Schedule::where('teacher_id', $teacher->id)->with(['subject', 'class'])->get();
+            // 💡 ប្រែប្រួលឈ្មោះថ្ងៃពី Carbon (English) ទៅជាភាសាខ្មែរ
+            // ដូចគ្នានឹងទម្រង់ដែលប្រើក្នុងតារាង schedules (column: day)
+            $dayMapping = [
+                'Monday'    => 'ច័ន្ទ',
+                'Tuesday'   => 'អង្គារ',
+                'Wednesday' => 'ពុធ',
+                'Thursday'  => 'ព្រហស្បតិ៍',
+                'Friday'    => 'សុក្រ',
+                'Saturday'  => 'សៅរ៍',
+                'Sunday'    => 'អាទិត្យ',
+            ];
+
+            $todayEnglish = now()->format('l');       // ឧ. "Monday"
+            $todayKhmer   = $dayMapping[$todayEnglish] ?? null;
+
+            // ✅ Total hours សរុបប្រចាំសប្តាហ៍ (មិនកំណត់តែថ្ងៃនេះ)
+            $totalHours = Schedule::where('teacher_id', $teacher->id)->count();
+
+            // ✅ កាលវិភាគសម្រាប់ថ្ងៃនេះប៉ុណ្ណោះ
+            $todaySchedules = Schedule::where('teacher_id', $teacher->id)
+                ->where(function ($query) use ($todayKhmer, $todayEnglish) {
+                    // គាំទ្រទាំងទម្រង់ខ្មែរ និង English ក្នុងករណីទិន្នន័យចម្រុះ
+                    $query->where('day', $todayKhmer)
+                          ->orWhere('day', $todayEnglish);
+                })
+                ->with(['subject', 'class'])
+                ->orderBy('time')
+                ->get();
+
             return response()->json([
                 'total_students' => $totalStudents,
-                'attendance_rate' => round($attendanceRate),
-                'total_hours' => $schedules->count(),
-                'today_schedule' => $schedules->map(fn($s) => [
+                'present_count' => $presentCount,
+                'total_hours' => $totalHours,
+                'today_schedule' => $todaySchedules->map(fn($s) => [
                     'id' => $s->id,
                     'time' => $s->time ?? '00:00',
                     'subject' => $s->subject->name ?? 'N/A',
-                    'class_name' => $s->class->grade_level ?? 'N/A',
-                    'room' => $s->room ?? 'N/A'
+                    'class_name' => $s->class
+                        ? ($s->class->grade_level . $s->class->name)
+                        : 'N/A',
+                    'room' => $s->room ?? ''
                 ])
             ]);
         } catch (\Exception $e) {
