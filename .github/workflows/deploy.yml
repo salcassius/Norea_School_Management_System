@@ -10,35 +10,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.3
-
-      - name: Install Composer
-        run: composer install --no-dev --optimize-autoloader
-        working-directory: school-backend
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Install Vue
-        run: npm install
+      - name: Install Frontend Dependencies
         working-directory: school-frontend
+        run: npm ci
 
       - name: Build Vue
-        run: npm run build
         working-directory: school-frontend
+        run: npm run build
 
-      - name: Upload Website
+      - name: Prepare Deploy Folder
+        run: |
+          mkdir deploy
+          mkdir deploy/laravel
+
+          # Copy Laravel project
+          cp -R school-backend/* deploy/laravel/
+
+          # Copy Laravel public files to htdocs
+          cp -R school-backend/public/* deploy/
+
+          # Replace assets with Vue build
+          rm -rf deploy/assets
+          cp -R school-frontend/dist/* deploy/
+
+      - name: Upload to InfinityFree
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./
+          local-dir: deploy/
           server-dir: /htdocs/
