@@ -7,14 +7,21 @@ COPY . .
 RUN apt-get update && apt-get install -y \
     unzip \
     git \
-    curl
-
-RUN docker-php-ext-install pdo pdo_mysql
+    curl \
+    && docker-php-ext-install pdo pdo_mysql
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-scripts
+
+RUN php artisan config:clear
 
 EXPOSE 8000
 
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
+CMD php artisan migrate --force && \
+    php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan serve --host=0.0.0.0 --port=8000
