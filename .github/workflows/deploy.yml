@@ -10,8 +10,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Install Backend Dependencies (Composer)
+        working-directory: school-backend
+        run: composer install --no-dev --optimize-autoloader
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -29,19 +39,24 @@ jobs:
       - name: Prepare Deploy Folder
         run: |
           mkdir deploy
-          mkdir deploy/laravel
+          mkdir -p deploy/laravel
 
-          # Copy Laravel project
+          # 1. Copy the entire Laravel project (including vendor) into deploy/laravel
           cp -R school-backend/* deploy/laravel/
 
-          # Copy Laravel public files to htdocs
+          # 2. Copy the public directory files directly into deploy/ (htdocs root)
           cp -R school-backend/public/* deploy/
 
-          # Replace assets with Vue build
+          # 3. AUTOMATIC PATH FIX: Rewrite relative paths to absolute InfinityFree server paths
+          sed -i "s|__DIR__.'/../storage|'/home/vol1_4/infinityfree.com/if0_42437891/htdocs/laravel/storage|g" deploy/index.php
+          sed -i "s|__DIR__.'/../vendor|'/home/vol1_4/infinityfree.com/if0_42437891/htdocs/laravel/vendor|g" deploy/index.php
+          sed -i "s|__DIR__.'/../bootstrap|'/home/vol1_4/infinityfree.com/if0_42437891/htdocs/laravel/bootstrap|g" deploy/index.php
+
+          # 4. Replace assets with Vue build
           rm -rf deploy/assets
           cp -R school-frontend/dist/* deploy/
 
-      - name: Upload to InfinityFree
+      - name: Upload to InfinityFree via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
