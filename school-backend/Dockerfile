@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN composer install --no-dev --optimize-autoload
+RUN composer install --no-dev --optimize-autoloader
 
 RUN php artisan config:clear
 
