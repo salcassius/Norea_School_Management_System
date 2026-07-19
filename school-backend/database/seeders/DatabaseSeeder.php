@@ -8,30 +8,35 @@ use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    public function run()
-{
-    // Admin
-    \App\Models\User::create([
-        'name' => 'Admin User',
-        'email' => 'admin@gmail.com',
-        'password' => 'admin1234',
-        'role' => 'admin'
-    ]);
+    public function run(): void
+    {
+        // Admin
+        User::create([
+            'name' => 'Admin User',
+            'email' => 'admin@gmail.com',
+            'password' => Hash::make('admin1234'),
+            'role' => 'admin',
+            'status' => true,
+        ]);
 
-    // Teacher ✅ (ត្រូវថែមត្រង់នេះ)
-    \App\Models\User::create([
-        'name' => 'Teacher User',
-        'email' => 'teacher01@gmail.com',
-        'password' => 'teacher123',
-        'role' => 'teacher'
-    ]);
 
-    // Student ✅ (ត្រូវថែមត្រង់នេះ)
-    \App\Models\User::create([
-        'name' => 'Student User',
-        'email' => 'student01@gmail.com',
-        'password' => 'student123',
-        'role' => 'student'
-    ]);
-}
+        // Teacher
+        User::create([
+            'name' => 'Teacher User',
+            'email' => 'teacher01@gmail.com',
+            'password' => Hash::make('teacher123'),
+            'role' => 'teacher',
+            'status' => true,
+        ]);
+
+
+        // Student
+        User::create([
+            'name' => 'Student User',
+            'email' => 'student01@gmail.com',
+            'password' => Hash::make('student123'),
+            'role' => 'student',
+            'status' => true,
+        ]);
+    }
 }
