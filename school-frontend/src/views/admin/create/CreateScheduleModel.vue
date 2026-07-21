@@ -36,26 +36,37 @@
           </div>
         </div>
 
-        <div class="space-y-1.5">
-          <label class="text-[14px] font-bold text-slate-600 ml-0.5">
-            គ្រូបង្រៀន <span class="text-rose-500">*</span>
-          </label>
-          <div class="relative">
-            <UserRound
-              :class="['absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5', isTeacherFieldInvalid ? 'text-rose-400' : 'text-slate-400']" />
-            <select v-model="form.teacher_id" @change="errorMessage = ''"
-            :class="['w-full bg-slate-50/50 border rounded-xl py-2.5 pl-11 pr-10 text-sm font-medium text-slate-700 outline-none focus:ring-4 transition-all appearance-none cursor-pointer max-h-[140px] overflow-y-auto custom-scrollbar min-w-[140px]',
-              isTeacherFieldInvalid ? 'border-rose-300 focus:ring-rose-500/10 focus:border-rose-500' : 'border-slate-200 focus:ring-indigo-500/10 focus:border-indigo-500']"
-            required>
-            <option value="" disabled>--- ជ្រើសរើសគ្រូបង្រៀន ---</option>
-            <option v-for="tc in teachers" :key="tc.id" :value="tc.id">
-              {{ tc.name_kh || tc.name }} {{ tc.name_en ? `(${tc.name_en})` : '' }}
-            </option>
-          </select>
-            <ChevronDown class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-xl border border-slate-100 text-1xs font-semibold text-slate-500">
+        <div class="space-y-1.5 relative" ref="teacherDropdownRef">
+  <label class="text-[14px] font-bold text-slate-600 ml-0.5">
+    គ្រូបង្រៀន <span class="text-rose-500">*</span>
+  </label>
+  <div class="relative">
+    <UserRound
+      :class="['absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 z-10', isTeacherFieldInvalid ? 'text-rose-400' : 'text-slate-400']" />
+
+    <button type="button" @click="isTeacherDropdownOpen = !isTeacherDropdownOpen"
+      :class="['w-full bg-slate-50/50 border rounded-xl py-2.5 pl-11 pr-10 text-sm font-medium text-left outline-none focus:ring-4 transition-all cursor-pointer truncate',
+        selectedTeacherLabel ? 'text-slate-700' : 'text-slate-400',
+        isTeacherFieldInvalid ? 'border-rose-300 focus:ring-rose-500/10 focus:border-rose-500' : 'border-slate-200 focus:ring-indigo-500/10 focus:border-indigo-500']">
+      {{ selectedTeacherLabel || '--- ជ្រើសរើសគ្រូបង្រៀន ---' }}
+    </button>
+
+    <ChevronDown
+      :class="['absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none transition-transform', isTeacherDropdownOpen ? 'rotate-180' : '']" />
+
+    <div v-if="isTeacherDropdownOpen"
+      class="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-[140px] overflow-y-auto custom-scrollbar min-w-[140px]">
+      <button v-for="tc in teachers" :key="tc.id" type="button"
+        @click="selectTeacher(tc)"
+        class="w-full text-left px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
+        {{ tc.name_kh || tc.name }} {{ tc.name_en ? `(${tc.name_en})` : '' }}
+      </button>
+      <div v-if="!teachers.length" class="px-3.5 py-2 text-sm text-slate-400">
+        មិនមានគ្រូបង្រៀនទេ
+      </div>
+    </div>
+  </div>
+</div>        <div class="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-xl border border-slate-100 text-1xs font-semibold text-slate-500">
           <div>ថ្ងៃសិក្សា៖ <span class="text-slate-800 font-bold">{{ form.day }}</span></div>
           <div>ម៉ោងសិក្សា៖ <span class="text-slate-800 font-bold">{{ form.time }}</span></div>
         </div>
