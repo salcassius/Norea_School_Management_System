@@ -44,14 +44,14 @@
             <UserRound
               :class="['absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5', isTeacherFieldInvalid ? 'text-rose-400' : 'text-slate-400']" />
             <select v-model="form.teacher_id" @change="errorMessage = ''"
-              :class="['w-full bg-slate-50/50 border rounded-xl py-2.5 pl-11 pr-10 text-sm font-medium text-slate-700 outline-none focus:ring-4 transition-all appearance-none cursor-pointer',
-                isTeacherFieldInvalid ? 'border-rose-300 focus:ring-rose-500/10 focus:border-rose-500' : 'border-slate-200 focus:ring-indigo-500/10 focus:border-indigo-500']"
-              required>
-              <option value="" disabled>--- ជ្រើសរើសគ្រូបង្រៀន ---</option>
-              <option v-for="tc in teachers" :key="tc.id" :value="tc.id">
-                {{ tc.name_kh || tc.name }} {{ tc.name_en ? `(${tc.name_en})` : '' }}
-              </option>
-            </select>
+            :class="['w-full bg-slate-50/50 border rounded-xl py-2.5 pl-11 pr-10 text-sm font-medium text-slate-700 outline-none focus:ring-4 transition-all appearance-none cursor-pointer max-h-[140px] overflow-y-auto custom-scrollbar min-w-[140px]',
+              isTeacherFieldInvalid ? 'border-rose-300 focus:ring-rose-500/10 focus:border-rose-500' : 'border-slate-200 focus:ring-indigo-500/10 focus:border-indigo-500']"
+            required>
+            <option value="" disabled>--- ជ្រើសរើសគ្រូបង្រៀន ---</option>
+            <option v-for="tc in teachers" :key="tc.id" :value="tc.id">
+              {{ tc.name_kh || tc.name }} {{ tc.name_en ? `(${tc.name_en})` : '' }}
+            </option>
+          </select>
             <ChevronDown class="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           </div>
         </div>
@@ -133,3 +133,10 @@ const handleSubmit = async () => {
   }
 }
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+</style>
