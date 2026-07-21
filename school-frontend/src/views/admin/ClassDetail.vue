@@ -80,13 +80,13 @@
         <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
           <div class="flex flex-col gap-3 mb-4">
             <div>
-              <h2 class="text-lg font-bold text-slate-800">សិស្សដែលផ្គូផ្គង class_id</h2>
-              <p class="text-sm text-slate-500 mt-1">សិស្សដែលមាន class_id ដូចគ្នា និងអាចបញ្ចូលបាន</p>
+              <h2 class="text-lg font-bold text-slate-800">សិស្សសម្រាប់បញ្ចូល</h2>
+              <!-- <p class="text-sm text-slate-500 mt-1">សិស្សដែលមានលក្ខណៈដូចគ្នា និងអាចបញ្ចូលបាន</p> -->
             </div>
             <div class="relative">
               <input v-model="suggestedSearchQuery" @input="onSearchInput"
                 type="text"
-                placeholder="ស្វែងរកសិស្សតាមឈ្មោះ ឬលេខកូដ..."
+                placeholder="ស្វែងរកសិស្សតាមឈ្មោះ ឬអត្តលេខ..."
                 class="w-full border border-slate-200 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
             </div>
           </div>
@@ -96,7 +96,7 @@
           </div>
 
           <div v-else-if="suggestedStudents.length === 0" class="py-10 text-center text-slate-500">
-            មិនមានសិស្សលក្ខណៈផ្គូផ្គងទេ
+            មិនមានសិស្សផ្គូផ្គងទេ
           </div>
 
           <div v-else class="space-y-3">

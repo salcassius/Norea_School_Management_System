@@ -181,7 +181,7 @@
               </td>
 
               <!-- សកម្មភាព | Sticky Right -->
-              <td class="px-6 py-4 text-right sticky right-0 bg-white z-10">
+              <td class="px-4 py-4 text-right sticky right-0 bg-white z-10">
                 <div class="flex items-center justify-end gap-2">
                   <!-- Inside the action td -->
                   <!-- <button @click="openDetailModal(student)" 
@@ -189,11 +189,11 @@
                           title="មើលលម្អិត">
                     <Eye class="w-4 h-4" />
                   </button> -->
-                  <button @click="openDetailModal(student)" 
+                  <!-- <button @click="openDetailModal(student)" 
         class="p-2 text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all active:scale-90 shadow-sm"
         title="មើលលម្អិត">
   <Eye class="w-4 h-4" />
-</button>
+</button> -->
                   <button @click="handleEdit(student)" title="កែសម្រួល"
                     class="p-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all active:scale-90 shadow-sm">
                     <Edit3 class="w-4 h-4" />
