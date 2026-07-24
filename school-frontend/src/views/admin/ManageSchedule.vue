@@ -17,17 +17,11 @@
 
       <div v-else class="w-full md:w-64">
         <label class="text-[15px] font-bold text-slate-600 ml-1">សូមជ្រើសរើសថ្នាក់</label>
-        <select
-          ref="classSelectRef"
-          v-model="filterClass"
-          @mousedown="saveScrollPosition"
-          @focus="saveScrollPosition"
-          @change="handleClassChange"
-          class="w-full mt-1 bg-slate-50 border border-slate-300 rounded-lg py-2 px-3 text-[14px] outline-none focus:border-indigo-500 cursor-pointer"
-        >
+        <select v-model="filterClass"
+          class="w-full mt-1 bg-slate-50 border border-slate-300 rounded-lg py-2 px-3 text-[14px] outline-none focus:border-indigo-500 cursor-pointer">
           <option value="" disabled>ជ្រើសរើសថ្នាក់</option>
-          <option v-for="cls in sortedStudentClasses" :key="cls.id" :value="cls.id">
-            ថ្នាក់ទី {{ cls.grade_level }}{{ cls.name }}
+          <option v-for="cls in studentClasses" :key="cls.id" :value="cls.id">
+           ថ្នាក់ទី {{ cls.grade_level }}{{ cls.name }}
           </option>
         </select>
       </div>
@@ -273,7 +267,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { FileText, FileSpreadsheet, MapPin, ChevronRight, ArrowLeft, School, LayoutDashboard, Edit3, Trash2, PlusCircle, Loader2, CheckCircle2, XCircle, X } from 'lucide-vue-next'
 import api from '../../services/authService'
 import CreateSchedule from '../admin/create/CreateScheduleModel.vue'
@@ -282,28 +276,6 @@ import EditSchedule from '../admin/edite/EditeSchedule.vue'
 // Export libraries
 import * as XLSX from 'xlsx-js-style'
 import html2pdf from 'html2pdf.js'
-
-// ─── Select scroll-position fix (ការពារកុំអោយទំព័រ "រត់ឡើងលើ" ពេលជ្រើសរើសថ្នាក់) ──
-const classSelectRef = ref(null)
-let savedScrollY = 0
-
-const restoreScroll = () => {
-  window.scrollTo({ top: savedScrollY, behavior: 'instant' })
-}
-
-const saveScrollPosition = () => {
-  savedScrollY = window.scrollY
-}
-
-const handleClassChange = () => {
-  // ១. Restore scroll ភ្លាមៗ បន្ទាប់ពី DOM update ជុំវិញ select
-  nextTick(() => {
-    restoreScroll()
-    // ២. ដក focus ចេញពី <select> ដើម្បីកុំអោយ browser (ជាពិសេស mobile)
-    //    ធ្វើ auto-scroll-into-view ទៅរក field ដែលកំពុង focus ម្តងទៀត
-    classSelectRef.value?.blur()
-  })
-}
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 const toast = ref({ show: false, message: '', type: 'success' })
@@ -483,16 +455,6 @@ const filteredClasses = computed(() => {
 
 const studentClasses = computed(() => filteredClasses.value)
 
-// ✅ តម្រៀបថ្នាក់ពីតូចទៅធំ តាម grade_level រួចតាម name (ក, ខ, គ ...)
-const sortedStudentClasses = computed(() => {
-  return [...studentClasses.value].sort((a, b) => {
-    const gradeA = Number(a.grade_level) || 0
-    const gradeB = Number(b.grade_level) || 0
-    if (gradeA !== gradeB) return gradeA - gradeB
-    return String(a.name || '').localeCompare(String(b.name || ''), 'km')
-  })
-})
-
 watch(filterClass, (newId) => {
   if (!newId) return
   const cls = classes.value.find(c => Number(c.id) === Number(newId))
@@ -507,11 +469,9 @@ const handleYearChange = () => {
   scheduleData.value = []
 }
 
-const handleSelectClass = async (cls) => {
+const handleSelectClass = (cls) => {
   selectedClassData.value = cls
-  await fetchSchedules()
-  // ✅ Restore scroll ម្តងទៀត បន្ទាប់ពីតារាងកាលវិភាគបាន render ចប់ (ដែលធ្វើឲ្យកម្ពស់ទំព័រប្រែប្រួល)
-  nextTick(() => restoreScroll())
+  fetchSchedules()
 }
 
 const getScheduleEntry = (day, time) => {
@@ -698,7 +658,7 @@ const exportToExcel = () => {
   const rowsConfig = []
   for (let r = 0; r <= tableEndRowIdx + 10; r++) {
     if (r >= tableStartRowIdx && r <= tableEndRowIdx) {
-      rowsConfig[r] = { hpt: 38 } // ៣៨ ພິចសែល សម្រាប់ ២ បន្ទាត់
+      rowsConfig[r] = { hpt: 38 } // ៣៨ ພិចសែល សម្រាប់ ២ បន្ទាត់
     } else {
       rowsConfig[r] = { hpt: 24 }
     }
