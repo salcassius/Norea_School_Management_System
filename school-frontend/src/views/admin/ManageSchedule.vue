@@ -18,6 +18,7 @@
       <div v-else class="w-full md:w-64">
         <label class="text-[15px] font-bold text-slate-600 ml-1">សូមជ្រើសរើសថ្នាក់</label>
         <select
+          ref="classSelectRef"
           v-model="filterClass"
           @mousedown="saveScrollPosition"
           @focus="saveScrollPosition"
@@ -283,15 +284,24 @@ import * as XLSX from 'xlsx-js-style'
 import html2pdf from 'html2pdf.js'
 
 // ─── Select scroll-position fix (ការពារកុំអោយទំព័រ "រត់ឡើងលើ" ពេលជ្រើសរើសថ្នាក់) ──
+const classSelectRef = ref(null)
 let savedScrollY = 0
+
+const restoreScroll = () => {
+  window.scrollTo({ top: savedScrollY, behavior: 'instant' })
+}
 
 const saveScrollPosition = () => {
   savedScrollY = window.scrollY
 }
 
 const handleClassChange = () => {
+  // ១. Restore scroll ភ្លាមៗ បន្ទាប់ពី DOM update ជុំវិញ select
   nextTick(() => {
-    window.scrollTo({ top: savedScrollY, behavior: 'instant' })
+    restoreScroll()
+    // ២. ដក focus ចេញពី <select> ដើម្បីកុំអោយ browser (ជាពិសេស mobile)
+    //    ធ្វើ auto-scroll-into-view ទៅរក field ដែលកំពុង focus ម្តងទៀត
+    classSelectRef.value?.blur()
   })
 }
 
@@ -497,9 +507,11 @@ const handleYearChange = () => {
   scheduleData.value = []
 }
 
-const handleSelectClass = (cls) => {
+const handleSelectClass = async (cls) => {
   selectedClassData.value = cls
-  fetchSchedules()
+  await fetchSchedules()
+  // ✅ Restore scroll ម្តងទៀត បន្ទាប់ពីតារាងកាលវិភាគបាន render ចប់ (ដែលធ្វើឲ្យកម្ពស់ទំព័រប្រែប្រួល)
+  nextTick(() => restoreScroll())
 }
 
 const getScheduleEntry = (day, time) => {
