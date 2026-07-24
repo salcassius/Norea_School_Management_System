@@ -7,10 +7,10 @@
     </div> -->
 
     <div
-      class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 font-[Battambang]">
+      class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 font-[Battambang]">
       <div class="space-y-1">
         <label class="text-[13px] sm:text-[14px] font-bold text-slate-600 uppercase font-[Battambang]">១. ជ្រើសរើសថ្នាក់រៀន</label>
-        <select v-model="selectedClassId" @change="onClassChange"
+        <select v-model="selectedClassId" @change="fetchAttendanceSheet"
           class=" text-[14px] w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 font-semibold outline-none focus:border-indigo-500 cursor-pointer">
           <option value="" disabled>--- ជ្រើសរើសថ្នាក់ ---</option>
           <option v-for="cls in classes" :key="cls.id" :value="cls.id">
@@ -20,24 +20,13 @@
       </div>
 
       <div class="space-y-1">
-        <label class="text-[13px] sm:text-[14px] font-bold text-slate-600 uppercase font-[Battambang]">២. ជ្រើសរើសមុខវិជ្ជា</label>
-        <select v-model="selectedSubjectId" @change="fetchAttendanceSheet" :disabled="!selectedClassId"
-          class=" text-[14px] w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 font-semibold outline-none focus:border-indigo-500 disabled:opacity-60 cursor-pointer">
-          <option value="" disabled>--- ជ្រើសរើសមុខវិជ្ជា ---</option>
-          <option v-for="sub in subjects" :key="sub.id" :value="sub.id">
-            {{ sub.name }}
-          </option>
-        </select>
-      </div>
-
-      <div class="space-y-1">
-        <label class="text-[13px] sm:text-[14px] font-bold text-slate-600 uppercase font-[Battambang]">៣. កាលបរិច្ឆេទ</label>
+        <label class="text-[13px] sm:text-[14px] font-bold text-slate-600 uppercase font-[Battambang]">២. កាលបរិច្ឆេទ</label>
         <input v-model="selectedDate" type="date" @change="fetchAttendanceSheet"
           class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-semibold outline-none focus:border-indigo-500 text-slate-800" />
       </div>
     </div>
 
-    <div v-if="selectedClassId && selectedSubjectId" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+    <div v-if="selectedClassId" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
 
       <div v-if="isLoading" class="p-12 text-center text-slate-600 font-medium">
         កំពុងទាញយកបញ្ជីឈ្មោះសិស្ស...
@@ -109,7 +98,7 @@
 
     <div v-else
       class="p-12 text-center bg-white rounded-2xl border border-slate-200/80 shadow-sm text-slate-600 font-medium">
-      <p>⚠️ សូមជ្រើសរើសថ្នាក់រៀន និងមុខវិជ្ជា ដើម្បីបើកផ្ទាំងគ្រប់គ្រងអវត្តមាន។</p>
+      <p>⚠️ សូមជ្រើសរើសថ្នាក់រៀន ដើម្បីបើកផ្ទាំងគ្រប់គ្រងអវត្តមាន។</p>
     </div>
 
 
@@ -145,51 +134,30 @@ import { Save } from 'lucide-vue-next'
 import api from '../../../services/authService'
 
 const classes = ref([])
-const subjects = ref([])
 const selectedClassId = ref('')
-const selectedSubjectId = ref('')
 const selectedDate = ref(new Date().toISOString().split('T')[0])
 
 const attendanceRows = ref([])
 const isLoading = ref(false)
 const isSaving = ref(false)
 
-const unwrapArray = (payload) => {
-  if (Array.isArray(payload)) return payload
-  if (Array.isArray(payload?.data)) return payload.data
-  if (Array.isArray(payload?.data?.data)) return payload.data.data
-  return []
-}
-
 onMounted(async () => {
   try {
-    const [classesRes, subjectsRes] = await Promise.all([
-      api.get('/classes'),
-      api.get('/subjects')
-    ])
-    classes.value = unwrapArray(classesRes.data)
-    subjects.value = unwrapArray(subjectsRes.data)
+    const response = await api.get('/classes')
+    classes.value = response.data?.data || response.data
   } catch (error) {
-    console.error('💥 Error fetching classes/subjects:', error)
+    console.error('💥 Error fetching teacher classes:', error)
   }
 })
 
-// ✅ នៅពេលប្តូរថ្នាក់ ត្រូវសម្អាតមុខវិជ្ជា និងបញ្ជីវត្តមានចាស់ចោល
-// ព្រោះការទាញយក attendance sheet ត្រូវការទាំងថ្នាក់ និងមុខវិជ្ជាព្រមគ្នា
-const onClassChange = () => {
-  selectedSubjectId.value = ''
-  attendanceRows.value = []
-}
-
 const fetchAttendanceSheet = async () => {
-  if (!selectedClassId.value || !selectedSubjectId.value || !selectedDate.value) return
+  if (!selectedClassId.value || !selectedDate.value) return
 
   isLoading.value = true
   try {
     const response = await api.get('/attendance/sheet', {
       params: {
         class_id: selectedClassId.value,
-        subject_id: selectedSubjectId.value,
         date: selectedDate.value
       }
     })
@@ -233,7 +201,6 @@ const submitAttendance = async () => {
   try {
     const payload = {
       class_id: selectedClassId.value,
-      subject_id: selectedSubjectId.value,
       date: selectedDate.value,
       attendance: attendanceRows.value.map(row => ({
         student_id: row.student_id,
