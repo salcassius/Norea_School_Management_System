@@ -258,29 +258,42 @@ const fetchDashboardData = async () => {
     ]
 
     // Bar chart
-    const labels = data.chart_classes_labels || []
-    barChartData.labels = labels
+    const rawLabels = data.chart_classes_labels || []
+    const rawPresent = data.chart_present_counts || []
+    const rawAbsent = data.chart_absent_counts || []
+    const rawExcused = alignToLabels(data.chart_excused_counts, rawLabels.length)
+
+    // តម្រៀបថ្នាក់ពីតូចទៅធំ តាមលេខដែលមាននៅក្នុង label (ឧ. "ថ្នាក់ទី៧" → 7)
+    const indices = rawLabels.map((_, i) => i)
+    indices.sort((a, b) => {
+      const numA = parseInt(String(rawLabels[a]).match(/\d+/)?.[0] ?? Infinity, 10)
+      const numB = parseInt(String(rawLabels[b]).match(/\d+/)?.[0] ?? Infinity, 10)
+      if (numA !== numB) return numA - numB
+      return String(rawLabels[a]).localeCompare(String(rawLabels[b]), 'km')
+    })
+
+    barChartData.labels = indices.map(i => rawLabels[i])
     barChartData.datasets = [
       {
         label: 'វត្តមាន',
         backgroundColor: '#10b981',
         borderRadius: 6,
         barThickness: 16,
-        data: data.chart_present_counts || []
+        data: indices.map(i => rawPresent[i] ?? 0)
       },
       {
         label: 'អវត្តមាន',
         backgroundColor: '#ed3030',
         borderRadius: 6,
         barThickness: 16,
-        data: data.chart_absent_counts || []
+        data: indices.map(i => rawAbsent[i] ?? 0)
       },
       {
         label: 'មានច្បាប់',
         backgroundColor: '#f59e0b',
         borderRadius: 6,
         barThickness: 16,
-        data: alignToLabels(data.chart_excused_counts, labels.length)
+        data: indices.map(i => rawExcused[i] ?? 0)
       }
     ]
 
