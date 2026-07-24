@@ -16,20 +16,20 @@
       </div>
 
       <div v-else class="w-full md:w-64">
-  <label class="text-[15px] font-bold text-slate-600 ml-1">សូមជ្រើសរើសថ្នាក់</label>
-  <select
-    v-model="filterClass"
-    @mousedown="saveScrollPosition"
-    @focus="saveScrollPosition"
-    @change="handleClassChange"
-    class="w-full mt-1 bg-slate-50 border border-slate-300 rounded-lg py-2 px-3 text-[14px] outline-none focus:border-indigo-500 cursor-pointer"
-  >
-    <option value="" disabled>ជ្រើសរើសថ្នាក់</option>
-    <option v-for="cls in sortedStudentClasses" :key="cls.id" :value="cls.id">
-      ថ្នាក់ទី {{ cls.grade_level }}{{ cls.name }}
-    </option>
-  </select>
-</div>
+        <label class="text-[15px] font-bold text-slate-600 ml-1">សូមជ្រើសរើសថ្នាក់</label>
+        <select
+          v-model="filterClass"
+          @mousedown="saveScrollPosition"
+          @focus="saveScrollPosition"
+          @change="handleClassChange"
+          class="w-full mt-1 bg-slate-50 border border-slate-300 rounded-lg py-2 px-3 text-[14px] outline-none focus:border-indigo-500 cursor-pointer"
+        >
+          <option value="" disabled>ជ្រើសរើសថ្នាក់</option>
+          <option v-for="cls in sortedStudentClasses" :key="cls.id" :value="cls.id">
+            ថ្នាក់ទី {{ cls.grade_level }}{{ cls.name }}
+          </option>
+        </select>
+      </div>
 
       <!-- Schedule section: appears inline below once a class is picked, no view-swap -->
       <div v-if="selectedClassData" class="space-y-4 animate-in fade-in duration-300">
@@ -272,7 +272,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { FileText, FileSpreadsheet, MapPin, ChevronRight, ArrowLeft, School, LayoutDashboard, Edit3, Trash2, PlusCircle, Loader2, CheckCircle2, XCircle, X } from 'lucide-vue-next'
 import api from '../../services/authService'
 import CreateSchedule from '../admin/create/CreateScheduleModel.vue'
@@ -282,9 +282,7 @@ import EditSchedule from '../admin/edite/EditeSchedule.vue'
 import * as XLSX from 'xlsx-js-style'
 import html2pdf from 'html2pdf.js'
 
-
-import { nextTick } from 'vue'
-
+// ─── Select scroll-position fix (ការពារកុំអោយទំព័រ "រត់ឡើងលើ" ពេលជ្រើសរើសថ្នាក់) ──
 let savedScrollY = 0
 
 const saveScrollPosition = () => {
@@ -474,6 +472,16 @@ const filteredClasses = computed(() => {
 })
 
 const studentClasses = computed(() => filteredClasses.value)
+
+// ✅ តម្រៀបថ្នាក់ពីតូចទៅធំ តាម grade_level រួចតាម name (ក, ខ, គ ...)
+const sortedStudentClasses = computed(() => {
+  return [...studentClasses.value].sort((a, b) => {
+    const gradeA = Number(a.grade_level) || 0
+    const gradeB = Number(b.grade_level) || 0
+    if (gradeA !== gradeB) return gradeA - gradeB
+    return String(a.name || '').localeCompare(String(b.name || ''), 'km')
+  })
+})
 
 watch(filterClass, (newId) => {
   if (!newId) return
@@ -678,7 +686,7 @@ const exportToExcel = () => {
   const rowsConfig = []
   for (let r = 0; r <= tableEndRowIdx + 10; r++) {
     if (r >= tableStartRowIdx && r <= tableEndRowIdx) {
-      rowsConfig[r] = { hpt: 38 } // ៣៨ ພិចសែល សម្រាប់ ២ បន្ទាត់
+      rowsConfig[r] = { hpt: 38 } // ៣៨ ພິចសែល សម្រាប់ ២ បន្ទាត់
     } else {
       rowsConfig[r] = { hpt: 24 }
     }
