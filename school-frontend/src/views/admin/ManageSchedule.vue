@@ -16,15 +16,20 @@
       </div>
 
       <div v-else class="w-full md:w-64">
-        <label class="text-[15px] font-bold text-slate-600 ml-1">សូមជ្រើសរើសថ្នាក់</label>
-        <select v-model="filterClass"
-          class="w-full mt-1 bg-slate-50 border border-slate-300 rounded-lg py-2 px-3 text-[14px] outline-none focus:border-indigo-500 cursor-pointer">
-          <option value="" disabled>ជ្រើសរើសថ្នាក់</option>
-          <option v-for="cls in studentClasses" :key="cls.id" :value="cls.id">
-           ថ្នាក់ទី {{ cls.grade_level }}{{ cls.name }}
-          </option>
-        </select>
-      </div>
+  <label class="text-[15px] font-bold text-slate-600 ml-1">សូមជ្រើសរើសថ្នាក់</label>
+  <select
+    v-model="filterClass"
+    @mousedown="saveScrollPosition"
+    @focus="saveScrollPosition"
+    @change="handleClassChange"
+    class="w-full mt-1 bg-slate-50 border border-slate-300 rounded-lg py-2 px-3 text-[14px] outline-none focus:border-indigo-500 cursor-pointer"
+  >
+    <option value="" disabled>ជ្រើសរើសថ្នាក់</option>
+    <option v-for="cls in sortedStudentClasses" :key="cls.id" :value="cls.id">
+      ថ្នាក់ទី {{ cls.grade_level }}{{ cls.name }}
+    </option>
+  </select>
+</div>
 
       <!-- Schedule section: appears inline below once a class is picked, no view-swap -->
       <div v-if="selectedClassData" class="space-y-4 animate-in fade-in duration-300">
@@ -276,6 +281,21 @@ import EditSchedule from '../admin/edite/EditeSchedule.vue'
 // Export libraries
 import * as XLSX from 'xlsx-js-style'
 import html2pdf from 'html2pdf.js'
+
+
+import { nextTick } from 'vue'
+
+let savedScrollY = 0
+
+const saveScrollPosition = () => {
+  savedScrollY = window.scrollY
+}
+
+const handleClassChange = () => {
+  nextTick(() => {
+    window.scrollTo({ top: savedScrollY, behavior: 'instant' })
+  })
+}
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 const toast = ref({ show: false, message: '', type: 'success' })
