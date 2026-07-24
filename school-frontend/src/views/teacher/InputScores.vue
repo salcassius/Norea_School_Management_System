@@ -71,8 +71,16 @@
               <th class="p-3 text-[15px] font-bold text-indigo-600 text-center">លទ្ធផល</th>
             </tr>
           </thead>
+          <!--
+            ✅ FIX: use `students` (stable, original fetch order) instead of
+            `sortedStudents` here. sortedStudents re-sorts by score total on
+            every keystroke, which made rows jump around while typing. The
+            table now keeps a fixed row order; the "ចំ.ថ្នាក់" (rank) column
+            still shows the correct rank via studentRankMap, computed
+            separately from the sorted list.
+          -->
           <tbody class="divide-y divide-slate-100">
-            <tr v-for="(student, index) in sortedStudents" :key="student.id" class="hover:bg-slate-50 transition-colors">
+            <tr v-for="(student, index) in students" :key="student.id" class="hover:bg-slate-50 transition-colors">
               <td class="p-3 text-[15px] text-slate-600 text-center">{{ index + 1 }}</td>
               <td class="p-3 text-[15px] font-bold text-slate-800 whitespace-nowrap">{{ student.name_kh }}</td>
               <td class="p-3 text-[15px] text-center">{{ getGenderKh(student.gender) }}</td>
@@ -90,7 +98,7 @@
               <!-- Live Calculations -->
               <td class="p-3 text-[15px] font-bold text-indigo-700 text-center bg-indigo-50/30">{{ calculateTotal(student) }}</td>
               <td class="p-3 text-[15px] font-semibold text-center">{{ calculateAverage(student) }}</td>
-              <td class="p-3 text-[15px] font-bold text-red-600 text-center">{{ index + 1 }}</td>
+              <td class="p-3 text-[15px] font-bold text-red-600 text-center">{{ studentRankMap[student.id] }}</td>
               <td class="p-3 text-[15px] text-center font-bold text-emerald-600">{{ getGradeKh(calculateAverage(student)) }}</td>
               <td class="p-3 text-[15px] text-center font-bold text-blue-600">{{ getGradeEn(calculateAverage(student)) }}</td>
               <td class="p-3 text-[15px] text-center font-bold" :class="getResult(student).color">{{ getResult(student).text }}</td>
@@ -337,8 +345,20 @@ const reportTitle = computed(() => {
   return parts.join(' ')
 })
 
+// ✅ តម្រៀបសម្រាប់ export (Excel/PDF) និងសម្រាប់គណនាចំណាត់ថ្នាក់
 const sortedStudents = computed(() => {
   return [...students.value].sort((a, b) => calculateTotal(b) - calculateTotal(a))
+})
+
+// ✅ FIX: ចំណាត់ថ្នាក់ (rank) របស់សិស្សម្នាក់ៗ គណនាដោយឡែកពី sortedStudents
+// ដើម្បីឲ្យតារាងបញ្ចូលពិន្ទុ (ដែលប្រើ `students` លំដាប់ថេរ) មិនលោត
+// ជួរដេកនៅពេលអ្នកប្រើប្រាស់វាយពិន្ទុ ប៉ុន្តែចំណាត់ថ្នាក់នៅតែត្រឹមត្រូវ
+const studentRankMap = computed(() => {
+  const map = {}
+  sortedStudents.value.forEach((s, idx) => {
+    map[s.id] = idx + 1
+  })
+  return map
 })
 
 const totalFemaleCount = computed(() => sortedStudents.value.filter(s => getGenderKh(s.gender) === 'ស្រី').length)
