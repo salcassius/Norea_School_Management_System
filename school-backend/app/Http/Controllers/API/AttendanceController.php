@@ -47,19 +47,10 @@ class AttendanceController extends Controller
     public function getStudentsByClass(Request $request, $class_id)
     {
         $date = $request->query('date', Carbon::now()->format('Y-m-d'));
-        // ✅ subject_id ជាជម្រើសបន្ថែម (optional) សម្រាប់ endpoint នេះ ព្រោះមិនមែនគ្រប់កន្លែងហៅតែងតែមានមុខវិជ្ជាទេ
-        $subject_id = $request->query('subject_id');
-
         $classRoom = ClassRoom::find($class_id);
         if (!$classRoom) return response()->json(['message' => 'មិនឃើញថ្នាក់'], 404);
         $students = $classRoom->student()->select('students.id', 'students.name_kh', 'students.student_id_card')->get();
-
-        $existingQuery = Attendance::where('class_id', $class_id)->where('date', $date);
-        if ($subject_id) {
-            $existingQuery->where('subject_id', $subject_id);
-        }
-        $existing = $existingQuery->get()->keyBy('student_id');
-
+        $existing = Attendance::where('class_id', $class_id)->where('date', $date)->get()->keyBy('student_id');
         $data = $students->map(function ($student) use ($existing) {
             return [
                 'student_id' => $student->id,
@@ -76,7 +67,6 @@ class AttendanceController extends Controller
     {
         $request->validate([
             'class_id' => 'required',
-            'subject_id' => 'required',
             'date' => 'required|date',
             'attendance' => 'required|array'
         ]);
@@ -90,7 +80,6 @@ class AttendanceController extends Controller
                     [
                         'student_id' => $item['student_id'],
                         'class_id' => $request->class_id,
-                        'subject_id' => $request->subject_id,
                         'date' => $request->date
                     ],
                     [
@@ -113,12 +102,10 @@ class AttendanceController extends Controller
         try {
             $request->validate([
                 'class_id' => 'required',
-                'subject_id' => 'required',
                 'date' => 'required|date'
             ]);
 
             $class_id = $request->class_id;
-            $subject_id = $request->subject_id;
             $date = $request->date;
             $students = DB::table('students')
                 ->join('classroom_student', 'students.id', '=', 'classroom_student.student_id')
@@ -126,7 +113,6 @@ class AttendanceController extends Controller
                 ->select('students.id', 'students.name_kh')
                 ->get();
             $existing = Attendance::where('class_id', $class_id)
-                ->where('subject_id', $subject_id)
                 ->where('date', $date)
                 ->get()
                 ->keyBy('student_id');
@@ -302,3 +288,5 @@ class AttendanceController extends Controller
     //         'students' => $students
     //     ]);
     // }
+
+
